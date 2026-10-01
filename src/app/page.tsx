@@ -163,12 +163,8 @@ function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) 
         ) : slide.image ? (
           <motion.img initial={{ opacity: 0, scale: 0.9, rotate: -2 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, type: 'spring' }} src={slide.image} alt={slide.title} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }} />
         ) : slide.embedUrl ? (
-          <div style={{ width: '100%', maxWidth: '600px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', padding: '3rem', borderRadius: '24px', backdropFilter: 'blur(10px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)', textAlign: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', color: textColor, fontWeight: 700, fontSize: '1.5rem' }}>
-              <ExternalLink size={48} color="#3b82f6" />
-              {slide.embedTitle || 'External Resource'}
-            </div>
-            <a href={slide.embedUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', marginTop: '2rem', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', textDecoration: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1.1rem', transition: 'all 0.2s' }}>Buka Tautan</a>
+          <div style={{ width: '100%', height: '100%', minHeight: '500px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+            <iframe src={slide.embedUrl} width="100%" height="100%" style={{ border: 'none' }} title={slide.embedTitle || 'Embedded Content'} allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking="true" execution-while-out-of-viewport="true" execution-while-not-rendered="true" web-share="true" allowFullScreen></iframe>
           </div>
         ) : null}
       </div>

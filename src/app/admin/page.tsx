@@ -205,17 +205,20 @@ export default function AdminPanel() {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 const formData = new FormData();
-                                formData.append('file', file);
+                                formData.append('image', file);
+                                formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
                                 try {
                                   setMessage('Uploading...');
-                                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                  const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
                                   const result = await res.json();
-                                  if (result.url) {
+                                  if (result.data && result.data.url) {
                                     const newData = { ...data };
-                                    newData.chapters[cIdx].image = result.url;
+                                    newData.chapters[cIdx].image = result.data.url;
                                     setData(newData);
                                     setMessage('Upload successful!');
                                     setTimeout(() => setMessage(''), 2000);
+                                  } else {
+                                    throw new Error(result.error?.message || 'Failed');
                                   }
                                 } catch (err) {
                                   setMessage('Upload failed');
@@ -284,17 +287,20 @@ export default function AdminPanel() {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
                                         const formData = new FormData();
-                                        formData.append('file', file);
+                                        formData.append('image', file);
+                                        formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
                                         try {
                                           setMessage('Uploading...');
-                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                          const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
                                           const result = await res.json();
-                                          if (result.url) {
+                                          if (result.data && result.data.url) {
                                             const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].image = result.url;
+                                            newData.chapters[cIdx].slides[sIdx].image = result.data.url;
                                             setData(newData);
                                             setMessage('Upload successful!');
                                             setTimeout(() => setMessage(''), 2000);
+                                          } else {
+                                            throw new Error('Failed');
                                           }
                                         } catch (err) {
                                           setMessage('Upload failed');
@@ -324,17 +330,20 @@ export default function AdminPanel() {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
                                         const formData = new FormData();
-                                        formData.append('file', file);
+                                        formData.append('image', file);
+                                        formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
                                         try {
                                           setMessage('Uploading...');
-                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                          const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
                                           const result = await res.json();
-                                          if (result.url) {
+                                          if (result.data && result.data.url) {
                                             const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].backgroundImage = result.url;
+                                            newData.chapters[cIdx].slides[sIdx].backgroundImage = result.data.url;
                                             setData(newData);
                                             setMessage('Upload successful!');
                                             setTimeout(() => setMessage(''), 2000);
+                                          } else {
+                                            throw new Error('Failed');
                                           }
                                         } catch (err) {
                                           setMessage('Upload failed');
@@ -369,16 +378,6 @@ export default function AdminPanel() {
                                   />
                                 </div>
 
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Web Embed URL (Iframe)</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.embedUrl || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedUrl = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="https://example.com"
-                                  />
-                                </div>
                               </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
                               <div>
