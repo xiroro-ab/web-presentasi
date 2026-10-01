@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, Sun, Moon, Map, Pointer, Edit3, Lightbulb, Search } from 'lucide-react';
 import Link from 'next/link';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Canvas } from '@react-three/fiber';
+import { useGLTF, Stage, PresentationControls } from '@react-three/drei';
 
-export type Slide = { id: string; title: string; content: string; image?: string; backgroundImage?: string; videoBackground?: string; embedUrl?: string; embedTitle?: string; };
+function Model3D({ url }: { url: string }) {
+  try {
+    const { scene } = useGLTF(url);
+    return <primitive object={scene} />;
+  } catch(e) {
+    return null;
+  }
+}
+
+export type Slide = { id: string; title: string; content: string; image?: string; backgroundImage?: string; videoBackground?: string; chartData?: string; model3DUrl?: string; timelineData?: string; embedUrl?: string; embedTitle?: string; };
 export type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 export type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
@@ -92,9 +104,14 @@ function InteractionLayer({ mode }: { mode: 'none' | 'laser' | 'draw' | 'spotlig
 }
 
 // --- 2. SLIDE CONTENT COMPONENT ---
-function SlideContent({ slide, isGaming, onOpenEmbed }: { slide: Slide, isGaming: boolean, onOpenEmbed: (url: string) => void }) {
+function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) {
   const textColor = isGaming ? '#fff' : '#111';
   const descColor = isGaming ? '#a1a1aa' : '#52525b';
+  
+  let timeline = null;
+  if (slide.timelineData) { try { timeline = JSON.parse(slide.timelineData); } catch(e) {} }
+  let chart = null;
+  if (slide.chartData) { try { chart = JSON.parse(slide.chartData); } catch(e) {} }
 
   return (
     <div style={{ display: 'flex', gap: '4rem', flex: 1, alignItems: 'center', width: '100%' }}>
@@ -103,21 +120,55 @@ function SlideContent({ slide, isGaming, onOpenEmbed }: { slide: Slide, isGaming
           <motion.h1 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} style={{ fontSize: '3.5rem', fontWeight: 800, margin: '0 0 1rem 0', letterSpacing: '-0.03em', lineHeight: 1.1, color: textColor }}>{slide.title}</motion.h1>
           <div style={{ fontSize: '1.25rem', lineHeight: 1.8, color: descColor, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {slide.content.split('\n').map((p, j) => (
-              <motion.p key={j} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + (j * 0.1) }} style={{ margin: 0 }}>{p}</motion.p>
+              <motion.p key={j} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + (j * 0.1) }} style={{ margin: 0, textAlign: 'justify' }}>{p}</motion.p>
             ))}
           </div>
         </div>
+        {timeline && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', padding: '1rem 0', width: '100%' }} className="hide-scrollbar">
+            {timeline.map((item: any, i: number) => (
+              <div key={i} style={{ minWidth: '200px', background: isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', padding: '1.5rem', borderRadius: '16px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#3b82f6', marginBottom: '0.5rem' }}>{item.year}</div>
+                <div style={{ color: textColor, fontWeight: 500, fontSize: '1rem' }}>{item.event}</div>
+              </div>
+            ))}
+          </motion.div>
+        )}
       </div>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        {slide.image ? (
+        {chart && chart.length > 0 ? (
+          <div style={{ width: '100%', height: '450px', background: isGaming ? 'rgba(0,0,0,0.6)' : '#fff', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chart}>
+                <XAxis dataKey="name" stroke={descColor} />
+                <Tooltip contentStyle={{ background: isGaming ? '#111' : '#fff', border: 'none', borderRadius: '12px', color: textColor, boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }} />
+                <Bar dataKey="value" fill="#3b82f6" radius={[6,6,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : slide.model3DUrl ? (
+          <div style={{ width: '100%', height: '550px', cursor: 'grab', background: isGaming ? 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%)', borderRadius: '32px' }}>
+            <Suspense fallback={<div style={{color: textColor, display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center'}}>Loading 3D...</div>}>
+              <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+                <ambientLight intensity={0.8} />
+                <directionalLight position={[10, 10, 10]} intensity={1.5} />
+                <PresentationControls speed={1.5} global zoom={0.8} polar={[-Math.PI / 4, Math.PI / 4]}>
+                  <Stage environment="city" intensity={0.8}>
+                    <Model3D url={slide.model3DUrl} />
+                  </Stage>
+                </PresentationControls>
+              </Canvas>
+            </Suspense>
+          </div>
+        ) : slide.image ? (
           <motion.img initial={{ opacity: 0, scale: 0.9, rotate: -2 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, type: 'spring' }} src={slide.image} alt={slide.title} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }} />
         ) : slide.embedUrl ? (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ width: '100%', maxWidth: '480px', background: isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.9)', backdropFilter: 'blur(20px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '24px', padding: '3rem 2.5rem', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', cursor: 'pointer' }} onClick={() => onOpenEmbed(slide.embedUrl!)} whileHover={{ scale: 1.02 }}>
-            <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto', boxShadow: '0 8px 24px rgba(59,130,246,0.4)' }}>
-              <ExternalLink size={36} color="#fff" />
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={() => document.dispatchEvent(new CustomEvent('openEmbed', { detail: { url: slide.embedUrl, title: slide.embedTitle } }))} style={{ width: '100%', maxWidth: '480px', background: isGaming ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '24px', padding: '3rem 2.5rem', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', cursor: 'pointer' }} whileHover={{ scale: 1.03 }}>
+            <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto', boxShadow: '0 8px 24px rgba(59,130,246,0.4)' }}>
+              <ExternalLink size={32} color="#fff" />
             </div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 700, color: textColor, marginBottom: '0.75rem' }}>{slide.embedTitle || 'Klik untuk Buka'}</div>
-            <div style={{ fontSize: '0.95rem', color: descColor, marginBottom: '2rem' }}>Klik kartu ini untuk membuka konten di dalam frame</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: 700, color: textColor, marginBottom: '0.75rem' }}>{slide.embedTitle || 'Klik untuk Buka'}</div>
+            <div style={{ fontSize: '0.9rem', color: descColor, marginBottom: '2rem', lineHeight: 1.6 }}>Klik untuk membuka konten di dalam frame</div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.75rem', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: '#fff', borderRadius: '12px', fontWeight: 600, fontSize: '0.95rem' }}>
               <ExternalLink size={16} /> Buka Frame
             </div>
@@ -186,7 +237,6 @@ function GamingViewer({ data, onToggleTheme, interactionMode, setInteractionMode
   const [showMinimap, setShowMinimap] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
   const [bgOffset, setBgOffset] = useState({ x: 0, y: 0 });
-  const [embedOverlay, setEmbedOverlay] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
@@ -358,7 +408,7 @@ function GamingViewer({ data, onToggleTheme, interactionMode, setInteractionMode
                   </motion.div>
                   
                   <motion.div variants={itemVariants}>
-                    <SlideContent slide={activeSlide!} isGaming={true} onOpenEmbed={(url) => setEmbedOverlay(url)} />
+                    <SlideContent slide={activeSlide!} isGaming={true} />
                   </motion.div>
 
                   <motion.div variants={itemVariants} className="no-print" style={{ display: 'flex', gap: '1.5rem', marginTop: '3rem', flexWrap: 'wrap' }}>
@@ -389,20 +439,6 @@ function GamingViewer({ data, onToggleTheme, interactionMode, setInteractionMode
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Embed Overlay */}
-      <AnimatePresence>
-        {embedOverlay && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '90vw', maxWidth: '1200px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setEmbedOverlay(null)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
-                <X size={18} /> Tutup Frame
-              </button>
-            </div>
-            <motion.iframe initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={embedOverlay} style={{ width: '90vw', maxWidth: '1200px', height: '78vh', border: 'none', borderRadius: '16px', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }} allowFullScreen />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -416,7 +452,6 @@ function FormalViewer({ data, onToggleTheme, interactionMode, setInteractionMode
   const [showMinimap, setShowMinimap] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
   const [bgOffset, setBgOffset] = useState({ x: 0, y: 0 });
-  const [embedOverlay, setEmbedOverlay] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
@@ -591,7 +626,7 @@ function FormalViewer({ data, onToggleTheme, interactionMode, setInteractionMode
                     </p>
                   </motion.div>
                   <motion.div variants={itemVariants}>
-                    <SlideContent slide={activeSlide!} isGaming={false} onOpenEmbed={(url) => setEmbedOverlay(url)} />
+                    <SlideContent slide={activeSlide!} isGaming={false} />
                   </motion.div>
 
                   <motion.div variants={itemVariants} className="no-print" style={{ display: 'flex', gap: '1.5rem', marginTop: '3rem', flexWrap: 'wrap' }}>
@@ -622,20 +657,6 @@ function FormalViewer({ data, onToggleTheme, interactionMode, setInteractionMode
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Embed Overlay */}
-      <AnimatePresence>
-        {embedOverlay && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '90vw', maxWidth: '1200px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setEmbedOverlay(null)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
-                <X size={18} /> Tutup Frame
-              </button>
-            </div>
-            <motion.iframe initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={embedOverlay} style={{ width: '90vw', maxWidth: '1200px', height: '78vh', border: 'none', borderRadius: '16px', boxShadow: '0 30px 60px rgba(0,0,0,0.3)' }} allowFullScreen />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -647,13 +668,7 @@ export default function PresentationViewer() {
   const [overrideTheme, setOverrideTheme] = useState<'gaming' | 'formal' | null>(null);
   const [isLaserActive, setIsLaserActive] = useState(false);
   const [interactionMode, setInteractionMode] = useState<'none' | 'laser' | 'draw' | 'spotlight' | 'magnify'>('none');
-  const [embedOverlayUrl, setEmbedOverlayUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const handleOpenEmbed = (e: any) => setEmbedOverlayUrl(e.detail);
-    document.addEventListener('openEmbed', handleOpenEmbed);
-    return () => document.removeEventListener('openEmbed', handleOpenEmbed);
-  }, []);
+  const [embedOverlay, setEmbedOverlay] = useState<{ url: string; title?: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/presentation')
@@ -678,6 +693,12 @@ export default function PresentationViewer() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenEmbed = (e: any) => setEmbedOverlay(e.detail);
+    document.addEventListener('openEmbed', handleOpenEmbed);
+    return () => document.removeEventListener('openEmbed', handleOpenEmbed);
   }, []);
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Experience...</div>;
@@ -707,19 +728,21 @@ export default function PresentationViewer() {
       {currentTheme === 'gaming' 
         ? <GamingViewer data={data} onToggleTheme={toggleTheme} interactionMode={interactionMode} setInteractionMode={setInteractionMode} /> 
         : <FormalViewer data={data} onToggleTheme={toggleTheme} interactionMode={interactionMode} setInteractionMode={setInteractionMode} />}
-      
+
+      {/* Global Embed Overlay */}
       <AnimatePresence>
-        {embedOverlayUrl && (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
-            <button onClick={() => setEmbedOverlayUrl(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', zIndex: 100000, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
-              <X size={24} />
-            </button>
-            <div style={{ width: '100%', height: '100%', maxWidth: '1400px', background: '#000', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <iframe src={embedOverlayUrl} width="100%" height="100%" style={{ border: 'none' }} allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen></iframe>
+        {embedOverlay && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '90vw', maxWidth: '1200px', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <button onClick={() => setEmbedOverlay(null)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                <X size={18} /> Tutup Frame
+              </button>
             </div>
+            <motion.iframe initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4, type: 'spring', bounce: 0 }} src={embedOverlay.url} title={embedOverlay.title || 'Embed'} style={{ width: '90vw', maxWidth: '1200px', height: '78vh', border: 'none', borderRadius: '16px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)' }} allowFullScreen />
           </motion.div>
         )}
       </AnimatePresence>
     </>
   );
 }
+

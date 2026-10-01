@@ -15,9 +15,8 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    // Check size limit (Upstash free tier limit is 1MB, so we limit to 800KB for safety)
     if (buffer.length > 800000) {
-      return NextResponse.json({ error: 'File too large (Max 800KB)' }, { status: 413 });
+      return NextResponse.json({ error: 'File terlalu besar (Max 800KB)' }, { status: 413 });
     }
 
     const base64Image = buffer.toString('base64');
@@ -27,7 +26,6 @@ export async function POST(request: Request) {
     const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
     const redisKey = `img_${id}`;
 
-    // Save to Upstash Redis
     const res = await fetch(`${UPSTASH_URL}/set/${redisKey}`, {
       method: 'POST',
       headers: {
@@ -42,10 +40,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Redis Error ${res.status}: ${err}` }, { status: 500 });
     }
 
-    // Return the local image route URL
     return NextResponse.json({ url: `/api/image?id=${redisKey}` });
   } catch (error: any) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload image: ' + error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload: ' + error.message }, { status: 500 });
   }
 }
