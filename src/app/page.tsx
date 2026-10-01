@@ -168,7 +168,10 @@ function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) 
               <ExternalLink size={48} color="#3b82f6" />
               {slide.embedTitle || 'Buka Konten Tambahan'}
             </div>
-            <button onClick={() => document.dispatchEvent(new CustomEvent('openEmbed', { detail: slide.embedUrl }))} style={{ display: 'inline-flex', marginTop: '2rem', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.2s' }}>Lihat 3D / Buka Frame</button>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem', flexWrap: 'wrap' }}>
+              <button onClick={() => document.dispatchEvent(new CustomEvent('openEmbed', { detail: slide.embedUrl }))} style={{ display: 'inline-flex', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', transition: 'all 0.2s' }}>Buka di dalam Frame</button>
+              <a href={slide.embedUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', padding: '1rem 2rem', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: textColor, textDecoration: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1rem', transition: 'all 0.2s', alignItems: 'center' }}>Buka di Tab Baru <ExternalLink size={16} style={{ marginLeft: '0.5rem' }} /></a>
+            </div>
           </div>
         ) : null}
       </div>

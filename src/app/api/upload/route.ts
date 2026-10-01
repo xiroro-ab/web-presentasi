@@ -10,9 +10,12 @@ export async function POST(request: Request) {
     }
 
     // Prepare data for Catbox
+    const bytes = await file.arrayBuffer();
+    const blob = new Blob([bytes], { type: file.type || 'application/octet-stream' });
+    
     const catboxFormData = new FormData();
     catboxFormData.append('reqtype', 'fileupload');
-    catboxFormData.append('fileToUpload', file);
+    catboxFormData.append('fileToUpload', blob, file.name || 'upload.png');
 
     // Upload to Catbox
     const res = await fetch('https://catbox.moe/user/api.php', {
