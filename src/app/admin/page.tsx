@@ -267,20 +267,19 @@ export default function AdminPanel() {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 const formData = new FormData();
-                                formData.append('image', file);
-                                formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
+                                formData.append('file', file);
                                 try {
                                   setMessage('Uploading...');
-                                  const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+                                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                   const result = await res.json();
-                                  if (result.data && result.data.url) {
+                                  if (result.url) {
                                     const newData = { ...data };
-                                    newData.chapters[cIdx].image = result.data.url;
+                                    newData.chapters[cIdx].image = result.url;
                                     setData(newData);
                                     setMessage('Upload successful!');
                                     setTimeout(() => setMessage(''), 2000);
                                   } else {
-                                    throw new Error(result.error?.message || 'Failed');
+                                    throw new Error('Failed');
                                   }
                                 } catch (err) {
                                   setMessage('Upload failed');
@@ -349,15 +348,14 @@ export default function AdminPanel() {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
                                         const formData = new FormData();
-                                        formData.append('image', file);
-                                        formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
+                                        formData.append('file', file);
                                         try {
                                           setMessage('Uploading...');
-                                          const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                           const result = await res.json();
-                                          if (result.data && result.data.url) {
+                                          if (result.url) {
                                             const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].image = result.data.url;
+                                            newData.chapters[cIdx].slides[sIdx].image = result.url;
                                             setData(newData);
                                             setMessage('Upload successful!');
                                             setTimeout(() => setMessage(''), 2000);
@@ -392,15 +390,14 @@ export default function AdminPanel() {
                                         const file = e.target.files?.[0];
                                         if (!file) return;
                                         const formData = new FormData();
-                                        formData.append('image', file);
-                                        formData.append('key', '79b9816e71b8ecce3de146d30dc66d4f');
+                                        formData.append('file', file);
                                         try {
                                           setMessage('Uploading...');
-                                          const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                           const result = await res.json();
-                                          if (result.data && result.data.url) {
+                                          if (result.url) {
                                             const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].backgroundImage = result.data.url;
+                                            newData.chapters[cIdx].slides[sIdx].backgroundImage = result.url;
                                             setData(newData);
                                             setMessage('Upload successful!');
                                             setTimeout(() => setMessage(''), 2000);
