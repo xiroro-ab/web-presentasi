@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser } from 'lucide-react';
 import Link from 'next/link';
 
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; };
@@ -477,6 +477,133 @@ function FormalViewer({ data }: { data: PresentationData }) {
   );
 }
 
+// --- PRESENTATION TOOLS OVERLAY ---
+function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
+  const [activeTool, setActiveTool] = useState<'none' | 'laser' | 'flashlight' | 'draw'>('none');
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
+  const [lines, setLines] = useState<{points: {x:number, y:number}[]}[]>([]);
+  const [currentLine, setCurrentLine] = useState<{x:number, y:number}[]>([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '1') setActiveTool('laser');
+      if (e.key === '2') setActiveTool('flashlight');
+      if (e.key === '3') setActiveTool('draw');
+      if (e.key === '0' || e.key === 'Escape') {
+        if (activeTool !== 'none') setActiveTool('none');
+      }
+      if (e.key === 'c' || e.key === 'C') setLines([]);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTool]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (activeTool !== 'draw') return;
+    setIsDrawing(true);
+    setCurrentLine([{ x: e.clientX, y: e.clientY }]);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (activeTool !== 'draw' || !isDrawing) return;
+    setCurrentLine(prev => [...prev, { x: e.clientX, y: e.clientY }]);
+  };
+
+  const handlePointerUp = () => {
+    if (activeTool !== 'draw' || !isDrawing) return;
+    setIsDrawing(false);
+    if (currentLine.length > 0) {
+      setLines(prev => [...prev, { points: currentLine }]);
+      setCurrentLine([]);
+    }
+  };
+
+  return (
+    <div 
+      style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+    >
+      {/* Base Presentation */}
+      <div style={{ pointerEvents: activeTool === 'draw' ? 'none' : 'auto', width: '100%', height: '100%' }}>
+        {children}
+      </div>
+
+      {/* Flashlight Overlay */}
+      {activeTool === 'flashlight' && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998,
+          pointerEvents: 'none',
+          background: `radial-gradient(circle 250px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgba(0,0,0,0.85) 100%)`
+        }} />
+      )}
+
+      {/* Laser Mouse Overlay */}
+      {activeTool === 'laser' && (
+        <motion.div 
+          animate={{ x: mousePos.x - 10, y: mousePos.y - 10 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 400, mass: 0.5 }}
+          style={{
+            position: 'fixed', top: 0, left: 0, zIndex: 9999, pointerEvents: 'none',
+            width: '20px', height: '20px', borderRadius: '50%',
+            background: '#ef4444',
+            boxShadow: '0 0 20px 10px rgba(239, 68, 68, 0.5)'
+          }}
+        />
+      )}
+
+      {/* Drawing Overlay */}
+      {(activeTool === 'draw' || lines.length > 0) && (
+        <svg style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9997, pointerEvents: activeTool === 'draw' ? 'auto' : 'none' }}>
+          {lines.map((line, i) => (
+            <polyline
+              key={i}
+              points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+          {isDrawing && currentLine.length > 0 && (
+            <polyline
+              points={currentLine.map(p => `${p.x},${p.y}`).join(' ')}
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+        </svg>
+      )}
+
+      {/* Floating Tools Control */}
+      <div style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.75rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <button onClick={() => setActiveTool('none')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'none' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Cursor Normal (0)"><MousePointer2 size={18} /></button>
+        <button onClick={() => setActiveTool('laser')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'laser' ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Laser Pointer (1)"><Target size={18} /></button>
+        <button onClick={() => setActiveTool('flashlight')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'flashlight' ? '#eab308' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Senter / Flashlight (2)"><Lightbulb size={18} /></button>
+        <button onClick={() => setActiveTool('draw')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'draw' ? '#10b981' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Mode Coret / Draw (3)"><Pencil size={18} /></button>
+        {lines.length > 0 && (
+          <button onClick={() => setLines([])} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft: '0.5rem' }} title="Hapus Semua Coretan (C)"><Eraser size={18} /></button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // --- MAIN WRAPPER ---
 export default function PresentationViewer() {
   const [data, setData] = useState<PresentationData | null>(null);
@@ -493,5 +620,9 @@ export default function PresentationViewer() {
   if (!data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>Error loading data.</div>;
 
   const theme = data.theme || 'gaming';
-  return theme === 'gaming' ? <GamingViewer data={data} /> : <FormalViewer data={data} />;
+  return (
+    <PresentationToolsOverlay>
+      {theme === 'gaming' ? <GamingViewer data={data} /> : <FormalViewer data={data} />}
+    </PresentationToolsOverlay>
+  );
 }
