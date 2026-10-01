@@ -328,13 +328,14 @@ export default function AdminPanel() {
                               onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML; setData(newData); }}
                               onDoubleClick={(e) => {
                                 const target = e.target as HTMLElement;
+                                const container = e.currentTarget;
                                 if (target.tagName === 'IMG') {
                                   setConfirmAction({
                                     message: 'Hapus gambar ini?',
                                     onConfirm: () => {
                                       target.remove();
                                       const newData = { ...data };
-                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      newData.chapters[cIdx].slides[sIdx].content = container.innerHTML;
                                       setData(newData);
                                       showToast('Gambar berhasil dihapus!');
                                     }
