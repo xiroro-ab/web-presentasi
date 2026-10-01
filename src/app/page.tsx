@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, X, Mail, Layout, Code, Monitor, ExternalLink, Smartphone, ArrowDown } from 'lucide-react';
+import { Menu, X, Mail, Layout, Code, Monitor, ExternalLink, Smartphone, ArrowDown, MonitorPlay } from 'lucide-react';
+import Link from 'next/link';
 
 
 // Physics Constants
@@ -20,6 +21,26 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const [showPresentations, setShowPresentations] = useState(false);
+  const [presentations, setPresentations] = useState<any[]>([]);
+  const [loadingPresentations, setLoadingPresentations] = useState(false);
+
+  useEffect(() => {
+    if (showPresentations && presentations.length === 0) {
+      setLoadingPresentations(true);
+      fetch('/api/presentations')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setPresentations(data);
+          setLoadingPresentations(false);
+        })
+        .catch(e => {
+          console.error(e);
+          setLoadingPresentations(false);
+        });
+    }
+  }, [showPresentations]);
 
   // Physics state
   const pointsRef = useRef<any[]>([]);
@@ -358,7 +379,17 @@ export default function Home() {
             <button onClick={() => smoothScrollTo('youtube')} className={`transition-all relative ${activeSection === 'youtube' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'youtube' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>YouTube</button>
             <button onClick={() => smoothScrollTo('kontak')} className={`transition-all relative ${activeSection === 'kontak' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'kontak' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Kontak</button>
           </div>
-          <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="flex-shrink-0 flex items-center gap-4">
+            <button 
+              onClick={() => setShowPresentations(true)} 
+              className="text-slate-300 hover:text-white transition-colors relative group p-2"
+              title="Lihat Presentasi Guru"
+            >
+              <MonitorPlay className="w-6 h-6" />
+              <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white text-black text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
+                Presentasi Guru
+              </span>
+            </button>
             <button onClick={() => window.location.href='/admin'} className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-extrabold font-poppins hover:scale-105 transition-transform shadow-lg flex items-center gap-2 cursor-pointer">
               Admin Login
             </button>
@@ -392,7 +423,17 @@ export default function Home() {
             <button onClick={() => smoothScrollTo('youtube')} className={`text-left ${activeSection === 'youtube' ? 'text-white font-bold' : 'hover:text-white'}`}>YouTube</button>
             <button onClick={() => smoothScrollTo('kontak')} className={`text-left ${activeSection === 'kontak' ? 'text-white font-bold' : 'hover:text-white'}`}>Kontak</button>
           </div>
-          <div className="mt-auto pb-8">
+          <div className="mt-auto pb-8 flex flex-col gap-4">
+            <button 
+              onClick={() => {
+                setShowPresentations(true);
+                setIsMobileMenuOpen(false);
+              }} 
+              className="w-full bg-[#2a2a2a] text-white py-3 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer border border-white/10 hover:bg-[#333] transition-colors"
+            >
+              <MonitorPlay className="w-5 h-5 text-blue-500" />
+              Daftar Presentasi Guru
+            </button>
             <button onClick={() => window.location.href='/admin'} className="w-full bg-white text-black py-3 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer">
               Admin Login
             </button>
@@ -403,7 +444,8 @@ export default function Home() {
       <main className="relative z-10 pt-24 md:pt-40 pb-20 px-4 w-full flex flex-col items-center gap-12 font-poppins">
          
          {/* HERO SECTION */}
-         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row overflow-hidden min-h-[700px] md:min-h-[550px] lg:min-h-[640px]">
+         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row min-h-[700px] md:min-h-0 md:h-auto lg:h-[640px] overflow-hidden">
+
             
             {/* The small top circle anchor indicator */}
             <div className="absolute top-8 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full border-2 border-white/10 items-center justify-center z-20 pointer-events-none hidden lg:flex">
@@ -411,8 +453,7 @@ export default function Home() {
             </div>
 
             {/* LEFT/TOP: Card & Canvas Wrapper */}
-            {/* Kept canvas and card together without parent scale, so coordinates match exactly */}
-            <div className="relative w-full md:w-1/2 h-[450px] sm:h-[550px] md:h-[600px] lg:h-[640px] flex-shrink-0 z-20">
+            <div className="relative w-full md:w-1/2 h-[450px] sm:h-[550px] md:h-full min-h-[450px] flex-shrink-0 z-20">
               
               {/* Physics Canvas */}
               <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" />
@@ -463,15 +504,12 @@ export default function Home() {
                <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-10 max-w-md mx-auto lg:mx-0">
                  Menyukai design, walau tidak paham design. Berbekal antusiasme tinggi untuk terus belajar, mencoba, dan menciptakan karya. Menyelesaikan setiap baris kode dengan insting dan imajinasi. Hanya VIBE CODING.
                </p>
-               <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+               <div className="flex justify-center lg:justify-start">
                  <button onClick={() => smoothScrollTo('portofolio')} className="flex items-center gap-3 px-6 py-3.5 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer">
                    Portofolio
                    <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
                      <ArrowDown className="w-4 h-4" />
                    </div>
-                 </button>
-                 <button onClick={() => window.location.href = '/presentations'} className="flex items-center gap-3 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer border border-white/20">
-                   Lihat Presentasi Guru
                  </button>
                </div>
             </div>
@@ -494,8 +532,8 @@ export default function Home() {
                      { icon: Monitor, title: "Website MPI Informatika", desc: "Website Media Pembelajaran Interaktif untuk mata pelajaran INFORMATIKA. Dibuat dengan vibe coding.", href: "https://mpi-informatika.vercel.app/" },
                      { icon: Smartphone, title: "Aplikasi Ujian CBT Android", desc: "Aplikasi ujian berbasis Android untuk memudahkan siswa ujian dari HP. Dibuat dengan vibe coding.", href: "https://drive.google.com/file/d/1wxOVvhZ8TjchsB59UPlpBzE8GDBqdNwb/view?usp=sharing" }
                   ].map((item, i) => (
-                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-8 rounded-3xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-2 group">
-                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform">
+                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-8 rounded-3xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-2 group overflow-hidden">
+                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform flex-shrink-0">
                           <item.icon className="w-6 h-6" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
@@ -601,6 +639,49 @@ export default function Home() {
          </section>
 
       </main>
+
+      {/* MODAL DAFTAR PRESENTASI */}
+      {showPresentations && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowPresentations(false)} />
+          <div className="bg-[#1c1c1c] rounded-3xl border border-white/10 shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col relative z-10">
+            
+            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#242424]">
+              <h2 className="text-2xl font-black text-white flex items-center gap-3">
+                <MonitorPlay className="text-blue-500" />
+                Daftar Presentasi Guru
+              </h2>
+              <button onClick={() => setShowPresentations(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+              {loadingPresentations ? (
+                <div className="py-20 text-center text-slate-400 font-medium">Memuat data presentasi...</div>
+              ) : presentations.length === 0 ? (
+                <div className="py-20 text-center text-slate-400 font-medium bg-[#242424] rounded-2xl border border-white/5">
+                  Belum ada presentasi yang dibuat.
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {presentations.map((item, i) => (
+                    <Link key={i} href={`/p/${item.slug}`} className="flex flex-col bg-[#242424] p-6 rounded-2xl border border-white/5 hover:border-blue-500/50 hover:bg-[#2a2a2a] transition-all hover:-translate-y-1">
+                      <div className="text-xs text-blue-400 font-bold mb-2 uppercase tracking-wider">Oleh: {item.teacherName}</div>
+                      <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">{item.title}</h3>
+                      <div className="mt-auto text-xs text-slate-500 flex items-center gap-1">
+                        <MonitorPlay className="w-3 h-3" /> /p/{item.slug}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
