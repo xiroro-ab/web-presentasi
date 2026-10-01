@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser } from 'lucide-react';
 import Link from 'next/link';
 
@@ -70,6 +70,22 @@ function GamingViewer({ data }: { data: PresentationData }) {
     localStorage.setItem('presentation_notes', JSON.stringify(newNotes));
   };
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  const xOffset = useTransform(springX, [0, typeof window !== 'undefined' ? window.innerWidth : 1000], [-15, 15]);
+  const yOffset = useTransform(springY, [0, typeof window !== 'undefined' ? window.innerHeight : 800], [-15, 15]);
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener('mousemove', handleMouse);
+    return () => window.removeEventListener('mousemove', handleMouse);
+  }, []);
+
   const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
   const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
@@ -116,7 +132,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
     exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.3 } })
   };
 
-  const itemVariants: any = { enter: { y: 20, opacity: 0 }, center: { y: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } } };
+  const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)' }}>
@@ -173,8 +189,8 @@ function GamingViewer({ data }: { data: PresentationData }) {
               const bgImg = chap.image || GAMING_IMAGES[i % GAMING_IMAGES.length];
               return (
                 <div key={chap.id} style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-                    <div style={{ width: '100%', height: '100%', backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) contrast(1.1)' }} />
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
+                    <motion.div style={{ width: '100%', height: '100%', backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) contrast(1.1)', scale: 1.05, x: xOffset, y: yOffset }} />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #09090b 0%, transparent 60%, #09090b 100%)' }} />
                   </div>
                   <motion.div initial={{ x: -60, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }} style={{ zIndex: 10, paddingLeft: '8%', maxWidth: '800px' }}>
@@ -189,8 +205,8 @@ function GamingViewer({ data }: { data: PresentationData }) {
             })}
           </motion.div>
         ) : (
-          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(40px) brightness(0.15)', zIndex: 0 }} />
+          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+            <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(40px) brightness(0.15)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
             
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: 'rgba(255,255,255,0.05)', width: '100%', zIndex: 50 }}>
               <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#3b82f6' }} />
@@ -283,6 +299,22 @@ function FormalViewer({ data }: { data: PresentationData }) {
     localStorage.setItem('presentation_notes', JSON.stringify(newNotes));
   };
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+  const xOffset = useTransform(springX, [0, typeof window !== 'undefined' ? window.innerWidth : 1000], [-15, 15]);
+  const yOffset = useTransform(springY, [0, typeof window !== 'undefined' ? window.innerHeight : 800], [-15, 15]);
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    window.addEventListener('mousemove', handleMouse);
+    return () => window.removeEventListener('mousemove', handleMouse);
+  }, []);
+
   const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
   const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
@@ -329,7 +361,7 @@ function FormalViewer({ data }: { data: PresentationData }) {
     exit: (dir: number) => ({ y: dir < 0 ? 30 : -30, opacity: 0, transition: { duration: 0.3 } })
   };
 
-  const itemVariants: any = { enter: { y: 15, opacity: 0 }, center: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } } };
+  const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', color: '#111', fontFamily: 'var(--font-sans)' }}>
@@ -395,9 +427,11 @@ function FormalViewer({ data }: { data: PresentationData }) {
                       </button>
                     </motion.div>
                   </div>
-                  <div style={{ width: '55%', height: '100%', position: 'relative', zIndex: 1 }}>
-                    <motion.div initial={{ scale: 1.1 }} whileInView={{ scale: 1 }} transition={{ duration: 1.5, ease: 'easeOut' }} style={{ width: '100%', height: '100%' }}>
-                      <img src={bgImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Cover" />
+                  <div style={{ width: '55%', height: '100%', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+                    <motion.div style={{ width: '100%', height: '100%', scale: 1.05, x: xOffset, y: yOffset }}>
+                      <motion.div initial={{ scale: 1.1 }} whileInView={{ scale: 1 }} transition={{ duration: 1.5, ease: 'easeOut' }} style={{ width: '100%', height: '100%' }}>
+                        <img src={bgImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Cover" />
+                      </motion.div>
                     </motion.div>
                   </div>
                 </div>
