@@ -51,6 +51,12 @@ export default function AdminPanel() {
   const [data, setData] = useState<PresentationData | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
+
+  const showToast = (msg: string) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(''), 3000);
+  };
 
   useEffect(() => {
     fetch('/api/presentation')
@@ -72,11 +78,10 @@ export default function AdminPanel() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        setMessage('Changes saved successfully');
-        setTimeout(() => setMessage(''), 3000);
+        showToast('Perubahan berhasil disimpan!');
       }
     } catch (e) {
-      setMessage('Failed to save.');
+      showToast('Gagal menyimpan perubahan.');
     }
     setSaving(false);
   };
@@ -91,6 +96,7 @@ export default function AdminPanel() {
       slides: []
     };
     setData({ ...data, chapters: [...data.chapters, newChapter] });
+    showToast('Chapter baru ditambahkan!');
   };
 
   const addSlide = (chapterIndex: number) => {
@@ -102,20 +108,33 @@ export default function AdminPanel() {
       content: 'Enter your slide content here...'
     });
     setData(newData);
+    showToast('Slide baru ditambahkan!');
   };
 
   const removeChapter = (index: number) => {
-    if (!data) return;
-    const newData = { ...data };
-    newData.chapters.splice(index, 1);
-    setData(newData);
+    setConfirmAction({
+      message: 'Hapus Chapter ini beserta seluruh slidenya?',
+      onConfirm: () => {
+        if (!data) return;
+        const newData = { ...data };
+        newData.chapters.splice(index, 1);
+        setData(newData);
+        showToast('Chapter berhasil dihapus!');
+      }
+    });
   };
 
   const removeSlide = (chapterIndex: number, slideIndex: number) => {
-    if (!data) return;
-    const newData = { ...data };
-    newData.chapters[chapterIndex].slides.splice(slideIndex, 1);
-    setData(newData);
+    setConfirmAction({
+      message: 'Hapus Slide ini?',
+      onConfirm: () => {
+        if (!data) return;
+        const newData = { ...data };
+        newData.chapters[chapterIndex].slides.splice(slideIndex, 1);
+        setData(newData);
+        showToast('Slide berhasil dihapus!');
+      }
+    });
   };
 
   if (!data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0a0a0c', color: '#fff' }}>Loading configuration...</div>;
@@ -136,13 +155,6 @@ export default function AdminPanel() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Presentation Editor</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <AnimatePresence>
-              {message && (
-                <motion.span initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 600 }}>
-                  {message}
-                </motion.span>
-              )}
-            </AnimatePresence>
             <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -294,15 +306,18 @@ export default function AdminPanel() {
                             placeholder="Slide Title"
                           />
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
+                            <div style={{ padding: '0.5rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: '#3b82f6', background: isGaming ? 'rgba(59,130,246,0.1)' : '#eff6ff', display: 'flex', justifyContent: 'space-between', borderRadius: '8px 8px 0 0', borderBottom: `1px solid ${isGaming ? 'rgba(59,130,246,0.2)' : '#dbeafe'}` }}>
+                              <span>💡 Hint: Klik 2x (Double-Click) pada gambar untuk menghapusnya.</span>
+                              <span>Mendukung Drag & Drop gambar</span>
+                            </div>
                             <AdminEditorToolbar 
-                              onUploadStart={() => setMessage('Uploading image...')} 
+                              onUploadStart={() => showToast('Uploading image...')} 
                               onUploadSuccess={(url: string) => { 
                                 const imgHtml = `<img src="${url}" />`;
                                 const newData: any = { ...data };
                                 newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + '<br/>' + imgHtml + '<br/>';
                                 setData(newData);
-                                setMessage('Image inserted at the bottom!'); 
-                                setTimeout(() => setMessage(''), 2000); 
+                                showToast('Gambar berhasil ditambahkan!'); 
                               }} 
                               isGaming={isGaming} 
                             />
@@ -314,12 +329,16 @@ export default function AdminPanel() {
                               onDoubleClick={(e) => {
                                 const target = e.target as HTMLElement;
                                 if (target.tagName === 'IMG') {
-                                  if (window.confirm('Hapus gambar ini?')) {
-                                    target.remove();
-                                    const newData = { ...data };
-                                    newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
-                                    setData(newData);
-                                  }
+                                  setConfirmAction({
+                                    message: 'Hapus gambar ini?',
+                                    onConfirm: () => {
+                                      target.remove();
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                      showToast('Gambar berhasil dihapus!');
+                                    }
+                                  });
                                 }
                               }}
                               onPaste={async (e) => {
@@ -437,6 +456,31 @@ export default function AdminPanel() {
 
         </div>
       </div>
+
+      {/* Floating Custom Toast */}
+      <AnimatePresence>
+        {message && (
+          <motion.div initial={{ opacity: 0, y: 50, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0, y: 50, x: '-50%' }} style={{ position: 'fixed', bottom: '2rem', left: '50%', background: '#3b82f6', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', boxShadow: '0 10px 25px rgba(59,130,246,0.4)', fontWeight: 600, zIndex: 9999, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Confirm Modal */}
+      <AnimatePresence>
+        {confirmAction && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} style={{ background: isGaming ? '#18181b' : '#fff', padding: '2rem', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', maxWidth: '400px', width: '90%', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem', color: isGaming ? '#fff' : '#111' }}>Konfirmasi</h3>
+              <p style={{ fontSize: '1rem', color: isGaming ? '#a1a1aa' : '#52525b', marginBottom: '2rem' }}>{confirmAction.message}</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '0.75rem', background: isGaming ? 'rgba(255,255,255,0.1)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.2)':'#e4e4e7'} onMouseOut={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.1)':'#f4f4f5'}>Batal</button>
+                <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '0.75rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='#dc2626'} onMouseOut={e=>e.currentTarget.style.background='#ef4444'}>Ya, Hapus</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
