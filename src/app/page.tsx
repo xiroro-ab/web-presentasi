@@ -85,6 +85,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [direction, setDirection] = useState(1);
   const [showFrame, setShowFrame] = useState(false);
+  const [frameUrl, setFrameUrl] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
@@ -323,6 +324,7 @@ function FormalViewer({ data }: { data: PresentationData }) {
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [direction, setDirection] = useState(1);
   const [showFrame, setShowFrame] = useState(false);
+  const [frameUrl, setFrameUrl] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
