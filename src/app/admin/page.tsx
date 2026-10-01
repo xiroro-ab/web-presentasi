@@ -296,7 +296,7 @@ export default function AdminPanel() {
                             <AdminEditorToolbar 
                               onUploadStart={() => setMessage('Uploading image...')} 
                               onUploadSuccess={(url: string) => { 
-                                const imgHtml = `<img src="${url}" style="max-width: 100%; border-radius: 8px; margin: 1rem 0; display: block;" />`;
+                                const imgHtml = `<img src="${url}" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 12px; margin: 1.5rem auto; display: block;" />`;
                                 const newData: any = { ...data };
                                 newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + '<br/>' + imgHtml + '<br/>';
                                 setData(newData);
