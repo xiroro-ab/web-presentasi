@@ -5,71 +5,12 @@ import { Plus, Trash2, Save, MonitorPlay } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-type Slide = { id: string; title: string; content: string; image?: string; backgroundImage?: string; videoBackground?: string; chartData?: string; model3DUrl?: string; timelineData?: string; embedUrl?: string; embedTitle?: string; };
+type Slide = { id: string; title: string; content: string; image?: string; backgroundImage?: string; videoBackground?: string; embedUrl?: string; embedTitle?: string; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
-function ChartEditor({ slide, isGaming, onChange }: { slide: Slide, isGaming: boolean, onChange: (val: string) => void }) {
-  let parsed = [];
-  try { parsed = JSON.parse(slide.chartData || '[]'); } catch(e) {}
-  if (!Array.isArray(parsed)) parsed = [];
 
-  const update = (idx: number, key: string, val: any) => {
-    const newArr = [...parsed];
-    newArr[idx] = { ...newArr[idx], [key]: val };
-    onChange(JSON.stringify(newArr));
-  };
-  const add = () => onChange(JSON.stringify([...parsed, { name: 'Item', value: 10 }]));
-  const remove = (idx: number) => {
-    const newArr = [...parsed];
-    newArr.splice(idx, 1);
-    onChange(JSON.stringify(newArr));
-  };
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-      {parsed.map((item: any, i: number) => (
-        <div key={i} style={{ display: 'flex', gap: '0.5rem' }}>
-          <input value={item.name || ''} onChange={(e) => update(i, 'name', e.target.value)} placeholder="Nama" style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: 'none', outline: 'none', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontSize: '0.85rem' }} />
-          <input type="number" value={item.value || 0} onChange={(e) => update(i, 'value', Number(e.target.value))} placeholder="Nilai" style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: 'none', outline: 'none', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontSize: '0.85rem' }} />
-          <button onClick={() => remove(i)} style={{ padding: '0.5rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>X</button>
-        </div>
-      ))}
-      <button onClick={add} style={{ padding: '0.5rem', background: isGaming ? '#3b82f6' : '#111', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>+ Tambah Data</button>
-    </div>
-  );
-}
-
-function TimelineEditor({ slide, isGaming, onChange }: { slide: Slide, isGaming: boolean, onChange: (val: string) => void }) {
-  let parsed = [];
-  try { parsed = JSON.parse(slide.timelineData || '[]'); } catch(e) {}
-  if (!Array.isArray(parsed)) parsed = [];
-
-  const update = (idx: number, key: string, val: string) => {
-    const newArr = [...parsed];
-    newArr[idx] = { ...newArr[idx], [key]: val };
-    onChange(JSON.stringify(newArr));
-  };
-  const add = () => onChange(JSON.stringify([...parsed, { year: '2024', event: 'Acara' }]));
-  const remove = (idx: number) => {
-    const newArr = [...parsed];
-    newArr.splice(idx, 1);
-    onChange(JSON.stringify(newArr));
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-      {parsed.map((item: any, i: number) => (
-        <div key={i} style={{ display: 'flex', gap: '0.5rem' }}>
-          <input value={item.year || ''} onChange={(e) => update(i, 'year', e.target.value)} placeholder="Tahun" style={{ width: '80px', padding: '0.5rem', borderRadius: '4px', border: 'none', outline: 'none', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontSize: '0.85rem' }} />
-          <input value={item.event || ''} onChange={(e) => update(i, 'event', e.target.value)} placeholder="Kejadian" style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: 'none', outline: 'none', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontSize: '0.85rem' }} />
-          <button onClick={() => remove(i)} style={{ padding: '0.5rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>X</button>
-        </div>
-      ))}
-      <button onClick={add} style={{ padding: '0.5rem', background: isGaming ? '#3b82f6' : '#111', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>+ Tambah Timeline</button>
-    </div>
-  );
-}
 
 export default function AdminPanel() {
   const [data, setData] = useState<PresentationData | null>(null);
@@ -414,40 +355,7 @@ export default function AdminPanel() {
                               </div>
                             </div>
                             
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Video Background URL (Feature 5)</label>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.videoBackground || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].videoBackground = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="https://...mp4"
-                                  />
-                                </div>
 
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>3D Model URL (Feature 4)</label>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.model3DUrl || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].model3DUrl = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="https://...glb"
-                                  />
-                                </div>
-
-                              </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Data Grafik Batang (Otomatis Animasi)</label>
-                                <ChartEditor slide={slide} isGaming={isGaming} onChange={(val: string) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].chartData = val; setData(newData); }} />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Data Timeline (Garis Waktu)</label>
-                                <TimelineEditor slide={slide} isGaming={isGaming} onChange={(val: string) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].timelineData = val; setData(newData); }} />
-                              </div>
-                            </div>
                             
                             <div style={{ marginTop: '1rem' }}>
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
