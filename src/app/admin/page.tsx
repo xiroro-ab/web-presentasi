@@ -35,9 +35,7 @@ const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) =
                 const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 const result = await res.json();
                 if (result.url) {
-                  const imgHtml = `<img src="${result.url}" style="max-width: 100%; border-radius: 8px; margin: 1rem 0; display: block;" />`;
-                  document.execCommand('insertHTML', false, imgHtml);
-                  onUploadSuccess();
+                  onUploadSuccess(result.url);
                 }
               } catch (err) {}
             }} 
@@ -295,7 +293,18 @@ export default function AdminPanel() {
                             placeholder="Slide Title"
                           />
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
-                            <AdminEditorToolbar onUploadStart={() => setMessage('Uploading image...')} onUploadSuccess={() => { setMessage('Image inserted!'); setTimeout(() => setMessage(''), 2000); }} isGaming={isGaming} />
+                            <AdminEditorToolbar 
+                              onUploadStart={() => setMessage('Uploading image...')} 
+                              onUploadSuccess={(url: string) => { 
+                                const imgHtml = `<img src="${url}" style="max-width: 100%; border-radius: 8px; margin: 1rem 0; display: block;" />`;
+                                const newData: any = { ...data };
+                                newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + '<br/>' + imgHtml + '<br/>';
+                                setData(newData);
+                                setMessage('Image inserted at the bottom!'); 
+                                setTimeout(() => setMessage(''), 2000); 
+                              }} 
+                              isGaming={isGaming} 
+                            />
                             <div 
                               contentEditable 
                               suppressContentEditableWarning
