@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+
+const IMGBB_API_KEY = "79b9816e71b8ecce3de146d30dc66d4f";
 
 export async function POST(request: Request) {
   try {
@@ -13,18 +13,30 @@ export async function POST(request: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64Image = buffer.toString('base64');
 
-    // Create a unique filename
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const publicPath = path.join(process.cwd(), 'public', 'uploads', filename);
+    // Prepare data for ImgBB
+    const imgbbFormData = new FormData();
+    imgbbFormData.append('key', IMGBB_API_KEY);
+    imgbbFormData.append('image', base64Image);
 
-    // Save the file
-    await writeFile(publicPath, buffer);
+    // Upload to ImgBB
+    const res = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      body: imgbbFormData,
+    });
 
-    // Return the URL path
-    return NextResponse.json({ url: `/uploads/${filename}` });
+    if (!res.ok) {
+      throw new Error('ImgBB upload failed');
+    }
+
+    const data = await res.json();
+    const imageUrl = data.data.url;
+
+    // Return the URL provided by ImgBB
+    return NextResponse.json({ url: imageUrl });
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
   }
 }
