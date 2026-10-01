@@ -124,7 +124,7 @@ function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) 
             ))}
           </div>
         </div>
-        {timeline && (
+        {timeline && timeline.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', padding: '1rem 0', width: '100%' }} className="hide-scrollbar">
             {timeline.map((item: any, i: number) => (
               <div key={i} style={{ minWidth: '200px', background: isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', padding: '1.5rem', borderRadius: '16px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
@@ -136,7 +136,7 @@ function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) 
         )}
       </div>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        {chart ? (
+        {chart && chart.length > 0 ? (
           <div style={{ width: '100%', height: '450px', background: isGaming ? 'rgba(0,0,0,0.6)' : '#fff', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(20px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chart}>
