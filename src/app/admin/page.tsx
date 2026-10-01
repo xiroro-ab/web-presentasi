@@ -413,20 +413,25 @@ export default function AdminPanel() {
                                     setMessage('Uploading pasted image...');
                                     const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                     const result = await res.json();
+                                    console.log('Paste result:', result);
                                     if (result.url) {
                                       const img = document.getElementById(tempId) as HTMLImageElement;
                                       if (img) {
                                         img.src = result.url;
                                         img.style.opacity = '1';
                                         img.removeAttribute('id');
-                                        const newData = { ...data };
-                                        newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
-                                        setData(newData);
-                                        setMessage('Image pasted successfully!');
-                                        setTimeout(() => setMessage(''), 2000);
                                       }
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                      setMessage('Image pasted successfully!');
+                                      setTimeout(() => setMessage(''), 2000);
+                                    } else {
+                                      setMessage('Paste failed: no URL');
+                                      setTimeout(() => setMessage(''), 2000);
                                     }
                                   } catch (err) { 
+                                    console.error('Paste error:', err);
                                     setMessage('Paste failed');
                                     setTimeout(() => setMessage(''), 2000);
                                   }
@@ -446,20 +451,25 @@ export default function AdminPanel() {
                                     setMessage('Uploading dropped image...');
                                     const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                     const result = await res.json();
+                                    console.log('Drop result:', result);
                                     if (result.url) {
                                       const img = document.getElementById(tempId) as HTMLImageElement;
                                       if (img) {
                                         img.src = result.url;
                                         img.style.opacity = '1';
                                         img.removeAttribute('id');
-                                        const newData = { ...data };
-                                        newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
-                                        setData(newData);
-                                        setMessage('Image dropped successfully!');
-                                        setTimeout(() => setMessage(''), 2000);
                                       }
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                      setMessage('Image dropped successfully!');
+                                      setTimeout(() => setMessage(''), 2000);
+                                    } else {
+                                      setMessage('Drop failed: no URL');
+                                      setTimeout(() => setMessage(''), 2000);
                                     }
                                   } catch (err) { 
+                                    console.error('Drop error:', err);
                                     setMessage('Drop failed');
                                     setTimeout(() => setMessage(''), 2000);
                                   }
