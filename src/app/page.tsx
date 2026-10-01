@@ -260,18 +260,8 @@ function GamingViewer({ data }: { data: PresentationData }) {
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  {activeSlide?.image && (
-                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', padding: '1rem' }}>
-                      <TiltImage src={activeSlide.image} />
-                    </motion.div>
-                  )}
-
-                  <motion.div variants={{ center: { transition: { staggerChildren: 0.1 } } }} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
-                    {activeSlide?.content.split('\n').map((line, i) => (
-                      <motion.p key={i} variants={itemVariants} style={{ minHeight: line.trim() === '' ? '1.5rem' : 'auto', margin: 0 }}>
-                        {line}
-                      </motion.p>
-                    ))}
+                  <motion.div variants={itemVariants} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
+                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" />
                   </motion.div>
 
                   {/* Interactive Elements Area */}
@@ -503,18 +493,8 @@ function FormalViewer({ data }: { data: PresentationData }) {
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  {activeSlide?.image && (
-                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e5e5', display: 'flex', justifyContent: 'center', background: '#f4f4f5', padding: '1rem' }}>
-                      <TiltImage src={activeSlide.image} />
-                    </motion.div>
-                  )}
-
-                  <motion.div variants={{ center: { transition: { staggerChildren: 0.1 } } }} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
-                    {activeSlide?.content.split('\n').map((line, i) => (
-                      <motion.p key={i} variants={itemVariants} style={{ minHeight: line.trim() === '' ? '1.5rem' : 'auto', margin: 0 }}>
-                        {line}
-                      </motion.p>
-                    ))}
+                  <motion.div variants={itemVariants} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
+                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" />
                   </motion.div>
 
                   {/* Interactive Elements Area */}

@@ -10,6 +10,44 @@ type Slide = { id: string; title: string; content: string; image?: string; embed
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
+const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) => {
+  return (
+    <div style={{ padding: '0.5rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#f4f4f5', display: 'flex', gap: '0.5rem', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e5e5e5'}`, alignItems: 'center', flexWrap: 'wrap', borderRadius: '8px 8px 0 0' }}>
+      <button onClick={() => document.execCommand('bold')} style={{ fontWeight: 'bold', padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>B</button>
+      <button onClick={() => document.execCommand('italic')} style={{ fontStyle: 'italic', padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>I</button>
+      <button onClick={() => document.execCommand('underline')} style={{ textDecoration: 'underline', padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>U</button>
+      <button onClick={() => document.execCommand('insertUnorderedList')} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>• List</button>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: `1px solid ${isGaming ? 'rgba(255,255,255,0.2)' : '#ccc'}`, paddingLeft: '0.5rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+          Insert Image
+          <input 
+            type="file" 
+            accept="image/*" 
+            style={{ display: 'none' }} 
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              onUploadStart();
+              const formData = new FormData();
+              formData.append('file', file);
+              try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.url) {
+                  const imgHtml = `<img src="${result.url}" style="max-width: 100%; border-radius: 8px; margin: 1rem 0; display: block;" />`;
+                  document.execCommand('insertHTML', false, imgHtml);
+                  onUploadSuccess();
+                }
+              } catch (err) {}
+            }} 
+          />
+        </label>
+      </div>
+    </div>
+  );
+};
+
 export default function AdminPanel() {
   const [data, setData] = useState<PresentationData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -256,54 +294,18 @@ export default function AdminPanel() {
                             style={{ width: '100%', fontSize: '1.2rem', fontWeight: 600, background: 'transparent', border: 'none', color: isGaming ? '#fff' : '#111', padding: '0 0 1rem 0', outline: 'none' }}
                             placeholder="Slide Title"
                           />
-                          <textarea 
-                            value={slide.content} 
-                            onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.target.value; setData(newData); }}
-                            style={{ width: '100%', minHeight: '80px', fontSize: '0.95rem', lineHeight: 1.6, background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: 'none', color: isGaming ? '#d4d4d8' : '#3f3f46', padding: '1rem', borderRadius: '8px', resize: 'vertical', outline: 'none', marginBottom: '1rem' }}
-                            placeholder="Slide content goes here..."
-                          />
+                          <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
+                            <AdminEditorToolbar onUploadStart={() => setMessage('Uploading image...')} onUploadSuccess={() => { setMessage('Image inserted!'); setTimeout(() => setMessage(''), 2000); }} isGaming={isGaming} />
+                            <div 
+                              contentEditable 
+                              suppressContentEditableWarning
+                              onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML; setData(newData); }}
+                              dangerouslySetInnerHTML={{ __html: slide.content }}
+                              style={{ width: '100%', minHeight: '150px', fontSize: '0.95rem', lineHeight: 1.6, color: isGaming ? '#d4d4d8' : '#3f3f46', padding: '1rem', outline: 'none' }}
+                            />
+                          </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Slide Image</label>
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input 
-                                  type="text" 
-                                  value={slide.image || ''} 
-                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].image = e.target.value; setData(newData); }}
-                                  style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                  placeholder="Image URL or upload..."
-                                />
-                                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
-                                  Upload
-                                  <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    style={{ display: 'none' }} 
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      const formData = new FormData();
-                                      formData.append('file', file);
-                                      try {
-                                        setMessage('Uploading...');
-                                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                                        const result = await res.json();
-                                        if (result.url) {
-                                          const newData = { ...data };
-                                          newData.chapters[cIdx].slides[sIdx].image = result.url;
-                                          setData(newData);
-                                          setMessage('Upload successful!');
-                                          setTimeout(() => setMessage(''), 2000);
-                                        }
-                                      } catch (err) {
-                                        setMessage('Upload failed');
-                                      }
-                                    }} 
-                                  />
-                                </label>
-                              </div>
-                            </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
                             
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
