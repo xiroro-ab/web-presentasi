@@ -5,7 +5,8 @@ import { Plus, Trash2, Save, MonitorPlay } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; };
+type EmbedLink = { title: string; url: string; };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
@@ -305,25 +306,35 @@ export default function AdminPanel() {
                             </div>
                             
                             <div>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', textTransform: 'uppercase' }}>Embed Title</label>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', textTransform: 'uppercase' }}>Embed URL</label>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', textTransform: 'uppercase' }}>Interactive Links (Embeds)</label>
+                                <button onClick={() => {
+                                  const newData = { ...data };
+                                  if (!newData.chapters[cIdx].slides[sIdx].embeds) newData.chapters[cIdx].slides[sIdx].embeds = [];
+                                  newData.chapters[cIdx].slides[sIdx].embeds!.push({ title: '', url: '' });
+                                  setData(newData);
+                                }} style={{ background: 'transparent', border: 'none', color: isGaming ? '#3b82f6' : '#111', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Plus size={12}/> Add Link</button>
                               </div>
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <input 
-                                  type="text" 
-                                  value={slide.embedTitle || ''} 
-                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedTitle = e.target.value; setData(newData); }}
-                                  style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                  placeholder="e.g. Watch Video"
-                                />
-                                <input 
-                                  type="text" 
-                                  value={slide.embedUrl || ''} 
-                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedUrl = e.target.value; setData(newData); }}
-                                  style={{ flex: 2, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                  placeholder="https://www.youtube.com/embed/..."
-                                />
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {(!slide.embeds || slide.embeds.length === 0) && !slide.embedUrl && (
+                                  <p style={{ fontSize: '0.8rem', color: isGaming ? '#71717a' : '#a1a1aa', margin: 0, fontStyle: 'italic' }}>No embed links added yet.</p>
+                                )}
+                                {/* Legacy Embed Support */}
+                                {slide.embedUrl && (
+                                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <input type="text" value={slide.embedTitle || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedTitle = e.target.value; setData(newData); }} placeholder="Title" style={{ flex: 1, fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }} />
+                                    <input type="text" value={slide.embedUrl} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedUrl = e.target.value; setData(newData); }} placeholder="URL" style={{ flex: 2, fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }} />
+                                    <button onClick={() => { const newData = { ...data }; delete newData.chapters[cIdx].slides[sIdx].embedUrl; delete newData.chapters[cIdx].slides[sIdx].embedTitle; setData(newData); }} style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem' }}><Trash2 size={14}/></button>
+                                  </div>
+                                )}
+                                {/* Dynamic Embeds Support */}
+                                {slide.embeds?.map((emb, eIdx) => (
+                                  <div key={eIdx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <input type="text" value={emb.title} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embeds![eIdx].title = e.target.value; setData(newData); }} placeholder="Title" style={{ flex: 1, fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }} />
+                                    <input type="text" value={emb.url} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embeds![eIdx].url = e.target.value; setData(newData); }} placeholder="URL" style={{ flex: 2, fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }} />
+                                    <button onClick={() => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embeds!.splice(eIdx, 1); setData(newData); }} style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem' }}><Trash2 size={14}/></button>
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           </div>

@@ -5,7 +5,8 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser } from 'lucide-react';
 import Link from 'next/link';
 
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; };
+type EmbedLink = { title: string; url: string; };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
@@ -174,14 +175,14 @@ function GamingViewer({ data }: { data: PresentationData }) {
 
       {/* Media Embed Modal */}
       <AnimatePresence>
-        {showFrame && activeSlide?.embedUrl && (
+        {showFrame && frameUrl && (
           <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
               <button onClick={() => setShowFrame(false)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <X size={18} /> Tutup Frame
               </button>
             </div>
-            <motion.iframe initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={activeSlide.embedUrl} style={{ width: '85vw', height: '80vh', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} allowFullScreen />
+            <motion.iframe initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} allowFullScreen />
           </motion.div>
         )}
       </AnimatePresence>
@@ -274,11 +275,15 @@ function GamingViewer({ data }: { data: PresentationData }) {
 
                   {/* Interactive Elements Area */}
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    {activeSlide?.embedUrl && (
-                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
-                        <ExternalLink size={18} /> {activeSlide.embedTitle || 'Buka Link Interaktif'}
-                      </motion.button>
-                    )}
+                    {(() => {
+                      const allEmbeds = [...(activeSlide?.embeds || [])];
+                      if (activeSlide?.embedUrl) allEmbeds.unshift({ title: activeSlide.embedTitle || 'Buka Link Interaktif', url: activeSlide.embedUrl });
+                      return allEmbeds.map((emb, idx) => (
+                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
+                          <ExternalLink size={18} /> {emb.title || 'Buka Link Interaktif'}
+                        </motion.button>
+                      ));
+                    })()}
                     
                     <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
@@ -408,14 +413,14 @@ function FormalViewer({ data }: { data: PresentationData }) {
 
       {/* Frame Modal Overlay */}
       <AnimatePresence>
-        {showFrame && activeSlide?.embedUrl && (
+        {showFrame && frameUrl && (
           <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
               <button onClick={() => setShowFrame(false)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 500, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <X size={18} /> Tutup View
               </button>
             </div>
-            <motion.iframe initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={activeSlide.embedUrl} style={{ width: '85vw', height: '80vh', border: '1px solid #e5e5e5', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} allowFullScreen />
+            <motion.iframe initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid #e5e5e5', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} allowFullScreen />
           </motion.div>
         )}
       </AnimatePresence>
@@ -512,11 +517,15 @@ function FormalViewer({ data }: { data: PresentationData }) {
 
                   {/* Interactive Elements Area */}
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    {activeSlide?.embedUrl && (
-                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.3)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #111', color: '#111', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#111'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#111'}}>
-                        <ExternalLink size={18} /> {activeSlide.embedTitle || 'Buka Link Interaktif'}
-                      </motion.button>
-                    )}
+                    {(() => {
+                      const allEmbeds = [...(activeSlide?.embeds || [])];
+                      if (activeSlide?.embedUrl) allEmbeds.unshift({ title: activeSlide.embedTitle || 'Buka Link Interaktif', url: activeSlide.embedUrl });
+                      return allEmbeds.map((emb, idx) => (
+                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #111', color: '#111', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#111'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#111'}}>
+                          <ExternalLink size={18} /> {emb.title || 'Buka Link Interaktif'}
+                        </motion.button>
+                      ));
+                    })()}
                     
                     <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
