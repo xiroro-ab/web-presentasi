@@ -484,6 +484,18 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<{points: {x:number, y:number}[]}[]>([]);
   const [currentLine, setCurrentLine] = useState<{x:number, y:number}[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && target.scrollTop !== undefined) {
+        setScrollOffset({ x: target.scrollLeft || 0, y: target.scrollTop || 0 });
+      }
+    };
+    window.addEventListener('scroll', handleScroll, true); // true = capture phase
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -512,12 +524,12 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
     if ((e.target as Element).closest('#presentation-toolbar')) return;
 
     setIsDrawing(true);
-    setCurrentLine([{ x: e.clientX, y: e.clientY }]);
+    setCurrentLine([{ x: e.clientX + scrollOffset.x, y: e.clientY + scrollOffset.y }]);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (activeTool !== 'draw' || !isDrawing) return;
-    setCurrentLine(prev => [...prev, { x: e.clientX, y: e.clientY }]);
+    setCurrentLine(prev => [...prev, { x: e.clientX + scrollOffset.x, y: e.clientY + scrollOffset.y }]);
   };
 
   const handlePointerUp = () => {
@@ -568,27 +580,29 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       {/* Drawing Overlay */}
       {(activeTool === 'draw' || lines.length > 0) && (
         <svg style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9997, pointerEvents: 'none' }}>
-          {lines.map((line, i) => (
-            <polyline
-              key={i}
-              points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
-              fill="none"
-              stroke="#ef4444"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          ))}
-          {isDrawing && currentLine.length > 0 && (
-            <polyline
-              points={currentLine.map(p => `${p.x},${p.y}`).join(' ')}
-              fill="none"
-              stroke="#ef4444"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
+          <g style={{ transform: `translate(${-scrollOffset.x}px, ${-scrollOffset.y}px)`, transition: 'transform 0.05s linear' }}>
+            {lines.map((line, i) => (
+              <polyline
+                key={i}
+                points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ))}
+            {isDrawing && currentLine.length > 0 && (
+              <polyline
+                points={currentLine.map(p => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+          </g>
         </svg>
       )}
 
