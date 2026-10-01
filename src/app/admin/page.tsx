@@ -5,7 +5,7 @@ import { Plus, Trash2, Save, MonitorPlay } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
-type Slide = { id: string; title: string; content: string; image?: string; backgroundImage?: string; videoBackground?: string; chartData?: string; model3DUrl?: string; timelineData?: string; embedUrl?: string; embedTitle?: string; };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
@@ -264,133 +264,47 @@ export default function AdminPanel() {
 
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div>
-                              <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Inline Slide Image</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Slide Image</label>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input 
+                                  type="text" 
+                                  value={slide.image || ''} 
+                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].image = e.target.value; setData(newData); }}
+                                  style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
+                                  placeholder="Image URL or upload..."
+                                />
+                                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+                                  Upload
                                   <input 
-                                    type="text" 
-                                    value={slide.image || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].image = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="Image URL or upload..."
-                                  />
-                                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
-                                    Upload
-                                    <input 
-                                      type="file" 
-                                      accept="image/*" 
-                                      style={{ display: 'none' }} 
-                                      onChange={async (e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        const formData = new FormData();
-                                        formData.append('file', file);
-                                        try {
-                                          setMessage('Uploading...');
-                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                                          const result = await res.json();
-                                          if (result.url) {
-                                            const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].image = result.url;
-                                            setData(newData);
-                                            setMessage('Upload successful!');
-                                            setTimeout(() => setMessage(''), 2000);
-                                          }
-                                        } catch (err) {
-                                          setMessage('Upload failed');
+                                    type="file" 
+                                    accept="image/*" 
+                                    style={{ display: 'none' }} 
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const formData = new FormData();
+                                      formData.append('file', file);
+                                      try {
+                                        setMessage('Uploading...');
+                                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                        const result = await res.json();
+                                        if (result.url) {
+                                          const newData = { ...data };
+                                          newData.chapters[cIdx].slides[sIdx].image = result.url;
+                                          setData(newData);
+                                          setMessage('Upload successful!');
+                                          setTimeout(() => setMessage(''), 2000);
                                         }
-                                      }} 
-                                    />
-                                  </label>
-                                </div>
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Background Image</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.backgroundImage || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].backgroundImage = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="Image URL or upload..."
+                                      } catch (err) {
+                                        setMessage('Upload failed');
+                                      }
+                                    }} 
                                   />
-                                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 0.75rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
-                                    Upload
-                                    <input 
-                                      type="file" 
-                                      accept="image/*" 
-                                      style={{ display: 'none' }} 
-                                      onChange={async (e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file) return;
-                                        const formData = new FormData();
-                                        formData.append('file', file);
-                                        try {
-                                          setMessage('Uploading...');
-                                          const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                                          const result = await res.json();
-                                          if (result.url) {
-                                            const newData = { ...data };
-                                            newData.chapters[cIdx].slides[sIdx].backgroundImage = result.url;
-                                            setData(newData);
-                                            setMessage('Upload successful!');
-                                            setTimeout(() => setMessage(''), 2000);
-                                          }
-                                        } catch (err) {
-                                          setMessage('Upload failed');
-                                        }
-                                      }} 
-                                    />
-                                  </label>
-                                </div>
+                                </label>
                               </div>
                             </div>
                             
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Video Background URL (Feature 5)</label>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.videoBackground || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].videoBackground = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="https://...mp4"
-                                  />
-                                </div>
-
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>3D Model URL (Feature 4)</label>
-                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                                  <input 
-                                    type="text" 
-                                    value={slide.model3DUrl || ''} 
-                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].model3DUrl = e.target.value; setData(newData); }}
-                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
-                                    placeholder="https://...glb"
-                                  />
-                                </div>
-                              </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Chart Data JSON (Feature 2)</label>
-                                <textarea 
-                                  value={slide.chartData || ''} 
-                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].chartData = e.target.value; setData(newData); }}
-                                  style={{ width: '100%', minHeight: '80px', fontSize: '0.85rem', fontFamily: 'monospace', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: 'none', color: isGaming ? '#d4d4d8' : '#3f3f46', padding: '0.75rem', borderRadius: '6px', resize: 'vertical', outline: 'none' }}
-                                  placeholder='[{"name":"Q1", "value":40}, {"name":"Q2", "value":80}]'
-                                />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Timeline JSON (Feature 7)</label>
-                                <textarea 
-                                  value={slide.timelineData || ''} 
-                                  onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].timelineData = e.target.value; setData(newData); }}
-                                  style={{ width: '100%', minHeight: '80px', fontSize: '0.85rem', fontFamily: 'monospace', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: 'none', color: isGaming ? '#d4d4d8' : '#3f3f46', padding: '0.75rem', borderRadius: '6px', resize: 'vertical', outline: 'none' }}
-                                  placeholder='[{"year":"2023", "event":"Mulai"}, {"year":"2024", "event":"Sukses"}]'
-                                />
-                              </div>
-                            </div>
-                            
-                            <div style={{ marginTop: '1rem' }}>
+                            <div>
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', textTransform: 'uppercase' }}>Embed Title</label>
                                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', textTransform: 'uppercase' }}>Embed URL</label>
