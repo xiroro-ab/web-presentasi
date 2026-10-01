@@ -375,12 +375,20 @@ export default function AdminPanel() {
                                 const target = e.target as HTMLElement;
                                 const container = e.currentTarget;
                                 if (target.tagName === 'IMG') {
+                                  const parent = target.parentNode;
+                                  const nextSibling = target.nextSibling;
+                                  
+                                  // Temporarily remove to compute the exact new HTML safely
+                                  target.remove();
+                                  const nextHtml = container.innerHTML;
+                                  // Put it immediately back to avoid visual glitch
+                                  parent?.insertBefore(target, nextSibling);
+                                  
                                   setConfirmAction({
                                     message: 'Hapus gambar ini?',
                                     onConfirm: () => {
-                                      target.remove();
                                       const newData = { ...data };
-                                      newData.chapters[cIdx].slides[sIdx].content = container.innerHTML;
+                                      newData.chapters[cIdx].slides[sIdx].content = nextHtml;
                                       setData(newData);
                                       showToast('Gambar berhasil dihapus!');
                                     }
