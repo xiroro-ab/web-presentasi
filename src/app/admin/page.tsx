@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, MonitorPlay } from 'lucide-react';
+import { Plus, Trash2, Save, MonitorPlay, Download, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
@@ -86,6 +86,39 @@ export default function AdminPanel() {
     setSaving(false);
   };
 
+  const exportData = () => {
+    if (!data) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `presentasi_backup_${new Date().getTime()}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    showToast('File backup berhasil diunduh!');
+  };
+
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed && parsed.chapters) {
+          setData(parsed);
+          showToast('Data berhasil di-import! Jangan lupa klik Save Changes.');
+        } else {
+          showToast('Format file JSON tidak valid!');
+        }
+      } catch (err) {
+        showToast('Gagal membaca file JSON!');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const addChapter = () => {
     if (!data) return;
     const newChapter: Chapter = {
@@ -155,6 +188,18 @@ export default function AdminPanel() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>Presentation Editor</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            
+            {/* Export Button */}
+            <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? 'rgba(255,255,255,0.1)' : '#e4e4e7', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.15)':'#d4d4d8'} onMouseOut={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.1)':'#e4e4e7'} title="Download Backup (JSON)">
+              <Download size={16} /> Export
+            </button>
+
+            {/* Import Button */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? 'rgba(255,255,255,0.1)' : '#e4e4e7', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.15)':'#d4d4d8'} onMouseOut={e=>e.currentTarget.style.background=isGaming?'rgba(255,255,255,0.1)':'#e4e4e7'} title="Upload Backup (JSON)">
+              <Upload size={16} /> Import
+              <input type="file" accept="application/json" style={{ display: 'none' }} onChange={importData} />
+            </label>
+
             <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
