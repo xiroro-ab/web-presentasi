@@ -86,6 +86,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
   const [direction, setDirection] = useState(1);
   const [showFrame, setShowFrame] = useState(false);
   const [frameUrl, setFrameUrl] = useState('');
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
@@ -117,6 +118,13 @@ function GamingViewer({ data }: { data: PresentationData }) {
   }, []);
 
   const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
+
+  const handleRichTextClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      setLightboxImage((target as HTMLImageElement).src);
+    }
+  };
   const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
@@ -184,6 +192,20 @@ function GamingViewer({ data }: { data: PresentationData }) {
               </button>
             </div>
             <motion.iframe initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} allowFullScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxImage(null)}>
+            <div style={{ width: '90vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <button onClick={() => setLightboxImage(null)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Gambar
+              </button>
+            </div>
+            <motion.img initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.3 }} src={lightboxImage} style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -261,7 +283,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
                   </motion.h1>
                   
                   <motion.div variants={itemVariants} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" />
+                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
                   </motion.div>
 
                   {/* Interactive Elements Area */}
@@ -315,6 +337,7 @@ function FormalViewer({ data }: { data: PresentationData }) {
   const [direction, setDirection] = useState(1);
   const [showFrame, setShowFrame] = useState(false);
   const [frameUrl, setFrameUrl] = useState('');
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
@@ -346,6 +369,13 @@ function FormalViewer({ data }: { data: PresentationData }) {
   }, []);
 
   const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
+
+  const handleRichTextClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      setLightboxImage((target as HTMLImageElement).src);
+    }
+  };
   const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
@@ -413,6 +443,20 @@ function FormalViewer({ data }: { data: PresentationData }) {
               </button>
             </div>
             <motion.iframe initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid #e5e5e5', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} allowFullScreen />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox Modal Overlay */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxImage(null)}>
+            <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <button onClick={() => setLightboxImage(null)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 500, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Gambar
+              </button>
+            </div>
+            <motion.img initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={lightboxImage} style={{ maxWidth: '85vw', maxHeight: '80vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -494,7 +538,7 @@ function FormalViewer({ data }: { data: PresentationData }) {
                   </motion.h1>
                   
                   <motion.div variants={itemVariants} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" />
+                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
                   </motion.div>
 
                   {/* Interactive Elements Area */}
