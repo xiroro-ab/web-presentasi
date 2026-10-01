@@ -50,6 +50,32 @@ function EditorToolbar() {
   );
 }
 
+// Reusable 3D Tilt Image Component
+function TiltImage({ src }: { src: string }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-150, 150], [15, -15]);
+  const rotateY = useTransform(x, [-150, 150], [-15, 15]);
+
+  return (
+    <motion.div
+      style={{ perspective: 1000, width: '100%', display: 'flex', justifyContent: 'center' }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        x.set(e.clientX - rect.left - rect.width / 2);
+        y.set(e.clientY - rect.top - rect.height / 2);
+      }}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+    >
+      <motion.img 
+        src={src} 
+        style={{ rotateX, rotateY, maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} 
+        alt="Slide 3D" 
+      />
+    </motion.div>
+  );
+}
+
 // --- GAMING VIEWER ---
 function GamingViewer({ data }: { data: PresentationData }) {
   const [activeChapterIndex, setActiveChapterIndex] = useState<number | null>(null);
@@ -196,9 +222,9 @@ function GamingViewer({ data }: { data: PresentationData }) {
                   <motion.div initial={{ x: -60, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }} style={{ zIndex: 10, paddingLeft: '8%', maxWidth: '800px' }}>
                     <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.85rem', marginBottom: '1.5rem' }}>MODULE {String(i + 1).padStart(2, '0')} // {chap.subtitle || 'Chapter'}</p>
                     <h1 style={{ fontSize: '5rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', marginBottom: '3rem' }}>{chap.title}</h1>
-                    <button onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '1rem 2rem', background: 'transparent', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '100px', color: '#fff', cursor: 'pointer', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 25px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '1rem 2rem', background: 'transparent', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '100px', color: '#fff', cursor: 'pointer', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                       Enter Module <ArrowRight size={18} color="#3b82f6" />
-                    </button>
+                    </motion.button>
                   </motion.div>
                 </div>
               );
@@ -206,6 +232,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
           </motion.div>
         ) : (
           <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+            <motion.div initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} exit={{ scaleX: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ position: 'absolute', inset: 0, background: '#3b82f6', zIndex: 9999, transformOrigin: 'left' }} />
             <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(15px) brightness(0.2)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
             
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: 'rgba(255,255,255,0.05)', width: '100%', zIndex: 50 }}>
@@ -230,21 +257,25 @@ function GamingViewer({ data }: { data: PresentationData }) {
                   </motion.h1>
                   
                   {activeSlide?.image && (
-                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
-                      <img src={activeSlide.image} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} alt="Slide" />
+                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', padding: '1rem' }}>
+                      <TiltImage src={activeSlide.image} />
                     </motion.div>
                   )}
 
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, whiteSpace: 'pre-wrap', textAlign: 'justify', marginBottom: '3rem' }}>
-                    {activeSlide?.content}
+                  <motion.div variants={{ center: { transition: { staggerChildren: 0.1 } } }} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
+                    {activeSlide?.content.split('\n').map((line, i) => (
+                      <motion.p key={i} variants={itemVariants} style={{ minHeight: line.trim() === '' ? '1.5rem' : 'auto', margin: 0 }}>
+                        {line}
+                      </motion.p>
+                    ))}
                   </motion.div>
 
                   {/* Interactive Elements Area */}
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
                     {activeSlide?.embedUrl && (
-                      <button onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
+                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
                         <ExternalLink size={18} /> {activeSlide.embedTitle || 'Buka Link Interaktif'}
-                      </button>
+                      </motion.button>
                     )}
                     
                     <button onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
@@ -422,9 +453,9 @@ function FormalViewer({ data }: { data: PresentationData }) {
                     <motion.div initial={{ y: 40, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }}>
                       <p style={{ color: '#888', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem', fontSize: '0.8rem' }}>{chap.subtitle || `Section ${String(i + 1).padStart(2, '0')}`}</p>
                       <h1 style={{ fontSize: '4.5rem', fontWeight: 400, lineHeight: 1.1, color: '#111', marginBottom: '3rem', letterSpacing: '-0.03em' }}>{chap.title}</h1>
-                      <button onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '0', background: 'transparent', border: 'none', color: '#111', cursor: 'pointer', fontWeight: 500 }}>
-                        Begin Module <div style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #e5e5e5', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ArrowRight size={16} /></div>
-                      </button>
+                      <motion.button animate={{ scale: [1, 1.02, 1] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '0', background: 'transparent', border: 'none', color: '#111', cursor: 'pointer', fontWeight: 500 }}>
+                        Begin Module <div style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #111', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ArrowRight size={16} /></div>
+                      </motion.button>
                     </motion.div>
                   </div>
                   <div style={{ width: '55%', height: '100%', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
@@ -439,7 +470,8 @@ function FormalViewer({ data }: { data: PresentationData }) {
             })}
           </motion.div>
         ) : (
-          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', background: '#fafafa' }}>
+          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', background: '#fafafa', overflow: 'hidden' }}>
+            <motion.div initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} exit={{ scaleX: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ position: 'absolute', inset: 0, background: '#111', zIndex: 9999, transformOrigin: 'left' }} />
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: '#e5e5e5', width: '100%', zIndex: 50 }}>
               <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#111' }} />
             </div>
@@ -463,21 +495,25 @@ function FormalViewer({ data }: { data: PresentationData }) {
                   </motion.h1>
                   
                   {activeSlide?.image && (
-                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e5e5', display: 'flex', justifyContent: 'center', background: '#f4f4f5' }}>
-                      <img src={activeSlide.image} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} alt="Slide" />
+                    <motion.div variants={itemVariants} style={{ marginBottom: '2.5rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e5e5', display: 'flex', justifyContent: 'center', background: '#f4f4f5', padding: '1rem' }}>
+                      <TiltImage src={activeSlide.image} />
                     </motion.div>
                   )}
 
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, whiteSpace: 'pre-wrap', textAlign: 'justify', marginBottom: '3rem' }}>
-                    {activeSlide?.content}
+                  <motion.div variants={{ center: { transition: { staggerChildren: 0.1 } } }} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
+                    {activeSlide?.content.split('\n').map((line, i) => (
+                      <motion.p key={i} variants={itemVariants} style={{ minHeight: line.trim() === '' ? '1.5rem' : 'auto', margin: 0 }}>
+                        {line}
+                      </motion.p>
+                    ))}
                   </motion.div>
 
                   {/* Interactive Elements Area */}
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
                     {activeSlide?.embedUrl && (
-                      <button onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #111', color: '#111', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='#111'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#111'}}>
+                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.3)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowFrame(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #111', color: '#111', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#111'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#111'}}>
                         <ExternalLink size={18} /> {activeSlide.embedTitle || 'Buka Link Interaktif'}
-                      </button>
+                      </motion.button>
                     )}
                     
                     <button onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
