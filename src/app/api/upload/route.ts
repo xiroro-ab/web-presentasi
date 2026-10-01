@@ -26,15 +26,15 @@ export async function POST(request: Request) {
     if (!res.ok) {
       const err = await res.text();
       console.error("Catbox error:", err);
-      throw new Error('Catbox upload failed');
+      return NextResponse.json({ error: `Catbox Error ${res.status}: ${err}` }, { status: 500 });
     }
 
     // Catbox returns the URL directly as plain text
     const imageUrl = await res.text();
 
     return NextResponse.json({ url: imageUrl });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload image: ' + error.message }, { status: 500 });
   }
 }
