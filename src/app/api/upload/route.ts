@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-const UPSTASH_URL = "https://splendid-ewe-317847.upstash.io";
-const UPSTASH_TOKEN = "gQAAAAAABNmXAAIgcDJiYmY5MTIwNTIyOWE0MmY5YmMyZTc2MmFiMTM3ODA0Mw";
+// Pastikan Anda menaruh ini di file .env.local nantinya
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'GANTI_DENGAN_URL_SUPABASE_ANDA';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'GANTI_DENGAN_ANON_KEY_SUPABASE_ANDA';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: Request) {
   try {
@@ -15,32 +19,35 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    if (buffer.length > 800000) {
-      return NextResponse.json({ error: 'File terlalu besar (Max 800KB)' }, { status: 413 });
+    // Anda bisa mengatur limit lebih besar (misal 5MB = 5000000) karena Supabase gratis 1GB
+    if (buffer.length > 5000000) {
+      return NextResponse.json({ error: 'File terlalu besar (Max 5MB)' }, { status: 413 });
     }
 
-    const base64Image = buffer.toString('base64');
-    const mimeType = file.type || 'image/png';
-    const dataUri = `data:${mimeType};base64,${base64Image}`;
-    
-    const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-    const redisKey = `img_${id}`;
+    // Buat nama file unik
+    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-    const res = await fetch(`${UPSTASH_URL}/set/${redisKey}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(dataUri)
-    });
+    // Upload ke Supabase Storage (bucket bernama 'presentations')
+    const { data, error } = await supabase
+      .storage
+      .from('presentations')
+      .upload(filename, buffer, {
+        contentType: file.type || 'image/png',
+        upsert: false
+      });
 
-    if (!res.ok) {
-      const err = await res.text();
-      return NextResponse.json({ error: `Redis Error ${res.status}: ${err}` }, { status: 500 });
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: `Supabase Error: ${error.message}` }, { status: 500 });
     }
 
-    return NextResponse.json({ url: `/api/image?id=${redisKey}` });
+    // Dapatkan Public URL langsung dari Supabase
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('presentations')
+      .getPublicUrl(filename);
+
+    return NextResponse.json({ url: publicUrlData.publicUrl });
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Failed to upload: ' + error.message }, { status: 500 });
