@@ -369,11 +369,11 @@ export default function Home() {
 
       {/* Desktop NAVBAR */}
       <nav className={`hidden md:block fixed left-1/2 -translate-x-1/2 w-[95%] lg:w-[85%] max-w-[1200px] z-[80] transition-all duration-500 ease-in-out ${isNavVisible ? 'top-14 opacity-100' : '-top-32 opacity-0'}`}>
-        <div className="bg-[#242424]/40 backdrop-blur-xl rounded-full px-8 py-5 flex items-center justify-between shadow-2xl border border-white/10">
-          <div className="font-poppins font-black text-3xl tracking-tighter text-white flex-shrink-0">
+        <div className="bg-[#242424]/40 backdrop-blur-xl rounded-full px-6 py-3 flex items-center justify-between shadow-2xl border border-white/10">
+          <div className="font-poppins font-black text-xl lg:text-2xl tracking-tighter text-white flex-shrink-0">
             A.B
           </div>
-          <div className="flex-1 flex justify-center items-center gap-10 text-[15px] font-semibold text-slate-300 font-poppins">
+          <div className="flex-1 flex justify-center items-center gap-4 lg:gap-8 text-xs lg:text-sm font-semibold text-slate-300 font-poppins">
             <button onClick={() => smoothScrollTo('home')} className={`transition-all relative ${activeSection === 'home' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'home' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Home</button>
             <button onClick={() => smoothScrollTo('portofolio')} className={`transition-all relative ${activeSection === 'portofolio' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'portofolio' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Portofolio</button>
             <button onClick={() => smoothScrollTo('youtube')} className={`transition-all relative ${activeSection === 'youtube' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'youtube' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>YouTube</button>
@@ -386,11 +386,11 @@ export default function Home() {
               title="Lihat Presentasi Guru"
             >
               <MonitorPlay className="w-6 h-6" />
-              <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 bg-white text-black text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
+              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
                 Presentasi Guru
               </span>
             </button>
-            <button onClick={() => window.location.href='/admin'} className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-extrabold font-poppins hover:scale-105 transition-transform shadow-lg flex items-center gap-2 cursor-pointer">
+            <button onClick={() => window.location.href='/admin'} className="bg-white text-black px-4 py-2 rounded-full text-xs font-extrabold font-poppins hover:scale-105 transition-transform shadow-lg flex items-center gap-2 cursor-pointer">
               Admin Login
             </button>
           </div>
@@ -444,7 +444,7 @@ export default function Home() {
       <main className="relative z-10 pt-24 md:pt-40 pb-20 px-4 w-full flex flex-col items-center gap-12 font-poppins">
          
          {/* HERO SECTION */}
-         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row min-h-[700px] md:min-h-0 md:h-auto lg:h-[640px] overflow-hidden">
+         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row min-h-[500px] lg:h-[550px] overflow-hidden">
 
             
             {/* The small top circle anchor indicator */}
@@ -453,14 +453,14 @@ export default function Home() {
             </div>
 
             {/* LEFT/TOP: Card & Canvas Wrapper */}
-            <div className="relative w-full md:w-1/2 h-[450px] sm:h-[550px] md:h-full min-h-[450px] flex-shrink-0 z-20">
+            <div className="relative w-full md:w-1/2 h-[350px] sm:h-[450px] md:h-full min-h-[350px] flex-shrink-0 z-20">
               
               {/* Physics Canvas */}
               <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" />
 
               <div 
                 ref={cardRef}
-                className="absolute top-0 left-0 w-[260px] pointer-events-auto cursor-grab active:cursor-grabbing select-none" style={{ transformOrigin: "50% -25px", willChange: "transform" }}
+                className="absolute top-0 left-0 w-[200px] sm:w-[220px] pointer-events-auto cursor-grab active:cursor-grabbing select-none" style={{ transformOrigin: "50% -25px", willChange: "transform" }}
                 onPointerDown={startCardDrag}
               >
                  {/* Metal Clip & Ring */}
@@ -494,74 +494,73 @@ export default function Home() {
             </div>
 
             {/* RIGHT/BOTTOM: Text Content */}
-            <div className="w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-12 md:px-6 lg:pr-12 lg:pl-0 py-8 md:py-0 relative z-20 pointer-events-auto text-center lg:text-left">
-               <h2 className="text-xl sm:text-2xl text-slate-300 mb-2 font-medium">
+            <div className="w-full md:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:pr-12 lg:pl-0 py-8 relative z-20 pointer-events-auto text-center lg:text-left">
+               <h2 className="text-lg sm:text-xl text-slate-300 mb-2 font-medium">
                  Halo! Saya <span className="font-bold text-white">Aris</span>
                </h2>
-               <h1 className="text-3xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white mb-6 leading-[1.1] tracking-tight" style={{ textShadow: "0 10px 30px rgba(0,0,0,0.5)", wordBreak: "break-word" }}>
-                 GURU INFORMATIKA.
+               <h1 className="text-2xl sm:text-4xl lg:text-4xl font-black text-white mb-4 leading-[1.1] tracking-tight" style={{ textShadow: "0 10px 30px rgba(0,0,0,0.5)", wordBreak: "break-word" }}>
+                 GURU<br/>INFORMATIKA.
                </h1>
-               <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-10 max-w-md mx-auto lg:mx-0">
+               <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-8 max-w-sm mx-auto lg:mx-0">
                  Menyukai design, walau tidak paham design. Berbekal antusiasme tinggi untuk terus belajar, mencoba, dan menciptakan karya. Menyelesaikan setiap baris kode dengan insting dan imajinasi. Hanya VIBE CODING.
                </p>
                <div className="flex justify-center lg:justify-start">
-                 <button onClick={() => smoothScrollTo('portofolio')} className="flex items-center gap-3 px-6 py-3.5 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer">
+                 <button onClick={() => smoothScrollTo('portofolio')} className="flex items-center gap-2 px-5 py-2.5 text-sm bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer">
                    Portofolio
-                   <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
-                     <ArrowDown className="w-4 h-4" />
+                   <div className="w-5 h-5 rounded-full border border-black flex items-center justify-center">
+                     <ArrowDown className="w-3 h-3" />
                    </div>
                  </button>
                </div>
             </div>
          </section>
 
-         {/* PORTFOLIO SECTION */}
+          {/* PORTFOLIO SECTION */}
          <section id="portofolio" className="w-full max-w-5xl mx-auto flex flex-col gap-6">
-            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center lg:text-left">
-               <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Portofolio & Project</h2>
-               <p className="text-slate-400 mb-10 max-w-2xl mx-auto lg:mx-0 text-sm sm:text-base">
+            <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center lg:text-left">
+               <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Portofolio & Project</h2>
+               <p className="text-slate-400 mb-8 max-w-xl mx-auto lg:mx-0 text-xs sm:text-sm">
                  Beberapa project dan karya unggulan yang telah diselesaikan.
                </p>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {[
                      { icon: Code, title: "Sistem Management Guru", desc: "Aplikasi manajemen data guru berbasis web yang fungsional. Dibangun murni dengan vibe coding.", href: "https://smpn58.vercel.app/" },
-                     { icon: Layout, title: "Aplikasi Ujian CBT Online", desc: "Platform Computer Based Test online untuk pelaksanaan ujian yang stabil. Dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/ujian-online/" },
-                     { icon: Smartphone, title: "Asset Bundle Porter MLBB", desc: "Tools porting asset bundle Unity untuk script MLBB. Berjalan responsif, dibuat dengan vibe coding.", href: "https://huggingface.co/spaces/xiroro/PortingApp/" },
-                     { icon: ExternalLink, title: "Toko Script MLBB", desc: "Toko penjualan online khusus script MLBB. Interface sederhana, dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/Toko-Online-Script-Mlbb/" },
-                     { icon: Monitor, title: "Website MPI Informatika", desc: "Website Media Pembelajaran Interaktif untuk mata pelajaran INFORMATIKA. Dibuat dengan vibe coding.", href: "https://mpi-informatika.vercel.app/" },
-                     { icon: Smartphone, title: "Aplikasi Ujian CBT Android", desc: "Aplikasi ujian berbasis Android untuk memudahkan siswa ujian dari HP. Dibuat dengan vibe coding.", href: "https://drive.google.com/file/d/1wxOVvhZ8TjchsB59UPlpBzE8GDBqdNwb/view?usp=sharing" }
+                     { icon: Layout, title: "Aplikasi Ujian CBT Online", desc: "Platform CBT online untuk pelaksanaan ujian yang stabil. Dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/ujian-online/" },
+                     { icon: Smartphone, title: "Asset Bundle Porter MLBB", desc: "Tools porting asset bundle Unity untuk script MLBB. Berjalan responsif.", href: "https://huggingface.co/spaces/xiroro/PortingApp/" },
+                     { icon: ExternalLink, title: "Toko Script MLBB", desc: "Toko penjualan online khusus script MLBB. Interface sederhana.", href: "https://xiroro-ab.github.io/Toko-Online-Script-Mlbb/" },
+                     { icon: Monitor, title: "Website MPI Informatika", desc: "Website Media Pembelajaran Interaktif mapel INFORMATIKA.", href: "https://mpi-informatika.vercel.app/" },
+                     { icon: Smartphone, title: "Aplikasi Ujian CBT Android", desc: "Aplikasi ujian berbasis Android untuk memudahkan siswa.", href: "https://drive.google.com/file/d/1wxOVvhZ8TjchsB59UPlpBzE8GDBqdNwb/view?usp=sharing" }
                   ].map((item, i) => (
-                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-8 rounded-3xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-2 group overflow-hidden">
-                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform flex-shrink-0">
-                          <item.icon className="w-6 h-6" />
+                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-6 rounded-2xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1 group overflow-hidden">
+                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-4 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform flex-shrink-0">
+                          <item.icon className="w-5 h-5" />
                         </div>
-                        <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                        <h3 className="text-base font-bold text-white mb-2 line-clamp-1">{item.title}</h3>
+                        <p className="text-slate-400 text-xs leading-relaxed line-clamp-3">{item.desc}</p>
                      </a>
                   ))}
                </div>
             </div>
          </section>
 
-         {/* YOUTUBE SECTION */}
+          {/* YOUTUBE SECTION */}
          <section id="youtube" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-12">
-            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center lg:text-left flex flex-col lg:flex-row items-center gap-12 overflow-hidden">
+            <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center lg:text-left flex flex-col md:flex-row items-center gap-8 overflow-hidden">
                <div className="flex-1">
-                 <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Akun YouTube Ku</h2>
-                 <p className="text-slate-400 mb-8 max-w-xl mx-auto lg:mx-0 text-sm sm:text-base leading-relaxed">
+                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Akun YouTube Ku</h2>
+                 <p className="text-slate-400 mb-6 max-w-lg mx-auto lg:mx-0 text-xs sm:text-sm leading-relaxed">
                    Saya juga aktif membagikan berbagai project, 3D modeling, karya kreatif lainnya, dan eksperimen coding di channel YouTube saya.
-                   Jangan lupa mampir, tonton karya-karyanya, dan berikan dukungan Anda dengan subscribe!
                  </p>
-                 <a href="https://youtube.com/@Xiroro-3DMODEL" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 hover:scale-105 transition-all shadow-lg shadow-red-600/30">
+                 <a href="https://youtube.com/@Xiroro-3DMODEL" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white text-sm font-bold rounded-full hover:bg-red-700 hover:scale-105 transition-all shadow-lg shadow-red-600/30">
                    Kunjungi Channel
-                   <ExternalLink className="w-5 h-5" />
+                   <ExternalLink className="w-4 h-4" />
                  </a>
                </div>
                
                {/* 3D YouTube Screenshot Mobile Mockup */}
-               <div className="w-[260px] sm:w-[320px] flex-shrink-0 flex flex-col group relative z-10"
-                    style={{ perspective: "1200px" }}
+               <div className="w-[200px] sm:w-[240px] flex-shrink-0 flex flex-col group relative z-10"
+                    style={{ perspective: "1000px" }}
                 >
                   <div className="relative w-full aspect-[9/19.5] transition-transform duration-500 ease-out"
                        style={{
@@ -615,22 +614,22 @@ export default function Home() {
          </section>
 
          {/* SOCIAL & CONTACT SECTION */}
-         <section id="kontak" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-20">
-            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center">
-               <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Mari Terhubung</h2>
-               <p className="text-slate-400 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
-                 Punya ide project seru, butuh script MLBB, atau hanya sekedar ingin berdiskusi? Jangan ragu untuk menghubungi saya melalui kontak di bawah.
+         <section id="kontak" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-16">
+            <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center">
+               <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Mari Terhubung</h2>
+               <p className="text-slate-400 mb-8 max-w-xl mx-auto text-xs sm:text-sm">
+                 Punya ide project seru, butuh script MLBB, atau hanya sekedar ingin berdiskusi? Hubungi saya.
                </p>
                
-               <div className="flex flex-wrap justify-center gap-4">
+               <div className="flex flex-wrap justify-center gap-3">
                   {[
                      { icon: Monitor, label: "Instagram", href: "https://www.instagram.com/aris.bermansyah/" },
                      { icon: Code, label: "GitHub", href: "https://github.com/xiroro-ab/" },
                      { icon: Mail, label: "Email", href: "mailto:aris.bermansyah14@gmail.com" },
                      { icon: ExternalLink, label: "Website", href: "https://xiroro-ab.github.io/Toko-Online-Script-Mlbb/" }
                   ].map((soc, i) => (
-                     <a key={i} href={soc.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-4 bg-[#1c1c1c] border border-white/5 rounded-full hover:bg-white/10 hover:-translate-y-1 transition-all text-white font-semibold text-sm sm:text-base">
-                        <soc.icon className="w-5 h-5" />
+                     <a key={i} href={soc.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-5 py-2.5 bg-[#1c1c1c] border border-white/5 rounded-full hover:bg-white/10 hover:-translate-y-1 transition-all text-white font-semibold text-xs sm:text-sm">
+                        <soc.icon className="w-4 h-4" />
                         {soc.label}
                      </a>
                   ))}
