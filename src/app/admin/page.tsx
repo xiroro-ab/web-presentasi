@@ -309,7 +309,19 @@ export default function AdminPanel() {
                             <div 
                               contentEditable 
                               suppressContentEditableWarning
+                              className="rich-text-content"
                               onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML; setData(newData); }}
+                              onDoubleClick={(e) => {
+                                const target = e.target as HTMLElement;
+                                if (target.tagName === 'IMG') {
+                                  if (window.confirm('Hapus gambar ini?')) {
+                                    target.remove();
+                                    const newData = { ...data };
+                                    newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                    setData(newData);
+                                  }
+                                }
+                              }}
                               onPaste={async (e) => {
                                 const file = e.clipboardData.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
