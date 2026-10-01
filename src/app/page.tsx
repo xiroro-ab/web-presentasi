@@ -219,7 +219,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
             {/* Content Container */}
             <div style={{ width: '100%', height: '100%', overflowY: 'auto', position: 'relative', zIndex: 5, padding: '8rem 6% 10rem 6%' }} className="hide-scrollbar">
               <AnimatePresence custom={direction} mode="wait">
-                <motion.div key={activeSlideIndex} custom={direction} variants={gamingSlideVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', background: 'rgba(9, 9, 11, 0.6)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', padding: '4rem', borderRadius: '16px' }}>
+                <motion.div key={activeSlideIndex} custom={direction} variants={gamingSlideVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', background: 'rgba(9, 9, 11, 0.4)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', padding: '4rem', borderRadius: '16px' }}>
                   <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
                     <div style={{ width: '30px', height: '2px', background: '#3b82f6' }} />
                     <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.8rem' }}>SEQ {String(activeSlideIndex + 1).padStart(2, '0')} / {String(activeChapter?.slides.length || 0).padStart(2, '0')}</p>
@@ -601,7 +601,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       {activeTool === 'laser' && (
         <motion.div 
           animate={{ x: mousePos.x - 10, y: mousePos.y - 10 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 400, mass: 0.5 }}
+          transition={{ type: 'tween', duration: 0 }}
           style={{
             position: 'fixed', top: 0, left: 0, zIndex: 9999, pointerEvents: 'none',
             width: '20px', height: '20px', borderRadius: '50%',
