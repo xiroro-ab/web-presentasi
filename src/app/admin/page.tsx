@@ -11,32 +11,6 @@ type Chapter = { id: string; title: string; subtitle?: string; image?: string; s
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
 const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) => {
-  const UploadButton = ({ label, align }: { label: string, align: 'left' | 'center' | 'right' }) => (
-    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
-      {label}
-      <input 
-        type="file" 
-        accept="image/*" 
-        style={{ display: 'none' }} 
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          onUploadStart();
-          const formData = new FormData();
-          formData.append('file', file);
-          try {
-            const res = await fetch('/api/upload', { method: 'POST', body: formData });
-            const result = await res.json();
-            if (result.url) {
-              onUploadSuccess(result.url, align);
-            }
-          } catch (err) {}
-          e.target.value = '';
-        }} 
-      />
-    </label>
-  );
-
   return (
     <div style={{ padding: '0.5rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#f4f4f5', display: 'flex', gap: '0.5rem', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e5e5e5'}`, alignItems: 'center', flexWrap: 'wrap', borderRadius: '8px 8px 0 0' }}>
       <button onClick={() => document.execCommand('bold')} style={{ fontWeight: 'bold', padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>B</button>
@@ -45,9 +19,29 @@ const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) =
       <button onClick={() => document.execCommand('insertUnorderedList')} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>• List</button>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: `1px solid ${isGaming ? 'rgba(255,255,255,0.2)' : '#ccc'}`, paddingLeft: '0.5rem' }}>
-        <UploadButton label="📷 Gambar (Kiri)" align="left" />
-        <UploadButton label="📷 Gambar (Tengah)" align="center" />
-        <UploadButton label="📷 Gambar (Kanan)" align="right" />
+        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+          Insert Image (At Bottom)
+          <input 
+            type="file" 
+            accept="image/*" 
+            style={{ display: 'none' }} 
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              onUploadStart();
+              const formData = new FormData();
+              formData.append('file', file);
+              try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.url) {
+                  onUploadSuccess(result.url);
+                }
+              } catch (err) {}
+              e.target.value = '';
+            }} 
+          />
+        </label>
       </div>
     </div>
   );
@@ -302,9 +296,8 @@ export default function AdminPanel() {
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
                             <AdminEditorToolbar 
                               onUploadStart={() => setMessage('Uploading image...')} 
-                              onUploadSuccess={(url: string, align: string) => { 
-                                const classes = align === 'left' ? 'img-left' : align === 'right' ? 'img-right' : 'img-center';
-                                const imgHtml = `<img src="${url}" class="${classes}" />`;
+                              onUploadSuccess={(url: string) => { 
+                                const imgHtml = `<img src="${url}" />`;
                                 const newData: any = { ...data };
                                 newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + '<br/>' + imgHtml + '<br/>';
                                 setData(newData);
@@ -317,6 +310,62 @@ export default function AdminPanel() {
                               contentEditable 
                               suppressContentEditableWarning
                               onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML; setData(newData); }}
+                              onPaste={async (e) => {
+                                const file = e.clipboardData.files?.[0];
+                                if (file && file.type.startsWith('image/')) {
+                                  e.preventDefault();
+                                  setMessage('Uploading pasted image...');
+                                  const tempId = 'img-' + Date.now();
+                                  const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
+                                  document.execCommand('insertHTML', false, placeholder);
+                                  const formData = new FormData(); formData.append('file', file);
+                                  try {
+                                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                    const result = await res.json();
+                                    if (result.url) {
+                                      const img = document.getElementById(tempId) as HTMLImageElement;
+                                      if (img) {
+                                        img.src = result.url;
+                                        img.style.opacity = '1';
+                                        img.removeAttribute('id');
+                                        const newData = { ...data };
+                                        newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                        setData(newData);
+                                        setMessage('Image pasted successfully!');
+                                      }
+                                    }
+                                  } catch (err) { setMessage('Paste failed'); }
+                                  setTimeout(() => setMessage(''), 2000);
+                                }
+                              }}
+                              onDrop={async (e) => {
+                                const file = e.dataTransfer.files?.[0];
+                                if (file && file.type.startsWith('image/')) {
+                                  e.preventDefault();
+                                  setMessage('Uploading dropped image...');
+                                  const tempId = 'img-' + Date.now();
+                                  const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
+                                  document.execCommand('insertHTML', false, placeholder);
+                                  const formData = new FormData(); formData.append('file', file);
+                                  try {
+                                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                    const result = await res.json();
+                                    if (result.url) {
+                                      const img = document.getElementById(tempId) as HTMLImageElement;
+                                      if (img) {
+                                        img.src = result.url;
+                                        img.style.opacity = '1';
+                                        img.removeAttribute('id');
+                                        const newData = { ...data };
+                                        newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                        setData(newData);
+                                        setMessage('Image dropped successfully!');
+                                      }
+                                    }
+                                  } catch (err) { setMessage('Drop failed'); }
+                                  setTimeout(() => setMessage(''), 2000);
+                                }
+                              }}
                               dangerouslySetInnerHTML={{ __html: slide.content }}
                               style={{ width: '100%', minHeight: '150px', fontSize: '0.95rem', lineHeight: 1.6, color: isGaming ? '#d4d4d8' : '#3f3f46', padding: '1rem', outline: 'none' }}
                             />
