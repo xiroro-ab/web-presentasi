@@ -509,6 +509,8 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (activeTool !== 'draw') return;
+    if ((e.target as Element).closest('#presentation-toolbar')) return;
+
     setIsDrawing(true);
     setCurrentLine([{ x: e.clientX, y: e.clientY }]);
   };
@@ -536,7 +538,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       onPointerCancel={handlePointerUp}
     >
       {/* Base Presentation */}
-      <div style={{ pointerEvents: activeTool === 'draw' ? 'none' : 'auto', width: '100%', height: '100%' }}>
+      <div style={{ userSelect: activeTool === 'draw' ? 'none' : 'auto', width: '100%', height: '100%' }}>
         {children}
       </div>
 
@@ -565,7 +567,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
 
       {/* Drawing Overlay */}
       {(activeTool === 'draw' || lines.length > 0) && (
-        <svg style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9997, pointerEvents: activeTool === 'draw' ? 'auto' : 'none' }}>
+        <svg style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9997, pointerEvents: 'none' }}>
           {lines.map((line, i) => (
             <polyline
               key={i}
@@ -591,7 +593,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Floating Tools Control */}
-      <div style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.75rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.75rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
         <button onClick={() => setActiveTool('none')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'none' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Cursor Normal (0)"><MousePointer2 size={18} /></button>
         <button onClick={() => setActiveTool('laser')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'laser' ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Laser Pointer (1)"><Target size={18} /></button>
         <button onClick={() => setActiveTool('flashlight')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'flashlight' ? '#eab308' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Senter / Flashlight (2)"><Lightbulb size={18} /></button>
