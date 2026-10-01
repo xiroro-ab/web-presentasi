@@ -1,0 +1,79 @@
+{
+  "title": "Interactive Presentation",
+  "theme": "gaming",
+  "chapters": [
+    {
+      "id": "chap-1",
+      "title": "INTRODUCTION",
+      "subtitle": "The Beginning",
+      "image": "/uploads/1790822686496-WhatsApp_Image_2026-09-30_at_09.46.31.jpeg",
+      "slides": [
+        {
+          "id": "slide-1-1",
+          "title": "Kalimat Narative",
+          "content": "Contoh Cerita: The Lost Wallet\n• Orientation: Seorang pemuda menemukan dompet berisi kartu identitas dan uang saat berjalan ke tempat kerja.\n• Complication: Ia sempat bingung harus berbuat apa dengan dompet tersebut.\n• Resolution: Ia memutuskan mencari sang pemilik, berhasil menemukannya, dan mengembalikan dompet itu, membuat hatinya senang karena berbuat jujur.\nStruktur Narrative Text Secara Umum\n• Orientation: Memperkenalkan tokoh, waktu, dan tempat.\n• Complication: Munculnya konflik atau masalah.\n• Resolution: Penyelesaian dari masalah tersebut.\n• Re-orientation: Pesan moral atau akhir cerita (opsional).\nJika Anda mau, saya bisa memberikan jenis narrative text lainnya seperti fabel (cerita hewan) atau legenda. Jenis cerita apa yang Anda butuhkan?",
+          "image": "/uploads/1790823138528-special_HD_113_skin05_ym_004.png",
+          "embedUrl": "https://artificialanalysis.ai/models#intelligence",
+          "embedTitle": "Data Statistik Ai"
+        },
+        {
+          "id": "slide-1790822657659",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        },
+        {
+          "id": "slide-1790822659336",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        },
+        {
+          "id": "slide-1790822660867",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        }
+      ]
+    },
+    {
+      "id": "chap-2",
+      "title": "DEEP DIVE",
+      "subtitle": "Core Mechanics",
+      "image": "/uploads/1790822695855-Undead_concept_art.jpg",
+      "slides": [
+        {
+          "id": "slide-2-1",
+          "title": "Interactive Flow",
+          "content": "Smooth animations and transitions to keep the audience engaged."
+        },
+        {
+          "id": "slide-1790822644412",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        },
+        {
+          "id": "slide-1790822651832",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        }
+      ]
+    },
+    {
+      "id": "chap-1790822665994",
+      "title": "New Chapter",
+      "subtitle": "Subtitle",
+      "image": "/uploads/1790822710333-Blade_SD_58_Skin06_LX_003.png",
+      "slides": [
+        {
+          "id": "slide-1790822668738",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        },
+        {
+          "id": "slide-1790822671475",
+          "title": "Slide Title",
+          "content": "Enter your slide content here..."
+        }
+      ]
+    }
+  ],
+  "globalBackground": "/uploads/1790826821456-WhatsApp_Image_2026-09-29_at_08.51.30.jpeg"
+}
