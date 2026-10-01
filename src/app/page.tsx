@@ -52,20 +52,22 @@ function EditorToolbar() {
 
 // Reusable 3D Tilt Image Component
 function TiltImage({ src }: { src: string }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-150, 150], [15, -15]);
-  const rotateY = useTransform(x, [-150, 150], [-15, 15]);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const x = useSpring(mouseX, { stiffness: 100, damping: 30 });
+  const y = useSpring(mouseY, { stiffness: 100, damping: 30 });
+  const rotateX = useTransform(y, [-250, 250], [5, -5]);
+  const rotateY = useTransform(x, [-250, 250], [-5, 5]);
 
   return (
     <motion.div
       style={{ perspective: 1000, width: '100%', display: 'flex', justifyContent: 'center' }}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect();
-        x.set(e.clientX - rect.left - rect.width / 2);
-        y.set(e.clientY - rect.top - rect.height / 2);
+        mouseX.set(e.clientX - rect.left - rect.width / 2);
+        mouseY.set(e.clientY - rect.top - rect.height / 2);
       }}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
+      onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
     >
       <motion.img 
         src={src} 
@@ -232,7 +234,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
           </motion.div>
         ) : (
           <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <motion.div initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} exit={{ scaleX: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ position: 'absolute', inset: 0, background: '#3b82f6', zIndex: 9999, transformOrigin: 'left' }} />
+            <motion.div initial={{ x: '-100%', opacity: 1 }} animate={{ x: '100%', opacity: 0 }} exit={{ x: '-100%', transition: { duration: 0.2 } }} transition={{ duration: 1.2, ease: 'easeOut' }} style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.4) 50%, transparent 100%)', filter: 'blur(20px)', zIndex: 9999, pointerEvents: 'none' }} />
             <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(15px) brightness(0.2)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
             
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: 'rgba(255,255,255,0.05)', width: '100%', zIndex: 50 }}>
@@ -278,9 +280,9 @@ function GamingViewer({ data }: { data: PresentationData }) {
                       </motion.button>
                     )}
                     
-                    <button onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
-                    </button>
+                    </motion.button>
                   </motion.div>
 
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
@@ -471,7 +473,7 @@ function FormalViewer({ data }: { data: PresentationData }) {
           </motion.div>
         ) : (
           <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', background: '#fafafa', overflow: 'hidden' }}>
-            <motion.div initial={{ scaleX: 1 }} animate={{ scaleX: 0 }} exit={{ scaleX: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} style={{ position: 'absolute', inset: 0, background: '#111', zIndex: 9999, transformOrigin: 'left' }} />
+            <motion.div initial={{ x: '-100%', opacity: 1 }} animate={{ x: '100%', opacity: 0 }} exit={{ x: '-100%', transition: { duration: 0.2 } }} transition={{ duration: 1.2, ease: 'easeOut' }} style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%)', filter: 'blur(30px)', zIndex: 9999, pointerEvents: 'none' }} />
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: '#e5e5e5', width: '100%', zIndex: 50 }}>
               <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#111' }} />
             </div>
@@ -516,9 +518,9 @@ function FormalViewer({ data }: { data: PresentationData }) {
                       </motion.button>
                     )}
                     
-                    <button onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px', transition: 'all 0.2s' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
-                    </button>
+                    </motion.button>
                   </motion.div>
 
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid #e5e5e5', paddingTop: '2rem' }}>
