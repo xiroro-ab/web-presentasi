@@ -206,7 +206,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
           </motion.div>
         ) : (
           <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(40px) brightness(0.15)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
+            <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(15px) brightness(0.2)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
             
             <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: 'rgba(255,255,255,0.05)', width: '100%', zIndex: 50 }}>
               <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#3b82f6' }} />
