@@ -403,6 +403,7 @@ export default function AdminPanel() {
                                 const file = e.clipboardData.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
                                   e.preventDefault();
+                                  const currentTarget = e.currentTarget;
                                   setMessage('Compressing pasted image...');
                                   const tempId = 'img-' + Date.now();
                                   const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
@@ -422,7 +423,7 @@ export default function AdminPanel() {
                                         img.removeAttribute('id');
                                       }
                                       const newData = { ...data };
-                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      newData.chapters[cIdx].slides[sIdx].content = currentTarget.innerHTML;
                                       setData(newData);
                                       setMessage('Image pasted successfully!');
                                       setTimeout(() => setMessage(''), 2000);
@@ -441,6 +442,7 @@ export default function AdminPanel() {
                                 const file = e.dataTransfer.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
                                   e.preventDefault();
+                                  const currentTarget = e.currentTarget;
                                   setMessage('Compressing dropped image...');
                                   const tempId = 'img-' + Date.now();
                                   const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
@@ -460,7 +462,7 @@ export default function AdminPanel() {
                                         img.removeAttribute('id');
                                       }
                                       const newData = { ...data };
-                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      newData.chapters[cIdx].slides[sIdx].content = currentTarget.innerHTML;
                                       setData(newData);
                                       setMessage('Image dropped successfully!');
                                       setTimeout(() => setMessage(''), 2000);
