@@ -368,7 +368,7 @@ export default function Home() {
       <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
 
       {/* Desktop NAVBAR */}
-      <nav className={`hidden md:block fixed left-1/2 -translate-x-1/2 w-[95%] lg:w-[85%] max-w-[1200px] z-[80] transition-all duration-500 ease-in-out ${isNavVisible ? 'top-14 opacity-100' : '-top-32 opacity-0'}`}>
+      <nav className={`hidden lg:block fixed left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-[80] transition-all duration-500 ease-in-out ${isNavVisible ? 'top-14 opacity-100' : '-top-32 opacity-0'}`}>
         <div className="bg-[#242424]/40 backdrop-blur-xl rounded-full px-6 py-3 flex items-center justify-between shadow-2xl border border-white/10">
           <div className="font-poppins font-black text-xl lg:text-2xl tracking-tighter text-white flex-shrink-0">
             A.B
@@ -398,7 +398,7 @@ export default function Home() {
       </nav>
 
       {/* Mobile NAVBAR Buttons */}
-      <nav className={`md:hidden fixed top-6 right-6 z-[110] transition-all duration-500 flex gap-2 ${isNavVisible || isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-20'}`}>
+      <nav className={`lg:hidden fixed top-6 right-6 z-[110] transition-all duration-500 flex gap-2 ${isNavVisible || isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-20'}`}>
         <button 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
           className="p-3 bg-[#242424]/80 backdrop-blur-md rounded-full border border-white/10 text-white shadow-xl cursor-pointer"
@@ -409,7 +409,7 @@ export default function Home() {
       </nav>
       
       {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
+      <div className={`lg:hidden fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
         <div className={`absolute top-0 right-0 w-64 h-full bg-[#1c1c1c] border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col p-6 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`} onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-10">
             <div className="font-poppins font-black text-2xl text-white">Aris</div>
@@ -444,7 +444,7 @@ export default function Home() {
       <main className="relative z-10 pt-24 md:pt-40 pb-20 px-4 w-full flex flex-col items-center gap-12 font-poppins">
          
          {/* HERO SECTION */}
-         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row min-h-[500px] lg:h-[550px] overflow-hidden">
+         <section id="home" className="w-full max-w-7xl bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row min-h-[500px] lg:h-[550px] overflow-hidden">
 
             
             {/* The small top circle anchor indicator */}
@@ -495,10 +495,10 @@ export default function Home() {
 
             {/* RIGHT/BOTTOM: Text Content */}
             <div className="w-full md:w-1/2 flex flex-col justify-center px-6 sm:px-10 lg:pr-12 lg:pl-0 py-8 relative z-20 pointer-events-auto text-center lg:text-left">
-               <h2 className="text-lg sm:text-xl text-slate-300 mb-2 font-medium">
+               <h2 className="text-xl sm:text-2xl lg:text-3xl text-slate-300 mb-4 font-medium">
                  Halo! Saya <span className="font-bold text-white">Aris</span>
                </h2>
-               <h1 className="text-2xl sm:text-4xl lg:text-4xl font-black text-white mb-4 leading-[1.1] tracking-tight" style={{ textShadow: "0 10px 30px rgba(0,0,0,0.5)", wordBreak: "break-word" }}>
+               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-white mb-6 leading-[1.1] tracking-tight" style={{ textShadow: "0 10px 30px rgba(0,0,0,0.5)", wordBreak: "break-word" }}>
                  GURU<br/>INFORMATIKA.
                </h1>
                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-8 max-w-sm mx-auto lg:mx-0">
@@ -516,14 +516,14 @@ export default function Home() {
          </section>
 
           {/* PORTFOLIO SECTION */}
-         <section id="portofolio" className="w-full max-w-5xl mx-auto flex flex-col gap-6">
+         <section id="portofolio" className="w-full max-w-7xl mx-auto flex flex-col gap-6">
             <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center lg:text-left">
-               <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Portofolio & Project</h2>
+               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">Portofolio & Project</h2>
                <p className="text-slate-400 mb-8 max-w-xl mx-auto lg:mx-0 text-xs sm:text-sm">
                  Beberapa project dan karya unggulan yang telah diselesaikan.
                </p>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {[
                      { icon: Code, title: "Sistem Management Guru", desc: "Aplikasi manajemen data guru berbasis web yang fungsional. Dibangun murni dengan vibe coding.", href: "https://smpn58.vercel.app/" },
                      { icon: Layout, title: "Aplikasi Ujian CBT Online", desc: "Platform CBT online untuk pelaksanaan ujian yang stabil. Dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/ujian-online/" },
@@ -532,12 +532,12 @@ export default function Home() {
                      { icon: Monitor, title: "Website MPI Informatika", desc: "Website Media Pembelajaran Interaktif mapel INFORMATIKA.", href: "https://mpi-informatika.vercel.app/" },
                      { icon: Smartphone, title: "Aplikasi Ujian CBT Android", desc: "Aplikasi ujian berbasis Android untuk memudahkan siswa.", href: "https://drive.google.com/file/d/1wxOVvhZ8TjchsB59UPlpBzE8GDBqdNwb/view?usp=sharing" }
                   ].map((item, i) => (
-                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-6 rounded-2xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1 group overflow-hidden">
+                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-8 sm:p-10 rounded-3xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1 group overflow-hidden">
                         <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mb-4 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform flex-shrink-0">
                           <item.icon className="w-5 h-5" />
                         </div>
-                        <h3 className="text-base font-bold text-white mb-2 line-clamp-1">{item.title}</h3>
-                        <p className="text-slate-400 text-xs leading-relaxed line-clamp-3">{item.desc}</p>
+                        <h3 className="text-xl font-bold text-white mb-3 leading-snug break-words">{item.title}</h3>
+                        <p className="text-slate-400 text-sm sm:text-base leading-relaxed text-slate-400">{item.desc}</p>
                      </a>
                   ))}
                </div>
@@ -545,10 +545,10 @@ export default function Home() {
          </section>
 
           {/* YOUTUBE SECTION */}
-         <section id="youtube" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-12">
+         <section id="youtube" className="w-full max-w-7xl mx-auto flex flex-col gap-6 mb-12">
             <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center lg:text-left flex flex-col md:flex-row items-center gap-8 overflow-hidden">
                <div className="flex-1">
-                 <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Akun YouTube Ku</h2>
+                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">Akun YouTube Ku</h2>
                  <p className="text-slate-400 mb-6 max-w-lg mx-auto lg:mx-0 text-xs sm:text-sm leading-relaxed">
                    Saya juga aktif membagikan berbagai project, 3D modeling, karya kreatif lainnya, dan eksperimen coding di channel YouTube saya.
                  </p>
@@ -614,9 +614,9 @@ export default function Home() {
          </section>
 
          {/* SOCIAL & CONTACT SECTION */}
-         <section id="kontak" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-16">
+         <section id="kontak" className="w-full max-w-7xl mx-auto flex flex-col gap-6 mb-16">
             <div className="bg-[#242424] rounded-[30px] shadow-2xl border border-white/5 p-6 sm:p-10 text-center">
-               <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Mari Terhubung</h2>
+               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">Mari Terhubung</h2>
                <p className="text-slate-400 mb-8 max-w-xl mx-auto text-xs sm:text-sm">
                  Punya ide project seru, butuh script MLBB, atau hanya sekedar ingin berdiskusi? Hubungi saya.
                </p>
@@ -684,3 +684,4 @@ export default function Home() {
     </div>
   );
 }
+
