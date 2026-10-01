@@ -15,18 +15,23 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString('base64');
 
-    // Prepare data for ImgBB
-    const imgbbFormData = new FormData();
-    imgbbFormData.append('key', IMGBB_API_KEY);
-    imgbbFormData.append('image', base64Image);
+    // Prepare data for ImgBB using URLSearchParams
+    const params = new URLSearchParams();
+    params.append('key', IMGBB_API_KEY);
+    params.append('image', base64Image);
 
     // Upload to ImgBB
     const res = await fetch('https://api.imgbb.com/1/upload', {
       method: 'POST',
-      body: imgbbFormData,
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     });
 
     if (!res.ok) {
+      const err = await res.text();
+      console.error("ImgBB error:", err);
       throw new Error('ImgBB upload failed');
     }
 

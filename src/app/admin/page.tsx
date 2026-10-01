@@ -368,6 +368,17 @@ export default function AdminPanel() {
                                     placeholder="https://...glb"
                                   />
                                 </div>
+
+                                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Web Embed URL (Iframe)</label>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                  <input 
+                                    type="text" 
+                                    value={slide.embedUrl || ''} 
+                                    onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].embedUrl = e.target.value; setData(newData); }}
+                                    style={{ flex: 1, fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.5rem', borderRadius: '6px', outline: 'none' }}
+                                    placeholder="https://example.com"
+                                  />
+                                </div>
                               </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
                               <div>
