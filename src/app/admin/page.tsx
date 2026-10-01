@@ -52,39 +52,75 @@ export default function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [teacherName, setTeacherName] = useState('');
+  const [password, setPassword] = useState('');
+  const [slug, setSlug] = useState('');
 
   const showToast = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
   };
 
-  useEffect(() => {
-    fetch('/api/presentation')
-      .then(res => res.json())
-      .then(d => {
-        if (!d.theme) d.theme = 'gaming';
-        setData(d);
-      })
-      .catch(e => console.error(e));
-  }, []);
+  const handleLogin = () => {
+    if (password === 'guru123' && teacherName.trim() !== '') {
+      setIsLoggedIn(true);
+      const generatedSlug = Math.random().toString(36).substring(2, 8);
+      setSlug(generatedSlug);
+      setData({
+        title: `Presentasi oleh ${teacherName}`,
+        theme: 'gaming',
+        chapters: []
+      });
+    } else {
+      alert('Password salah atau nama kosong!');
+    }
+  };
 
   const handleSave = async () => {
     if (!data) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/presentation', {
+      const res = await fetch('/api/presentations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ slug, teacherName, title: data.title, data }),
       });
       if (res.ok) {
-        showToast('Perubahan berhasil disimpan!');
+        showToast(`Berhasil disimpan! URL: /p/${slug}`);
       }
     } catch (e) {
       showToast('Gagal menyimpan perubahan.');
     }
     setSaving(false);
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#151515] font-sans text-white p-4">
+        <div className="bg-[#242424] p-8 rounded-3xl w-full max-w-md shadow-2xl border border-white/10">
+          <h2 className="text-2xl font-black text-center mb-6">Login Admin / Guru</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-slate-400 mb-2">Nama Guru</label>
+              <input type="text" value={teacherName} onChange={e => setTeacherName(e.target.value)} className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="Masukkan nama..." />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-400 mb-2">Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-[#1c1c1c] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500" placeholder="password (guru123)" />
+            </div>
+            <button onClick={handleLogin} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors mt-4">
+              Masuk
+            </button>
+            <button onClick={() => window.location.href = '/'} className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-colors mt-2">
+              Kembali ke Beranda
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const exportData = () => {
     if (!data) return;

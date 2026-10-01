@@ -1,751 +1,606 @@
 "use client";
+import React, { useEffect, useRef, useState } from 'react';
+import { Menu, X, Mail, Layout, Code, Monitor, ExternalLink, Smartphone, ArrowDown } from 'lucide-react';
 
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser } from 'lucide-react';
-import Link from 'next/link';
 
-type EmbedLink = { title: string; url: string; };
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
-type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
-type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
+// Physics Constants
+const GRAVITY = 0.9;
+const DAMPING = 0.985;
+const CONSTRAINT_ITERATIONS = 40;
+const ROPE_SEGMENTS = 10;
+const SEG_LEN = 16;
+const CARD_H = 380;
 
-const GAMING_IMAGES = [
-  'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1542751110-97427bbecf20?q=80&w=1200&auto=format&fit=crop'
-];
-
-const FORMAL_IMAGES = [
-  'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1507676184212-d0330a151f84?q=80&w=1200&auto=format&fit=crop'
-];
-
-// Reusable Editor Toolbar
-function EditorToolbar() {
-  return (
-    <div style={{ padding: '1rem', background: '#f4f4f5', display: 'flex', gap: '1rem', borderBottom: '1px solid #e5e5e5', alignItems: 'center', flexWrap: 'wrap' }}>
-      <button onClick={() => document.execCommand('bold')} style={{ fontWeight: 'bold', padding: '0.5rem 1rem', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '4px', background: '#fff' }}>B</button>
-      <button onClick={() => document.execCommand('italic')} style={{ fontStyle: 'italic', padding: '0.5rem 1rem', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '4px', background: '#fff' }}>I</button>
-      <button onClick={() => document.execCommand('underline')} style={{ textDecoration: 'underline', padding: '0.5rem 1rem', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '4px', background: '#fff' }}>U</button>
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid #ccc', paddingLeft: '1rem' }}>
-        <span style={{ fontSize: '0.85rem', color: '#555', fontWeight: 600 }}>Color:</span>
-        <input type="color" onChange={(e) => document.execCommand('foreColor', false, e.target.value)} style={{ cursor: 'pointer', border: 'none', background: 'transparent', width: '30px', height: '30px' }} title="Text Color" />
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid #ccc', paddingLeft: '1rem' }}>
-        <span style={{ fontSize: '0.85rem', color: '#555', fontWeight: 600 }}>Size:</span>
-        <select onChange={(e) => document.execCommand('fontSize', false, e.target.value)} style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', cursor: 'pointer', outline: 'none' }}>
-          <option value="3">Normal</option>
-          <option value="5">Besar</option>
-          <option value="7">Sangat Besar</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-// Reusable 3D Tilt Image Component
-function TiltImage({ src }: { src: string }) {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const x = useSpring(mouseX, { stiffness: 100, damping: 30 });
-  const y = useSpring(mouseY, { stiffness: 100, damping: 30 });
-  const rotateX = useTransform(y, [-250, 250], [5, -5]);
-  const rotateY = useTransform(x, [-250, 250], [-5, 5]);
-
-  return (
-    <motion.div
-      style={{ perspective: 1000, width: '100%', display: 'flex', justifyContent: 'center' }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        mouseX.set(e.clientX - rect.left - rect.width / 2);
-        mouseY.set(e.clientY - rect.top - rect.height / 2);
-      }}
-      onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
-    >
-      <motion.img 
-        src={src} 
-        style={{ rotateX, rotateY, maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', display: 'block' }} 
-        alt="Slide 3D" 
-      />
-    </motion.div>
-  );
-}
-
-// --- GAMING VIEWER ---
-function GamingViewer({ data }: { data: PresentationData }) {
-  const [activeChapterIndex, setActiveChapterIndex] = useState<number | null>(null);
-  const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
-  const [direction, setDirection] = useState(1);
-  const [showFrame, setShowFrame] = useState(false);
-  const [frameUrl, setFrameUrl] = useState('');
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [showNotes, setShowNotes] = useState(false);
-  const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const saved = localStorage.getItem('presentation_notes');
-    if (saved) setSlideNotes(JSON.parse(saved));
-  }, []);
-
-  const saveNote = (slideId: string, html: string) => {
-    const newNotes = { ...slideNotes, [slideId]: html };
-    setSlideNotes(newNotes);
-    localStorage.setItem('presentation_notes', JSON.stringify(newNotes));
-  };
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-  const xOffset = useTransform(springX, [0, typeof window !== 'undefined' ? window.innerWidth : 1000], [-15, 15]);
-  const yOffset = useTransform(springY, [0, typeof window !== 'undefined' ? window.innerHeight : 800], [-15, 15]);
-
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
-  }, []);
-
-  const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
-
-  const handleRichTextClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'IMG') {
-      setLightboxImage((target as HTMLImageElement).src);
-    }
-  };
-  const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
-  const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
-  const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
-
-  useEffect(() => { setShowFrame(false); setShowNotes(false); }, [activeSlideIndex]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (showFrame) { if (e.key === 'Escape') setShowFrame(false); return; }
-      if (showNotes) { if (e.key === 'Escape') setShowNotes(false); return; }
-      
-      if (activeChapterIndex !== null) {
-        if (e.key === 'ArrowRight') nextSlide();
-        if (e.key === 'ArrowLeft') prevSlide();
-        if (e.key === 'Escape') setActiveChapterIndex(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeChapterIndex, activeSlideIndex, data, showFrame, showNotes]);
-
-  const handleEnterChapter = (index: number) => { setActiveChapterIndex(index); setActiveSlideIndex(0); setDirection(1); };
+export default function Home() {
+  const [activeSection, setActiveSection] = useState('home');
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const lastScrollY = useRef(0);
   
-  const nextSlide = () => {
-    if (activeChapterIndex === null || !activeChapter) return;
-    if (activeSlideIndex < activeChapter.slides.length - 1) {
-      setDirection(1);
-      setActiveSlideIndex(prev => prev + 1);
-    }
-  };
-  
-  const prevSlide = () => {
-    if (activeChapterIndex === null || !activeChapter) return;
-    if (activeSlideIndex > 0) {
-      setDirection(-1);
-      setActiveSlideIndex(prev => prev - 1);
-    }
-  };
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const gamingSlideVariants: any = {
-    enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.5, type: 'spring', bounce: 0, staggerChildren: 0.1 } },
-    exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.3 } })
-  };
+  // Physics state
+  const pointsRef = useRef<any[]>([]);
+  const segLensRef = useRef<number[]>([]);
+  const draggedPointRef = useRef<any>(null);
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const anchorPosRef = useRef({ x: 0, y: -20 });
 
-  const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
-
-  return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)' }}>
-      {activeChapterIndex === null && (
-        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100 }}>
-          <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            <Settings size={16} /> Configuration
-          </Link>
-        </div>
-      )}
-
-      {/* Media Embed Modal */}
-      <AnimatePresence>
-        {showFrame && frameUrl && (
-          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setShowFrame(false)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Frame
-              </button>
-            </div>
-            <motion.iframe initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} allowFullScreen />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Lightbox Modal */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxImage(null)}>
-            <div style={{ width: '90vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setLightboxImage(null)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Gambar
-              </button>
-            </div>
-            <motion.img initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} transition={{ delay: 0.1, duration: 0.3 }} src={lightboxImage} style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Interactive Notes Modal */}
-      <AnimatePresence>
-        {showNotes && activeSlide && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '80vw', maxWidth: '1000px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 600 }}>Live Papan Catatan: {activeSlide.title}</h2>
-              <button onClick={() => setShowNotes(false)} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 700, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Catatan
-              </button>
-            </div>
-            <motion.div initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: 20 }} style={{ width: '80vw', maxWidth: '1000px', background: '#fff', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-              <EditorToolbar />
-              <div 
-                contentEditable 
-                suppressContentEditableWarning
-                onBlur={(e) => saveNote(activeSlide.id, e.currentTarget.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: slideNotes[activeSlide.id] || '<p>Mulai mengetik catatan interaktif Anda di sini...</p>' }}
-                style={{ flex: 1, minHeight: '50vh', padding: '2rem', color: '#111', fontSize: '1.25rem', lineHeight: 1.8, outline: 'none', overflowY: 'auto', fontFamily: 'var(--font-sans)' }} 
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {activeChapterIndex === null ? (
-          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.8 }} style={{ width: '100%', height: '100%', overflowY: 'auto', scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }} className="hide-scrollbar">
-            {data.chapters.map((chap, i) => {
-              const bgImg = chap.image || GAMING_IMAGES[i % GAMING_IMAGES.length];
-              return (
-                <div key={chap.id} style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
-                    <motion.div style={{ width: '100%', height: '100%', backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) contrast(1.1)', scale: 1.05, x: xOffset, y: yOffset }} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #09090b 0%, transparent 60%, #09090b 100%)' }} />
-                  </div>
-                  <motion.div initial={{ x: -60, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }} style={{ zIndex: 10, paddingLeft: '8%', maxWidth: '800px' }}>
-                    <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.85rem', marginBottom: '1.5rem' }}>MODULE {String(i + 1).padStart(2, '0')} // {chap.subtitle || 'Chapter'}</p>
-                    <h1 style={{ fontSize: '5rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', marginBottom: '3rem' }}>{chap.title}</h1>
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 25px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '1rem 2rem', background: 'transparent', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '100px', color: '#fff', cursor: 'pointer', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                      Enter Module <ArrowRight size={18} color="#3b82f6" />
-                    </motion.button>
-                  </motion.div>
-                </div>
-              );
-            })}
-          </motion.div>
-        ) : (
-          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-            <motion.div initial={{ x: '-100%', opacity: 1 }} animate={{ x: '100%', opacity: 0 }} exit={{ x: '-100%', transition: { duration: 0.2 } }} transition={{ duration: 1.2, ease: 'easeOut' }} style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.4) 50%, transparent 100%)', filter: 'blur(20px)', zIndex: 9999, pointerEvents: 'none' }} />
-            <motion.div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${activeChapter?.image || GAMING_IMAGES[activeChapterIndex! % GAMING_IMAGES.length]})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(15px) brightness(0.2)', zIndex: 0, scale: 1.05, x: xOffset, y: yOffset }} />
-            
-            <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: 'rgba(255,255,255,0.05)', width: '100%', zIndex: 50 }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#3b82f6' }} />
-            </div>
-
-            <button onClick={() => setActiveChapterIndex(null)} style={{ position: 'fixed', top: '2.5rem', left: '3rem', zIndex: 50, display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-              <ArrowLeft size={16} /> Exit Module
-            </button>
-
-            {/* Content Container */}
-            <div style={{ width: '100%', height: '100%', overflowY: 'auto', position: 'relative', zIndex: 5, padding: '8rem 6% 10rem 6%' }} className="hide-scrollbar">
-              <AnimatePresence custom={direction} mode="wait">
-                <motion.div key={activeSlideIndex} custom={direction} variants={gamingSlideVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', background: 'rgba(9, 9, 11, 0.4)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', padding: '4rem', borderRadius: '16px' }}>
-                  <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={{ width: '30px', height: '2px', background: '#3b82f6' }} />
-                    <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.8rem' }}>SEQ {String(activeSlideIndex + 1).padStart(2, '0')} / {String(activeChapter?.slides.length || 0).padStart(2, '0')}</p>
-                  </motion.div>
-                  
-                  <motion.h1 variants={itemVariants} style={{ fontSize: '3.5rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '2.5rem', color: '#fff' }}>
-                    {activeSlide?.title}
-                  </motion.h1>
-                  
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
-                  </motion.div>
-
-                  {/* Interactive Elements Area */}
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    {(() => {
-                      const allEmbeds = [...(activeSlide?.embeds || [])];
-                      if (activeSlide?.embedUrl) allEmbeds.unshift({ title: activeSlide.embedTitle || 'Buka Link Interaktif', url: activeSlide.embedUrl });
-                      return allEmbeds.map((emb, idx) => (
-                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
-                          <ExternalLink size={18} /> {emb.title || 'Buka Link Interaktif'}
-                        </motion.button>
-                      ));
-                    })()}
-                    
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
-                      <PenTool size={18} /> Buka Papan Catatan
-                    </motion.button>
-                  </motion.div>
-
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
-                    {!isLastSlide ? (
-                      <button onClick={nextSlide} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}>Proceed to Next <ArrowRight size={18} /></button>
-                    ) : (
-                      <button onClick={() => setActiveChapterIndex(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}><CheckCircle size={18} /> Complete Module</button>
-                    )}
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Bottom Nav */}
-            <div style={{ position: 'fixed', bottom: '3rem', right: '3rem', zIndex: 50, display: 'flex', gap: '1rem' }}>
-              <button onClick={prevSlide} disabled={activeSlideIndex === 0} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', color: '#fff', cursor: activeSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: activeSlideIndex === 0 ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <ArrowLeft size={18} />
-              </button>
-              <button onClick={nextSlide} disabled={isLastSlide} style={{ width: '48px', height: '48px', borderRadius: '50%', border: 'none', background: '#fff', color: '#09090b', cursor: isLastSlide ? 'not-allowed' : 'pointer', opacity: isLastSlide ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <ArrowRight size={18} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// --- ELEGANT FORMAL VIEWER ---
-function FormalViewer({ data }: { data: PresentationData }) {
-  const [activeChapterIndex, setActiveChapterIndex] = useState<number | null>(null);
-  const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
-  const [direction, setDirection] = useState(1);
-  const [showFrame, setShowFrame] = useState(false);
-  const [frameUrl, setFrameUrl] = useState('');
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [showNotes, setShowNotes] = useState(false);
-  const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
-
+  // Scroll Spy and Navbar Hide/Show using IntersectionObserver
   useEffect(() => {
-    const saved = localStorage.getItem('presentation_notes');
-    if (saved) setSlideNotes(JSON.parse(saved));
-  }, []);
+    // Intersection Observer for Scroll Spy
+    const sections = ['home', 'portofolio', 'youtube', 'kontak'];
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, {
+      root: containerRef.current,
+      rootMargin: '-40% 0px -40% 0px',
+      threshold: 0
+    });
 
-  const saveNote = (slideId: string, html: string) => {
-    const newNotes = { ...slideNotes, [slideId]: html };
-    setSlideNotes(newNotes);
-    localStorage.setItem('presentation_notes', JSON.stringify(newNotes));
-  };
+    sections.forEach(section => {
+      const el = document.getElementById(section);
+      if (el) observer.observe(el);
+    });
 
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
-  const xOffset = useTransform(springX, [0, typeof window !== 'undefined' ? window.innerWidth : 1000], [-15, 15]);
-  const yOffset = useTransform(springY, [0, typeof window !== 'undefined' ? window.innerHeight : 800], [-15, 15]);
-
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouse);
-    return () => window.removeEventListener('mousemove', handleMouse);
-  }, []);
-
-  const activeChapter = activeChapterIndex !== null ? data.chapters[activeChapterIndex] : null;
-
-  const handleRichTextClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'IMG') {
-      setLightboxImage((target as HTMLImageElement).src);
-    }
-  };
-  const isLastSlide = activeChapter ? activeSlideIndex === activeChapter.slides.length - 1 : false;
-  const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
-  const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
-
-  useEffect(() => { setShowFrame(false); setShowNotes(false); }, [activeSlideIndex]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (showFrame) { if (e.key === 'Escape') setShowFrame(false); return; }
-      if (showNotes) { if (e.key === 'Escape') setShowNotes(false); return; }
-
-      if (activeChapterIndex !== null) {
-        if (e.key === 'ArrowRight') nextSlide();
-        if (e.key === 'ArrowLeft') prevSlide();
-        if (e.key === 'Escape') setActiveChapterIndex(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeChapterIndex, activeSlideIndex, data, showFrame, showNotes]);
-
-  const handleEnterChapter = (index: number) => { setActiveChapterIndex(index); setActiveSlideIndex(0); setDirection(1); };
-  
-  const nextSlide = () => {
-    if (activeChapterIndex === null || !activeChapter) return;
-    if (activeSlideIndex < activeChapter.slides.length - 1) {
-      setDirection(1);
-      setActiveSlideIndex(prev => prev + 1);
-    }
-  };
-  
-  const prevSlide = () => {
-    if (activeChapterIndex === null || !activeChapter) return;
-    if (activeSlideIndex > 0) {
-      setDirection(-1);
-      setActiveSlideIndex(prev => prev - 1);
-    }
-  };
-
-  const formalVariants: any = {
-    enter: (dir: number) => ({ y: dir > 0 ? 30 : -30, opacity: 0 }),
-    center: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.1 } },
-    exit: (dir: number) => ({ y: dir < 0 ? 30 : -30, opacity: 0, transition: { duration: 0.3 } })
-  };
-
-  const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
-
-  return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', color: '#111', fontFamily: 'var(--font-sans)' }}>
-      {activeChapterIndex === null && (
-        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100 }}>
-          <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#555', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '100px' }}>
-            <Settings size={16} /> Settings
-          </Link>
-        </div>
-      )}
-
-      {/* Frame Modal Overlay */}
-      <AnimatePresence>
-        {showFrame && frameUrl && (
-          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setShowFrame(false)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 500, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup View
-              </button>
-            </div>
-            <motion.iframe initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={frameUrl} style={{ width: '85vw', height: '80vh', border: '1px solid #e5e5e5', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} allowFullScreen />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Lightbox Modal Overlay */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div initial={{ opacity: 0, backdropFilter: 'blur(0px)' }} animate={{ opacity: 1, backdropFilter: 'blur(20px)' }} exit={{ opacity: 0, backdropFilter: 'blur(0px)' }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onClick={() => setLightboxImage(null)}>
-            <div style={{ width: '85vw', display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-              <button onClick={() => setLightboxImage(null)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 500, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Gambar
-              </button>
-            </div>
-            <motion.img initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} transition={{ delay: 0.1, duration: 0.4 }} src={lightboxImage} style={{ maxWidth: '85vw', maxHeight: '80vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Interactive Notes Modal */}
-      <AnimatePresence>
-        {showNotes && activeSlide && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '80vw', maxWidth: '1000px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 600, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Catatan Interaktif: {activeSlide.title}</h2>
-              <button onClick={() => setShowNotes(false)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 500, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Catatan
-              </button>
-            </div>
-            <motion.div initial={{ y: 20 }} animate={{ y: 0 }} exit={{ y: 20 }} style={{ width: '80vw', maxWidth: '1000px', background: '#fff', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid #e5e5e5' }}>
-              <EditorToolbar />
-              <div 
-                contentEditable 
-                suppressContentEditableWarning
-                onBlur={(e) => saveNote(activeSlide.id, e.currentTarget.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: slideNotes[activeSlide.id] || '<p>Mulai mengetik catatan interaktif Anda di sini...</p>' }}
-                style={{ flex: 1, minHeight: '50vh', padding: '2rem', color: '#111', fontSize: '1.25rem', lineHeight: 1.8, outline: 'none', overflowY: 'auto', fontFamily: 'var(--font-sans)' }} 
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {activeChapterIndex === null ? (
-          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -40 }} transition={{ duration: 0.8 }} style={{ width: '100%', height: '100%', overflowY: 'auto', scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }} className="hide-scrollbar">
-            {data.chapters.map((chap, i) => {
-              const bgImg = chap.image || FORMAL_IMAGES[i % FORMAL_IMAGES.length];
-              return (
-                <div key={chap.id} style={{ width: '100vw', height: '100vh', scrollSnapAlign: 'start', position: 'relative', display: 'flex', overflow: 'hidden' }}>
-                  <div style={{ width: '45%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 8%', background: '#fff', zIndex: 2 }}>
-                    <motion.div initial={{ y: 40, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }}>
-                      <p style={{ color: '#888', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '1.5rem', fontSize: '0.8rem' }}>{chap.subtitle || `Section ${String(i + 1).padStart(2, '0')}`}</p>
-                      <h1 style={{ fontSize: '4.5rem', fontWeight: 400, lineHeight: 1.1, color: '#111', marginBottom: '3rem', letterSpacing: '-0.03em' }}>{chap.title}</h1>
-                      <motion.button animate={{ scale: [1, 1.02, 1] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '0', background: 'transparent', border: 'none', color: '#111', cursor: 'pointer', fontWeight: 500 }}>
-                        Begin Module <div style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid #111', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><ArrowRight size={16} /></div>
-                      </motion.button>
-                    </motion.div>
-                  </div>
-                  <div style={{ width: '55%', height: '100%', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
-                    <motion.div style={{ width: '100%', height: '100%', scale: 1.05, x: xOffset, y: yOffset }}>
-                      <motion.div initial={{ scale: 1.1 }} whileInView={{ scale: 1 }} transition={{ duration: 1.5, ease: 'easeOut' }} style={{ width: '100%', height: '100%' }}>
-                        <img src={bgImg} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Cover" />
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </div>
-              );
-            })}
-          </motion.div>
-        ) : (
-          <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', background: '#fafafa', overflow: 'hidden' }}>
-            <motion.div initial={{ x: '-100%', opacity: 1 }} animate={{ x: '100%', opacity: 0 }} exit={{ x: '-100%', transition: { duration: 0.2 } }} transition={{ duration: 1.2, ease: 'easeOut' }} style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%)', filter: 'blur(30px)', zIndex: 9999, pointerEvents: 'none' }} />
-            <div style={{ position: 'fixed', top: 0, left: 0, height: '3px', background: '#e5e5e5', width: '100%', zIndex: 50 }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#111' }} />
-            </div>
-
-            <button onClick={() => setActiveChapterIndex(null)} style={{ position: 'fixed', top: '2.5rem', left: '3rem', zIndex: 50, display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#555', fontSize: '0.85rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'transparent', border: 'none', cursor: 'pointer' }}>
-              <LayoutGrid size={16} /> Back to Index
-            </button>
-
-            {/* Content Container */}
-            <div style={{ width: '100%', height: '100%', overflowY: 'auto', position: 'relative', zIndex: 5, padding: '8rem 6% 10rem 6%' }} className="hide-scrollbar">
-              <AnimatePresence custom={direction} mode="wait">
-                <motion.div key={activeSlideIndex} custom={direction} variants={formalVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto' }}>
-                  <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                    <p style={{ color: '#888', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                      Slide {String(activeSlideIndex + 1).padStart(2, '0')} of {String(activeChapter?.slides.length || 0).padStart(2, '0')}
-                    </p>
-                  </motion.div>
-                  
-                  <motion.h1 variants={itemVariants} style={{ fontSize: '3.5rem', fontWeight: 400, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '2.5rem', color: '#111' }}>
-                    {activeSlide?.title}
-                  </motion.h1>
-                  
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
-                  </motion.div>
-
-                  {/* Interactive Elements Area */}
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    {(() => {
-                      const allEmbeds = [...(activeSlide?.embeds || [])];
-                      if (activeSlide?.embedUrl) allEmbeds.unshift({ title: activeSlide.embedTitle || 'Buka Link Interaktif', url: activeSlide.embedUrl });
-                      return allEmbeds.map((emb, idx) => (
-                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #111', color: '#111', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#111'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#111'}}>
-                          <ExternalLink size={18} /> {emb.title || 'Buka Link Interaktif'}
-                        </motion.button>
-                      ));
-                    })()}
-                    
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
-                      <PenTool size={18} /> Buka Papan Catatan
-                    </motion.button>
-                  </motion.div>
-
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid #e5e5e5', paddingTop: '2rem' }}>
-                    {!isLastSlide ? (
-                      <button onClick={nextSlide} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#111', color: '#fff', border: 'none', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer' }}>Continue <ArrowRight size={16} /></button>
-                    ) : (
-                      <button onClick={() => setActiveChapterIndex(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#fff', color: '#111', border: '1px solid #e5e5e5', borderRadius: '100px', fontSize: '0.95rem', fontWeight: 500, cursor: 'pointer' }}><CheckCircle size={16} /> Finish Section</button>
-                    )}
-                  </motion.div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            <div style={{ position: 'fixed', bottom: '3rem', right: '3rem', zIndex: 50, display: 'flex', gap: '1rem' }}>
-              <button onClick={prevSlide} disabled={activeSlideIndex === 0} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid #e5e5e5', background: '#fff', color: '#111', cursor: activeSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: activeSlideIndex === 0 ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <ArrowLeft size={18} />
-              </button>
-              <button onClick={nextSlide} disabled={isLastSlide} style={{ width: '48px', height: '48px', borderRadius: '50%', border: 'none', background: '#111', color: '#fff', cursor: isLastSlide ? 'not-allowed' : 'pointer', opacity: isLastSlide ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <ArrowRight size={18} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// --- PRESENTATION TOOLS OVERLAY ---
-function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
-  const [activeTool, setActiveTool] = useState<'none' | 'laser' | 'flashlight' | 'draw'>('none');
-  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
-  const [lines, setLines] = useState<{points: {x:number, y:number}[]}[]>([]);
-  const [currentLine, setCurrentLine] = useState<{x:number, y:number}[]>([]);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
+    // 2. Scroll event for Hide/Show Navbar
+    let ticking = false;
     const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target && target.scrollTop !== undefined) {
-        setScrollOffset({ x: target.scrollLeft || 0, y: target.scrollTop || 0 });
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const target = e.target as HTMLElement;
+          const scrollY = target.scrollTop;
+          
+          if (scrollY > lastScrollY.current && scrollY > 50) {
+            setIsNavVisible(false);
+          } else {
+            setIsNavVisible(true);
+          }
+          lastScrollY.current = scrollY;
+          ticking = false;
+        });
+        ticking = true;
       }
     };
-    window.addEventListener('scroll', handleScroll, true); // true = capture phase
-    return () => window.removeEventListener('scroll', handleScroll, true);
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '1') setActiveTool('laser');
-      if (e.key === '2') setActiveTool('flashlight');
-      if (e.key === '3') setActiveTool('draw');
-      if (e.key === '0' || e.key === 'Escape') {
-        if (activeTool !== 'none') setActiveTool('none');
-      }
-      if (e.key === 'c' || e.key === 'C') setLines([]);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTool]);
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (activeTool !== 'draw') return;
-    if ((e.target as Element).closest('#presentation-toolbar')) return;
-
-    setIsDrawing(true);
-    setCurrentLine([{ x: e.clientX + scrollOffset.x, y: e.clientY + scrollOffset.y }]);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (activeTool !== 'draw' || !isDrawing) return;
-    setCurrentLine(prev => [...prev, { x: e.clientX + scrollOffset.x, y: e.clientY + scrollOffset.y }]);
-  };
-
-  const handlePointerUp = () => {
-    if (activeTool !== 'draw' || !isDrawing) return;
-    setIsDrawing(false);
-    if (currentLine.length > 0) {
-      setLines(prev => [...prev, { points: currentLine }]);
-      setCurrentLine([]);
+    
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll, true);
     }
+
+    return () => {
+      sections.forEach(section => {
+        const el = document.getElementById(section);
+        if (el) observer.unobserve(el);
+      });
+      if (container) {
+        container.removeEventListener('scroll', handleScroll, true);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+
+    const points: any[] = [];
+    const segLens: number[] = [];
+
+    // Initialize Rope
+    for (let i = 0; i < ROPE_SEGMENTS; i++) {
+      points.push({ x: 0, y: i * SEG_LEN, oldx: 0, oldy: i * SEG_LEN, pinned: i === 0 });
+      if (i > 0) segLens.push(SEG_LEN);
+    }
+    
+    // Initialize Card Bob (center of mass)
+    points.push({ x: 0, y: ROPE_SEGMENTS * SEG_LEN + CARD_H * 0.45, oldx: 0, oldy: ROPE_SEGMENTS * SEG_LEN + CARD_H * 0.45, pinned: false });
+    segLens.push(CARD_H * 0.45);
+
+    pointsRef.current = points;
+    segLensRef.current = segLens;
+
+    let animationFrameId: number;
+
+    const integrate = () => {
+      const pts = pointsRef.current;
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        if (p.pinned || p === draggedPointRef.current) continue;
+        const localDamping = DAMPING - i * 0.001;
+        const vx = (p.x - p.oldx) * localDamping;
+        const vy = (p.y - p.oldy) * localDamping;
+        p.oldx = p.x;
+        p.oldy = p.y;
+        p.x += vx;
+        p.y += vy + GRAVITY;
+      }
+    };
+
+    const satisfyConstraints = () => {
+      const pts = pointsRef.current;
+      const slens = segLensRef.current;
+      
+      for (let iter = 0; iter < CONSTRAINT_ITERATIONS; iter++) {
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const restLen = slens[i];
+          const stiffness = 0.98;
+
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+          const diff = (dist - restLen) / dist;
+
+          const p1Locked = p1.pinned || p1 === draggedPointRef.current;
+          const p2Locked = p2.pinned || p2 === draggedPointRef.current;
+          if (p1Locked && p2Locked) continue;
+
+          const offX = dx * 0.5 * diff * stiffness;
+          const offY = dy * 0.5 * diff * stiffness;
+
+          if (!p1Locked) { p1.x += offX; p1.y += offY; }
+          if (!p2Locked) { p2.x -= offX; p2.y -= offY; }
+        }
+        
+        // Pin anchor
+        pts[0].x = anchorPosRef.current.x;
+        pts[0].y = anchorPosRef.current.y;
+      }
+    };
+
+    const applyDrag = () => {
+      if (!draggedPointRef.current) return;
+      draggedPointRef.current.x += (pointerRef.current.x - dragOffsetRef.current.x - draggedPointRef.current.x) * 0.6;
+      draggedPointRef.current.y += (pointerRef.current.y - dragOffsetRef.current.y - draggedPointRef.current.y) * 0.6;
+    };
+
+    const render = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+
+      const pts = pointsRef.current;
+      
+      // Draw Strap (Thick Black Ribbon)
+      ctx.strokeStyle = '#111111';
+      ctx.lineWidth = 36;
+      ctx.lineCap = 'butt';
+      ctx.lineJoin = 'bevel';
+      
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < ROPE_SEGMENTS; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.stroke();
+
+      // Highlight for fabric depth
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 32;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < ROPE_SEGMENTS; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.stroke();
+
+      // Draw Text on Strap
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 13px Poppins, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const textIdx = ROPE_SEGMENTS - 3;
+      if (pts[textIdx] && pts[textIdx+1]) {
+        const p1 = pts[textIdx];
+        const p2 = pts[textIdx+1];
+        const cx = (p1.x + p2.x) / 2;
+        const cy = (p1.y + p2.y) / 2;
+        let angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle - Math.PI/2);
+        ctx.fillText('A.B', 0, 0);
+        ctx.restore();
+      }
+
+      // Sync DOM Card position
+      if (cardRef.current) {
+        const hook = pts[ROPE_SEGMENTS - 1];
+        const bob = pts[pts.length - 1];
+        let angle = Math.atan2(bob.y - hook.y, bob.x - hook.x) - Math.PI / 2;
+        
+        const cardX = hook.x - 130; // 130 is half of 260px width
+        const cardY = hook.y + 25;  // 25 is offset for origin
+        
+        // Dynamic scale based on screen width to fit mobile and tablet
+        const scale = window.innerWidth < 640 ? 0.75 : window.innerWidth < 768 ? 0.85 : window.innerWidth < 1024 ? 0.75 : 1;
+        
+        cardRef.current.style.transform = `translate3d(${cardX}px, ${cardY}px, 0) rotate(${angle}rad) scale(${scale})`;
+      }
+    };
+
+    const loop = () => {
+      applyDrag();
+      integrate();
+      satisfyConstraints();
+      render();
+      animationFrameId = requestAnimationFrame(loop);
+    };
+    
+    const handleResize = () => {
+      if (canvasRef.current) {
+        const rect = canvasRef.current.parentElement!.getBoundingClientRect();
+        canvasRef.current.width = rect.width;
+        canvasRef.current.height = rect.height;
+        // Always center the anchor in the canvas container
+        anchorPosRef.current = {
+          x: rect.width / 2,
+          y: -20
+        };
+        if (pointsRef.current[0].x === 0) {
+           for (let i = 0; i < pointsRef.current.length; i++) {
+              pointsRef.current[i].x = anchorPosRef.current.x;
+              pointsRef.current[i].oldx = anchorPosRef.current.x;
+           }
+        }
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Global pointer handlers
+  useEffect(() => {
+
+    const handlePointerMoveWindow = (e: PointerEvent) => {
+      if (!draggedPointRef.current || !canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      pointerRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    };
+
+    const handlePointerUpWindow = () => {
+      if (draggedPointRef.current) {
+        draggedPointRef.current = null;
+        document.body.style.cursor = 'default';
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMoveWindow);
+    window.addEventListener('pointerup', handlePointerUpWindow);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMoveWindow);
+      window.removeEventListener('pointerup', handlePointerUpWindow);
+    };
+  }, []);
+
+  const startCardDrag = (e: React.PointerEvent) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    pointerRef.current = { x: px, y: py };
+    
+    const pts = pointsRef.current;
+    if (pts.length > 0) {
+      draggedPointRef.current = pts[pts.length - 1]; 
+      dragOffsetRef.current = {
+        x: px - draggedPointRef.current.x,
+        y: py - draggedPointRef.current.y
+      };
+      document.body.style.cursor = 'grabbing';
+    }
+  };
+
+  const smoothScrollTo = (id: string) => {
+     const el = document.getElementById(id);
+     if (el && containerRef.current) {
+        containerRef.current.scrollTo({
+           top: el.offsetTop - 80,
+           behavior: 'smooth'
+        });
+        setIsMobileMenuOpen(false);
+     }
   };
 
   return (
     <div 
-      style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
+      ref={containerRef}
+      className="fixed inset-0 z-[100] bg-[#151515] text-slate-100 font-sans selection:bg-white/20 overflow-x-hidden overflow-y-auto"
     >
-      {/* Base Presentation */}
-      <div style={{ userSelect: activeTool === 'draw' ? 'none' : 'auto', width: '100%', height: '100%' }}>
-        {children}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .bg-grid {
+          background-size: 40px 40px;
+          background-image: 
+            linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        html { scroll-behavior: smooth; }
+      `}</style>
+      
+      {/* Background Grid */}
+      <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
+
+      {/* Desktop NAVBAR */}
+      <nav className={`hidden md:block fixed left-1/2 -translate-x-1/2 w-[95%] lg:w-[85%] max-w-[1200px] z-[80] transition-all duration-500 ease-in-out ${isNavVisible ? 'top-14 opacity-100' : '-top-32 opacity-0'}`}>
+        <div className="bg-[#242424]/40 backdrop-blur-xl rounded-full px-8 py-5 flex items-center justify-between shadow-2xl border border-white/10">
+          <div className="font-poppins font-black text-3xl tracking-tighter text-white flex-shrink-0">
+            A.B
+          </div>
+          <div className="flex-1 flex justify-center items-center gap-10 text-[15px] font-semibold text-slate-300 font-poppins">
+            <button onClick={() => smoothScrollTo('home')} className={`transition-all relative ${activeSection === 'home' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'home' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Home</button>
+            <button onClick={() => smoothScrollTo('portofolio')} className={`transition-all relative ${activeSection === 'portofolio' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'portofolio' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Portofolio</button>
+            <button onClick={() => smoothScrollTo('youtube')} className={`transition-all relative ${activeSection === 'youtube' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'youtube' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>YouTube</button>
+            <button onClick={() => smoothScrollTo('kontak')} className={`transition-all relative ${activeSection === 'kontak' ? 'text-white font-bold' : 'hover:text-white'} after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-[2px] after:bg-white after:transition-transform after:origin-center ${activeSection === 'kontak' ? 'after:scale-x-100' : 'after:scale-x-0'}`}>Kontak</button>
+          </div>
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <button onClick={() => window.location.href='/admin'} className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-extrabold font-poppins hover:scale-105 transition-transform shadow-lg flex items-center gap-2 cursor-pointer">
+              Admin Login
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile NAVBAR Buttons */}
+      <nav className={`md:hidden fixed top-6 right-6 z-[110] transition-all duration-500 flex gap-2 ${isNavVisible || isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-20'}`}>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+          className="p-3 bg-[#242424]/80 backdrop-blur-md rounded-full border border-white/10 text-white shadow-xl cursor-pointer"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+
+      </nav>
+      
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
+        <div className={`absolute top-0 right-0 w-64 h-full bg-[#1c1c1c] border-l border-white/10 shadow-2xl transition-transform duration-300 flex flex-col p-6 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`} onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-10">
+            <div className="font-poppins font-black text-2xl text-white">Aris</div>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex flex-col gap-6 text-lg font-medium text-slate-300">
+            <button onClick={() => smoothScrollTo('home')} className={`text-left ${activeSection === 'home' ? 'text-white font-bold' : 'hover:text-white'}`}>Home</button>
+            <button onClick={() => smoothScrollTo('portofolio')} className={`text-left ${activeSection === 'portofolio' ? 'text-white font-bold' : 'hover:text-white'}`}>Portofolio</button>
+            <button onClick={() => smoothScrollTo('youtube')} className={`text-left ${activeSection === 'youtube' ? 'text-white font-bold' : 'hover:text-white'}`}>YouTube</button>
+            <button onClick={() => smoothScrollTo('kontak')} className={`text-left ${activeSection === 'kontak' ? 'text-white font-bold' : 'hover:text-white'}`}>Kontak</button>
+          </div>
+          <div className="mt-auto pb-8">
+            <button onClick={() => window.location.href='/admin'} className="w-full bg-white text-black py-3 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+              Admin Login
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Flashlight Overlay */}
-      {activeTool === 'flashlight' && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998,
-          pointerEvents: 'none',
-          background: `radial-gradient(circle 250px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgba(0,0,0,0.85) 100%)`
-        }} />
-      )}
+      <main className="relative z-10 pt-24 md:pt-40 pb-20 px-4 w-full flex flex-col items-center gap-12 font-poppins">
+         
+         {/* HERO SECTION */}
+         <section id="home" className="w-full max-w-5xl bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 relative flex flex-col md:flex-row overflow-hidden min-h-[700px] md:min-h-[550px] lg:min-h-[640px]">
+            
+            {/* The small top circle anchor indicator */}
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full border-2 border-white/10 items-center justify-center z-20 pointer-events-none hidden lg:flex">
+              <div className="w-1.5 h-1.5 bg-white rounded-full opacity-50" />
+            </div>
 
-      {/* Laser Mouse Overlay */}
-      {activeTool === 'laser' && (
-        <motion.div 
-          animate={{ x: mousePos.x - 10, y: mousePos.y - 10 }}
-          transition={{ type: 'tween', duration: 0 }}
-          style={{
-            position: 'fixed', top: 0, left: 0, zIndex: 9999, pointerEvents: 'none',
-            width: '20px', height: '20px', borderRadius: '50%',
-            background: '#ef4444',
-            boxShadow: '0 0 20px 10px rgba(239, 68, 68, 0.5)'
-          }}
-        />
-      )}
+            {/* LEFT/TOP: Card & Canvas Wrapper */}
+            {/* Kept canvas and card together without parent scale, so coordinates match exactly */}
+            <div className="relative w-full md:w-1/2 h-[450px] sm:h-[550px] md:h-[600px] lg:h-[640px] flex-shrink-0 z-20">
+              
+              {/* Physics Canvas */}
+              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" />
 
-      {/* Drawing Overlay */}
-      {(activeTool === 'draw' || lines.length > 0) && (
-        <svg style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9997, pointerEvents: 'none' }}>
-          <g style={{ transform: `translate(${-scrollOffset.x}px, ${-scrollOffset.y}px)`, transition: 'transform 0.05s linear' }}>
-            {lines.map((line, i) => (
-              <polyline
-                key={i}
-                points={line.points.map(p => `${p.x},${p.y}`).join(' ')}
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ))}
-            {isDrawing && currentLine.length > 0 && (
-              <polyline
-                points={currentLine.map(p => `${p.x},${p.y}`).join(' ')}
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            )}
-          </g>
-        </svg>
-      )}
+              <div 
+                ref={cardRef}
+                className="absolute top-0 left-0 w-[260px] pointer-events-auto cursor-grab active:cursor-grabbing select-none" style={{ transformOrigin: "50% -25px", willChange: "transform" }}
+                onPointerDown={startCardDrag}
+              >
+                 {/* Metal Clip & Ring */}
+                 <div className="absolute -top-[25px] left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                    <div className="w-12 h-5 bg-gradient-to-b from-gray-400 to-gray-600 rounded-sm shadow-md border-b border-gray-700" />
+                    <div className="w-6 h-8 border-[4px] border-gray-300 rounded-full -mt-2 shadow-[0_4px_10px_rgba(0,0,0,0.5)]" />
+                 </div>
 
-      {/* Floating Tools Control */}
-      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.75rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-        <button onClick={() => setActiveTool('none')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'none' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Cursor Normal (0)"><MousePointer2 size={18} /></button>
-        <button onClick={() => setActiveTool('laser')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'laser' ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Laser Pointer (1)"><Target size={18} /></button>
-        <button onClick={() => setActiveTool('flashlight')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'flashlight' ? '#eab308' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Senter / Flashlight (2)"><Lightbulb size={18} /></button>
-        <button onClick={() => setActiveTool('draw')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'draw' ? '#10b981' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Mode Coret / Draw (3)"><Pencil size={18} /></button>
-        {lines.length > 0 && (
-          <button onClick={() => setLines([])} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft: '0.5rem' }} title="Hapus Semua Coretan (C)"><Eraser size={18} /></button>
-        )}
-      </div>
+                 {/* The ID Card Base */}
+                 <div className="w-full aspect-[2/3] rounded-2xl bg-gradient-to-b from-[#f0f0f0] to-[#d4d4d4] shadow-[0_30px_60px_rgba(0,0,0,0.8)] p-3 relative overflow-hidden flex flex-col border border-white/50">
+                    {/* Hole */}
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-2.5 bg-[#111] rounded-full shadow-inner z-10" />
+                    
+                    {/* Photo Area */}
+                    <div className="w-full flex-1 bg-[#1a1a1a] rounded-xl mt-6 relative overflow-hidden border-[3px] border-black/10">
+                       <img src="https://raw.githubusercontent.com/xiroro-ab/bab3-sk-kelas8v2-aris/main/1752495560972.jpg" crossOrigin="anonymous" alt="Profile" className="w-full h-full object-cover object-top" draggable={false} referrerPolicy="no-referrer" />
+                       <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none" />
+                    </div>
+
+                    {/* Bottom Area */}
+                    <div className="h-[90px] w-full relative flex items-center justify-center overflow-hidden">
+                       <div className="relative z-10">
+                          <span className="text-2xl font-black text-black/80 uppercase tracking-tighter text-center leading-none block">Aris<br/>Bermansyah</span>
+                       </div>
+                    </div>
+                    
+                    {/* Glossy Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-50 pointer-events-none" />
+                 </div>
+              </div>
+            </div>
+
+            {/* RIGHT/BOTTOM: Text Content */}
+            <div className="w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-12 md:px-6 lg:pr-12 lg:pl-0 py-8 md:py-0 relative z-20 pointer-events-auto text-center lg:text-left">
+               <h2 className="text-xl sm:text-2xl text-slate-300 mb-2 font-medium">
+                 Halo! Saya <span className="font-bold text-white">Aris</span>
+               </h2>
+               <h1 className="text-3xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white mb-6 leading-[1.1] tracking-tight" style={{ textShadow: "0 10px 30px rgba(0,0,0,0.5)", wordBreak: "break-word" }}>
+                 GURU INFORMATIKA.
+               </h1>
+               <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-10 max-w-md mx-auto lg:mx-0">
+                 Menyukai design, walau tidak paham design. Berbekal antusiasme tinggi untuk terus belajar, mencoba, dan menciptakan karya. Menyelesaikan setiap baris kode dengan insting dan imajinasi. Hanya VIBE CODING.
+               </p>
+               <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                 <button onClick={() => smoothScrollTo('portofolio')} className="flex items-center gap-3 px-6 py-3.5 bg-white text-black font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer">
+                   Portofolio
+                   <div className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
+                     <ArrowDown className="w-4 h-4" />
+                   </div>
+                 </button>
+                 <button onClick={() => window.location.href = '/presentations'} className="flex items-center gap-3 px-6 py-3.5 bg-blue-600 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-xl cursor-pointer border border-white/20">
+                   Lihat Presentasi Guru
+                 </button>
+               </div>
+            </div>
+         </section>
+
+         {/* PORTFOLIO SECTION */}
+         <section id="portofolio" className="w-full max-w-5xl mx-auto flex flex-col gap-6">
+            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center lg:text-left">
+               <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Portofolio & Project</h2>
+               <p className="text-slate-400 mb-10 max-w-2xl mx-auto lg:mx-0 text-sm sm:text-base">
+                 Beberapa project dan karya unggulan yang telah diselesaikan.
+               </p>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[
+                     { icon: Code, title: "Sistem Management Guru", desc: "Aplikasi manajemen data guru berbasis web yang fungsional. Dibangun murni dengan vibe coding.", href: "https://smpn58.vercel.app/" },
+                     { icon: Layout, title: "Aplikasi Ujian CBT Online", desc: "Platform Computer Based Test online untuk pelaksanaan ujian yang stabil. Dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/ujian-online/" },
+                     { icon: Smartphone, title: "Asset Bundle Porter MLBB", desc: "Tools porting asset bundle Unity untuk script MLBB. Berjalan responsif, dibuat dengan vibe coding.", href: "https://huggingface.co/spaces/xiroro/PortingApp/" },
+                     { icon: ExternalLink, title: "Toko Script MLBB", desc: "Toko penjualan online khusus script MLBB. Interface sederhana, dibuat dengan vibe coding.", href: "https://xiroro-ab.github.io/Toko-Online-Script-Mlbb/" },
+                     { icon: Monitor, title: "Website MPI Informatika", desc: "Website Media Pembelajaran Interaktif untuk mata pelajaran INFORMATIKA. Dibuat dengan vibe coding.", href: "https://mpi-informatika.vercel.app/" },
+                     { icon: Smartphone, title: "Aplikasi Ujian CBT Android", desc: "Aplikasi ujian berbasis Android untuk memudahkan siswa ujian dari HP. Dibuat dengan vibe coding.", href: "https://drive.google.com/file/d/1wxOVvhZ8TjchsB59UPlpBzE8GDBqdNwb/view?usp=sharing" }
+                  ].map((item, i) => (
+                     <a key={i} href={item.href} target="_blank" rel="noopener noreferrer" className="block bg-[#1c1c1c] p-8 rounded-3xl border border-white/5 hover:border-white/20 transition-all hover:-translate-y-2 group">
+                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-6 text-white mx-auto lg:mx-0 group-hover:scale-110 transition-transform">
+                          <item.icon className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                        <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                     </a>
+                  ))}
+               </div>
+            </div>
+         </section>
+
+         {/* YOUTUBE SECTION */}
+         <section id="youtube" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-12">
+            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center lg:text-left flex flex-col lg:flex-row items-center gap-12 overflow-hidden">
+               <div className="flex-1">
+                 <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Akun YouTube Ku</h2>
+                 <p className="text-slate-400 mb-8 max-w-xl mx-auto lg:mx-0 text-sm sm:text-base leading-relaxed">
+                   Saya juga aktif membagikan berbagai project, 3D modeling, karya kreatif lainnya, dan eksperimen coding di channel YouTube saya.
+                   Jangan lupa mampir, tonton karya-karyanya, dan berikan dukungan Anda dengan subscribe!
+                 </p>
+                 <a href="https://youtube.com/@Xiroro-3DMODEL" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 hover:scale-105 transition-all shadow-lg shadow-red-600/30">
+                   Kunjungi Channel
+                   <ExternalLink className="w-5 h-5" />
+                 </a>
+               </div>
+               
+               {/* 3D YouTube Screenshot Mobile Mockup */}
+               <div className="w-[260px] sm:w-[320px] flex-shrink-0 flex flex-col group relative z-10"
+                    style={{ perspective: "1200px" }}
+                >
+                  <div className="relative w-full aspect-[9/19.5] transition-transform duration-500 ease-out"
+                       style={{
+                          transform: "rotateY(-25deg) rotateX(10deg) rotateZ(-2deg) scale(1)",
+                          transformStyle: "preserve-3d"
+                       }}
+                       onMouseEnter={(e) => e.currentTarget.style.transform = "rotateY(0deg) rotateX(0deg) rotateZ(0deg) scale(1.05)"}
+                       onMouseLeave={(e) => e.currentTarget.style.transform = "rotateY(-25deg) rotateX(10deg) rotateZ(-2deg) scale(1)"}
+                  >
+                     {/* 3D Thickness Layers (12 layers to simulate 12px depth) */}
+                     {[...Array(12)].map((_, i) => (
+                        <div key={i} className="absolute inset-0 bg-slate-300 border border-slate-400 rounded-[45px]" style={{ transform: `translateZ(-${i + 1}px)` }}></div>
+                     ))}
+                     
+                     {/* Deepest layer for Drop Shadow */}
+                     <div className="absolute inset-0 bg-slate-400 rounded-[45px]" style={{ transform: 'translateZ(-13px)', boxShadow: '-25px 30px 50px rgba(0,0,0,0.8)' }}></div>
+
+                     {/* Physical Buttons (attached to the sides, pushed slightly back in Z) */}
+                     {/* Volume Up */}
+                     <div className="absolute top-[20%] -left-[4px] w-[4px] h-[45px] bg-slate-300 rounded-l-md border-y border-l border-slate-400" style={{ transform: 'translateZ(-6px)' }}></div>
+                     {/* Volume Down */}
+                     <div className="absolute top-[28%] -left-[4px] w-[4px] h-[45px] bg-slate-300 rounded-l-md border-y border-l border-slate-400" style={{ transform: 'translateZ(-6px)' }}></div>
+                     {/* Power Button */}
+                     <div className="absolute top-[25%] -right-[4px] w-[4px] h-[65px] bg-slate-300 rounded-r-md border-y border-r border-slate-400" style={{ transform: 'translateZ(-6px)' }}></div>
+
+                     {/* Front Face (Screen and Bezel) */}
+                     <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-300 to-slate-400 rounded-[45px] p-[3px] sm:p-[4px]" style={{ transform: 'translateZ(0px)', transformStyle: "preserve-3d" }}>
+                         {/* Inner Bezel (Black Bkontak) */}
+                         <div className="relative w-full h-full bg-[#0a0a0a] rounded-[42px] p-[6px] sm:p-[8px] overflow-hidden flex shadow-[inset_0_0_15px_rgba(0,0,0,1)] border border-black" style={{ transform: 'translateZ(1px)' }}>
+                             {/* Dynamic Island / Notch */}
+                             <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-[32%] h-[24px] bg-black rounded-[20px] z-30 shadow-[inset_0_-1px_3px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2">
+                                 {/* Camera lens reflection */}
+                                 <div className="w-2.5 h-2.5 rounded-full bg-[#0f0f2a] shadow-[inset_1px_1px_2px_rgba(255,255,255,0.15)] border border-[#1a1a1a]"></div>
+                                 <div className="w-1.5 h-1.5 rounded-full bg-[#0f0f2a] shadow-[inset_1px_1px_2px_rgba(255,255,255,0.15)]"></div>
+                             </div>
+                             
+                             {/* Screen Content */}
+                             <div className="w-full h-full bg-slate-900 rounded-[34px] overflow-hidden relative z-20">
+                                 <img src="https://raw.githubusercontent.com/xiroro-ab/Toko-Online-Script-Mlbb/main/WhatsApp%20Image%202026-07-15%20at%2023.41.21.jpeg" crossOrigin="anonymous" alt="YouTube Screenshot" className="w-full h-full object-contain bg-[#121212]" referrerPolicy="no-referrer" />
+                                 
+                                 {/* Glossy Screen Reflection */}
+                                 <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 pointer-events-none z-30" />
+                                 {/* Inner Shadow for Screen Depth */}
+                                 <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] pointer-events-none z-30 rounded-[34px]" />
+                             </div>
+                         </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+
+         {/* SOCIAL & CONTACT SECTION */}
+         <section id="kontak" className="w-full max-w-5xl mx-auto flex flex-col gap-6 mb-20">
+            <div className="bg-[#242424] rounded-[40px] shadow-2xl border border-white/5 p-8 sm:p-12 text-center">
+               <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">Mari Terhubung</h2>
+               <p className="text-slate-400 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
+                 Punya ide project seru, butuh script MLBB, atau hanya sekedar ingin berdiskusi? Jangan ragu untuk menghubungi saya melalui kontak di bawah.
+               </p>
+               
+               <div className="flex flex-wrap justify-center gap-4">
+                  {[
+                     { icon: Monitor, label: "Instagram", href: "https://www.instagram.com/aris.bermansyah/" },
+                     { icon: Code, label: "GitHub", href: "https://github.com/xiroro-ab/" },
+                     { icon: Mail, label: "Email", href: "mailto:aris.bermansyah14@gmail.com" },
+                     { icon: ExternalLink, label: "Website", href: "https://xiroro-ab.github.io/Toko-Online-Script-Mlbb/" }
+                  ].map((soc, i) => (
+                     <a key={i} href={soc.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-4 bg-[#1c1c1c] border border-white/5 rounded-full hover:bg-white/10 hover:-translate-y-1 transition-all text-white font-semibold text-sm sm:text-base">
+                        <soc.icon className="w-5 h-5" />
+                        {soc.label}
+                     </a>
+                  ))}
+               </div>
+            </div>
+         </section>
+
+      </main>
     </div>
-  );
-}
-
-// --- MAIN WRAPPER ---
-export default function PresentationViewer() {
-  const [data, setData] = useState<PresentationData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/presentation')
-      .then(res => res.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(e => { console.error(e); setLoading(false); });
-  }, []);
-
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Experience...</div>;
-  if (!data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>Error loading data.</div>;
-
-  const theme = data.theme || 'gaming';
-  return (
-    <PresentationToolsOverlay>
-      {theme === 'gaming' ? <GamingViewer data={data} /> : <FormalViewer data={data} />}
-    </PresentationToolsOverlay>
   );
 }
