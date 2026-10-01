@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+const UPSTASH_URL = "https://splendid-ewe-317847.upstash.io";
+const UPSTASH_TOKEN = "gQAAAAAABNmXAAIgcDJiYmY5MTIwNTIyOWE0MmY5YmMyZTc2MmFiMTM3ODA0Mw";
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -9,30 +12,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Prepare data for Catbox
     const bytes = await file.arrayBuffer();
-    const blob = new Blob([bytes], { type: file.type || 'application/octet-stream' });
+    const buffer = Buffer.from(bytes);
     
-    const catboxFormData = new FormData();
-    catboxFormData.append('reqtype', 'fileupload');
-    catboxFormData.append('fileToUpload', blob, file.name || 'upload.png');
+    // Check size limit (Upstash free tier limit is 1MB, so we limit to 800KB for safety)
+    if (buffer.length > 800000) {
+      return NextResponse.json({ error: 'File too large (Max 800KB)' }, { status: 413 });
+    }
 
-    // Upload to Catbox
-    const res = await fetch('https://catbox.moe/user/api.php', {
+    const base64Image = buffer.toString('base64');
+    const mimeType = file.type || 'image/png';
+    const dataUri = `data:${mimeType};base64,${base64Image}`;
+    
+    const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    const redisKey = `img_${id}`;
+
+    // Save to Upstash Redis
+    const res = await fetch(`${UPSTASH_URL}/set/${redisKey}`, {
       method: 'POST',
-      body: catboxFormData,
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dataUri)
     });
 
     if (!res.ok) {
       const err = await res.text();
-      console.error("Catbox error:", err);
-      return NextResponse.json({ error: `Catbox Error ${res.status}: ${err}` }, { status: 500 });
+      return NextResponse.json({ error: `Redis Error ${res.status}: ${err}` }, { status: 500 });
     }
 
-    // Catbox returns the URL directly as plain text
-    const imageUrl = await res.text();
-
-    return NextResponse.json({ url: imageUrl });
+    // Return the local image route URL
+    return NextResponse.json({ url: `/api/image?id=${redisKey}` });
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Failed to upload image: ' + error.message }, { status: 500 });
