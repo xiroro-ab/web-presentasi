@@ -11,6 +11,32 @@ type Chapter = { id: string; title: string; subtitle?: string; image?: string; s
 type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
 
 const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) => {
+  const UploadButton = ({ label, align }: { label: string, align: 'left' | 'center' | 'right' }) => (
+    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+      {label}
+      <input 
+        type="file" 
+        accept="image/*" 
+        style={{ display: 'none' }} 
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          onUploadStart();
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await res.json();
+            if (result.url) {
+              onUploadSuccess(result.url, align);
+            }
+          } catch (err) {}
+          e.target.value = '';
+        }} 
+      />
+    </label>
+  );
+
   return (
     <div style={{ padding: '0.5rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#f4f4f5', display: 'flex', gap: '0.5rem', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e5e5e5'}`, alignItems: 'center', flexWrap: 'wrap', borderRadius: '8px 8px 0 0' }}>
       <button onClick={() => document.execCommand('bold')} style={{ fontWeight: 'bold', padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>B</button>
@@ -19,28 +45,9 @@ const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) =
       <button onClick={() => document.execCommand('insertUnorderedList')} style={{ padding: '0.4rem 0.8rem', cursor: 'pointer', border: 'none', borderRadius: '4px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', color: isGaming ? '#fff' : '#111' }}>• List</button>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: `1px solid ${isGaming ? 'rgba(255,255,255,0.2)' : '#ccc'}`, paddingLeft: '0.5rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
-          Insert Image
-          <input 
-            type="file" 
-            accept="image/*" 
-            style={{ display: 'none' }} 
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              onUploadStart();
-              const formData = new FormData();
-              formData.append('file', file);
-              try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                const result = await res.json();
-                if (result.url) {
-                  onUploadSuccess(result.url);
-                }
-              } catch (err) {}
-            }} 
-          />
-        </label>
+        <UploadButton label="📷 Gambar (Kiri)" align="left" />
+        <UploadButton label="📷 Gambar (Tengah)" align="center" />
+        <UploadButton label="📷 Gambar (Kanan)" align="right" />
       </div>
     </div>
   );
@@ -295,8 +302,9 @@ export default function AdminPanel() {
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
                             <AdminEditorToolbar 
                               onUploadStart={() => setMessage('Uploading image...')} 
-                              onUploadSuccess={(url: string) => { 
-                                const imgHtml = `<img src="${url}" style="max-width: 100%; max-height: 50vh; object-fit: contain; border-radius: 12px; margin: 1.5rem auto; display: block;" />`;
+                              onUploadSuccess={(url: string, align: string) => { 
+                                const classes = align === 'left' ? 'img-left' : align === 'right' ? 'img-right' : 'img-center';
+                                const imgHtml = `<img src="${url}" class="${classes}" />`;
                                 const newData: any = { ...data };
                                 newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + '<br/>' + imgHtml + '<br/>';
                                 setData(newData);
