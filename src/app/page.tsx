@@ -163,8 +163,12 @@ function SlideContent({ slide, isGaming }: { slide: Slide, isGaming: boolean }) 
         ) : slide.image ? (
           <motion.img initial={{ opacity: 0, scale: 0.9, rotate: -2 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, type: 'spring' }} src={slide.image} alt={slide.title} style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }} />
         ) : slide.embedUrl ? (
-          <div style={{ width: '100%', height: '100%', minHeight: '500px', borderRadius: '24px', overflow: 'hidden', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-            <iframe src={slide.embedUrl} width="100%" height="100%" style={{ border: 'none' }} title={slide.embedTitle || 'Embedded Content'} allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking="true" execution-while-out-of-viewport="true" execution-while-not-rendered="true" web-share="true" allowFullScreen></iframe>
+          <div style={{ width: '100%', maxWidth: '600px', background: isGaming ? 'rgba(255,255,255,0.05)' : '#fff', padding: '3rem', borderRadius: '24px', backdropFilter: 'blur(10px)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 20px 40px rgba(0,0,0,0.1)', textAlign: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', color: textColor, fontWeight: 700, fontSize: '1.5rem' }}>
+              <ExternalLink size={48} color="#3b82f6" />
+              {slide.embedTitle || 'Buka Konten Tambahan'}
+            </div>
+            <button onClick={() => document.dispatchEvent(new CustomEvent('openEmbed', { detail: slide.embedUrl }))} style={{ display: 'inline-flex', marginTop: '2rem', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.2s' }}>Lihat 3D / Buka Frame</button>
           </div>
         ) : null}
       </div>
@@ -661,6 +665,13 @@ export default function PresentationViewer() {
   const [overrideTheme, setOverrideTheme] = useState<'gaming' | 'formal' | null>(null);
   const [isLaserActive, setIsLaserActive] = useState(false);
   const [interactionMode, setInteractionMode] = useState<'none' | 'laser' | 'draw' | 'spotlight' | 'magnify'>('none');
+  const [embedOverlayUrl, setEmbedOverlayUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleOpenEmbed = (e: any) => setEmbedOverlayUrl(e.detail);
+    document.addEventListener('openEmbed', handleOpenEmbed);
+    return () => document.removeEventListener('openEmbed', handleOpenEmbed);
+  }, []);
 
   useEffect(() => {
     fetch('/api/presentation')
@@ -714,6 +725,19 @@ export default function PresentationViewer() {
       {currentTheme === 'gaming' 
         ? <GamingViewer data={data} onToggleTheme={toggleTheme} interactionMode={interactionMode} setInteractionMode={setInteractionMode} /> 
         : <FormalViewer data={data} onToggleTheme={toggleTheme} interactionMode={interactionMode} setInteractionMode={setInteractionMode} />}
+      
+      <AnimatePresence>
+        {embedOverlayUrl && (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
+            <button onClick={() => setEmbedOverlayUrl(null)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '50px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', zIndex: 100000, boxShadow: '0 4px 20px rgba(0,0,0,0.5)', transition: 'transform 0.2s' }} onMouseOver={e=>e.currentTarget.style.transform='scale(1.1)'} onMouseOut={e=>e.currentTarget.style.transform='scale(1)'}>
+              <X size={24} />
+            </button>
+            <div style={{ width: '100%', height: '100%', maxWidth: '1400px', background: '#000', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <iframe src={embedOverlayUrl} width="100%" height="100%" style={{ border: 'none' }} allow="autoplay; fullscreen; xr-spatial-tracking" allowFullScreen></iframe>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
