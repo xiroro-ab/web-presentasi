@@ -423,10 +423,13 @@ export default function AdminPanel() {
                                         newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
                                         setData(newData);
                                         setMessage('Image pasted successfully!');
+                                        setTimeout(() => setMessage(''), 2000);
                                       }
                                     }
-                                  } catch (err) { setMessage('Paste failed'); }
-                                  setTimeout(() => setMessage(''), 2000);
+                                  } catch (err) { 
+                                    setMessage('Paste failed');
+                                    setTimeout(() => setMessage(''), 2000);
+                                  }
                                 }
                               }}
                               onDrop={async (e) => {
@@ -453,10 +456,13 @@ export default function AdminPanel() {
                                         newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
                                         setData(newData);
                                         setMessage('Image dropped successfully!');
+                                        setTimeout(() => setMessage(''), 2000);
                                       }
                                     }
-                                  } catch (err) { setMessage('Drop failed'); }
-                                  setTimeout(() => setMessage(''), 2000);
+                                  } catch (err) { 
+                                    setMessage('Drop failed');
+                                    setTimeout(() => setMessage(''), 2000);
+                                  }
                                 }
                               }}
                               dangerouslySetInnerHTML={{ __html: slide.content }}
