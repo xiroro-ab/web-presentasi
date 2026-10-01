@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, Save, MonitorPlay, Download, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import imageCompression from 'browser-image-compression';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
@@ -29,9 +30,10 @@ const AdminEditorToolbar = ({ onUploadStart, onUploadSuccess, isGaming }: any) =
               const file = e.target.files?.[0];
               if (!file) return;
               onUploadStart();
-              const formData = new FormData();
-              formData.append('file', file);
               try {
+                const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                const formData = new FormData();
+                formData.append('file', compressed);
                 const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 const result = await res.json();
                 if (result.url) {
@@ -299,9 +301,11 @@ export default function AdminPanel() {
                               onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                const formData = new FormData();
-                                formData.append('file', file);
                                 try {
+                                  setMessage('Compressing...');
+                                  const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                  const formData = new FormData();
+                                  formData.append('file', compressed);
                                   setMessage('Uploading...');
                                   const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                   const result = await res.json();
@@ -399,12 +403,14 @@ export default function AdminPanel() {
                                 const file = e.clipboardData.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
                                   e.preventDefault();
-                                  setMessage('Uploading pasted image...');
+                                  setMessage('Compressing pasted image...');
                                   const tempId = 'img-' + Date.now();
                                   const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
                                   document.execCommand('insertHTML', false, placeholder);
-                                  const formData = new FormData(); formData.append('file', file);
                                   try {
+                                    const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                    const formData = new FormData(); formData.append('file', compressed);
+                                    setMessage('Uploading pasted image...');
                                     const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                     const result = await res.json();
                                     if (result.url) {
@@ -427,12 +433,14 @@ export default function AdminPanel() {
                                 const file = e.dataTransfer.files?.[0];
                                 if (file && file.type.startsWith('image/')) {
                                   e.preventDefault();
-                                  setMessage('Uploading dropped image...');
+                                  setMessage('Compressing dropped image...');
                                   const tempId = 'img-' + Date.now();
                                   const placeholder = `<img id="${tempId}" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TG9hZGluZy4uLjwvdGV4dD48L3N2Zz4=" style="opacity: 0.5;" />`;
                                   document.execCommand('insertHTML', false, placeholder);
-                                  const formData = new FormData(); formData.append('file', file);
                                   try {
+                                    const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                    const formData = new FormData(); formData.append('file', compressed);
+                                    setMessage('Uploading dropped image...');
                                     const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                     const result = await res.json();
                                     if (result.url) {

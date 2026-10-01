@@ -6,14 +6,6 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'GANTI_DENGAN_A
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
-
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
