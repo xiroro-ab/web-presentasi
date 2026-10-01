@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Pastikan Anda menaruh ini di file .env.local nantinya
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'GANTI_DENGAN_URL_SUPABASE_ANDA';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'GANTI_DENGAN_ANON_KEY_SUPABASE_ANDA';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
 
 export async function POST(request: Request) {
   try {
