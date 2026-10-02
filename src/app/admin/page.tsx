@@ -69,6 +69,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [globalBg, setGlobalBg] = useState('');
   const [globalBgOpacity, setGlobalBgOpacity] = useState(0.6);
+  const [uploadingChapter, setUploadingChapter] = useState<number | null>(null);
 
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -443,11 +444,13 @@ export default function AdminPanel() {
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Cover Image</label>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <input type="text" value={chap.image || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].image = e.target.value; setData(newData); }} style={{ flex: 1, fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="URL" />
-                          <label style={{ display: 'flex', alignItems: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>
-                            Upload
-                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                          <label style={{ display: 'flex', alignItems: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 1rem', borderRadius: '6px', cursor: uploadingChapter === cIdx ? 'not-allowed' : 'pointer', fontSize: '0.85rem', opacity: uploadingChapter === cIdx ? 0.7 : 1 }}>
+                            {uploadingChapter === cIdx ? 'Mengunggah...' : 'Upload'}
+                            <input type="file" accept="image/*" style={{ display: 'none' }} disabled={uploadingChapter === cIdx} onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (!file) return;
+                              setUploadingChapter(cIdx);
+                              showToast('Mengunggah gambar cover...');
                               try {
                                 const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
                                 const formData = new FormData(); formData.append('file', compressed);
@@ -457,8 +460,14 @@ export default function AdminPanel() {
                                   const newData = { ...data };
                                   newData.chapters[cIdx].image = result.url;
                                   setData(newData);
+                                  showToast('Cover berhasil diunggah!');
                                 }
-                              } catch (err) {}
+                              } catch (err) {
+                                showToast('Gagal mengunggah cover');
+                                console.error(err);
+                              } finally {
+                                setUploadingChapter(null);
+                              }
                             }} />
                           </label>
                         </div>
