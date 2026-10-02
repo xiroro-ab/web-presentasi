@@ -17,6 +17,7 @@ type PresentationData = {
   subject: string;
   title: string;
   theme: 'gaming' | 'formal';
+  transition?: 'slide' | 'fade' | 'zoom';
   chapters: Chapter[];
   content?: any;
 };
@@ -334,8 +335,8 @@ export default function AdminPanel() {
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: '#fff' }}>Konfirmasi</h3>
                 <p style={{ color: '#a1a1aa', marginBottom: '2rem' }}>{confirmAction.message}</p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                  <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>Batal</button>
-                  <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Hapus</button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>Batal</button>
+                  <button onMouseDown={(e) => e.preventDefault()} onClick={() => { setConfirmAction(null); setTimeout(() => confirmAction.onConfirm(), 10); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Hapus</button>
                 </div>
               </motion.div>
             </motion.div>
@@ -415,6 +416,21 @@ export default function AdminPanel() {
               <option value="gaming" style={{ color: '#111' }}>Tema Gelap (Dark Mode)</option>
               <option value="formal" style={{ color: '#111' }}>Tema Terang (Light Mode)</option>
             </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Transisi Slide (Animasi)</label>
+            <select value={data.transition || 'slide'} onChange={(e) => setData({ ...data, transition: e.target.value as 'slide' | 'fade' | 'zoom' })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}>
+              <option value="slide" style={{ color: '#111' }}>Geser (Slide)</option>
+              <option value="fade" style={{ color: '#111' }}>Memudar (Fade)</option>
+              <option value="zoom" style={{ color: '#111' }}>Perbesar (Zoom)</option>
+            </select>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '1rem' }}>
+              <span>Kecerahan Background</span>
+              <span>{Math.round(globalBgOpacity * 100)}%</span>
+            </label>
+            <input type="range" min="0" max="1" step="0.05" value={globalBgOpacity} onChange={(e) => setGlobalBgOpacity(parseFloat(e.target.value))} style={{ width: '100%', cursor: 'pointer', accentColor: '#3b82f6' }} />
           </div>
         </div>
 
@@ -576,8 +592,8 @@ export default function AdminPanel() {
               <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: isGaming ? '#fff' : '#111', fontWeight: 700 }}>Konfirmasi</h3>
               <p style={{ marginBottom: '2rem', color: isGaming ? '#a1a1aa' : '#52525b' }}>{confirmAction.message}</p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
-                <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Lanjutkan</button>
+                <button onMouseDown={(e) => e.preventDefault()} onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
+                <button onMouseDown={(e) => e.preventDefault()} onClick={() => { setConfirmAction(null); setTimeout(() => confirmAction.onConfirm(), 10); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Lanjutkan</button>
               </div>
             </motion.div>
           </motion.div>

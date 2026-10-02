@@ -5,13 +5,12 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User, BarChart as BarChartIcon } from 'lucide-react';
 import Link from 'next/link';
 import { AboutMeModal } from '../../../../AboutMeModal';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { QRCodeSVG } from 'qrcode.react';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
-type PresentationData = { title: string; theme?: 'gaming' | 'formal'; chapters: Chapter[] };
+type PresentationData = { title: string; theme?: 'gaming' | 'formal'; transition?: 'slide' | 'fade' | 'zoom'; chapters: Chapter[] };
 
 const GAMING_IMAGES = [
   'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
@@ -195,9 +194,17 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   };
 
   const gamingSlideVariants: any = {
-    enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.5, type: 'spring', bounce: 0, staggerChildren: 0.1 } },
-    exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.3 } })
+    enter: (dir: number) => {
+      if (data.transition === 'fade') return { opacity: 0 };
+      if (data.transition === 'zoom') return { scale: 0.8, opacity: 0 };
+      return { x: dir > 0 ? 100 : -100, opacity: 0 };
+    },
+    center: { x: 0, scale: 1, opacity: 1, transition: { duration: 0.5, type: 'spring', bounce: 0, staggerChildren: 0.1 } },
+    exit: (dir: number) => {
+      if (data.transition === 'fade') return { opacity: 0, transition: { duration: 0.3 } };
+      if (data.transition === 'zoom') return { scale: 1.1, opacity: 0, transition: { duration: 0.3 } };
+      return { x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.3 } };
+    }
   };
 
   const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
@@ -304,19 +311,23 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
               {/* Chart Section */}
               <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
-                <div style={{ flex: 1, minHeight: '400px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={pollResults} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 24, fontWeight: 700, fill: '#111' }} />
-                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 16, fill: '#71717a' }} />
-                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} />
-                      <Bar dataKey="uv" radius={[8, 8, 0, 0]} animationDuration={1000}>
-                        {pollResults.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#ef4444', '#3b82f6', '#eab308', '#22c55e'][index % 4]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '1rem', height: '300px', borderBottom: '2px solid #e5e5e5', paddingBottom: '1rem' }}>
+                  {pollResults.map((res, i) => {
+                    const maxVotes = Math.max(1, ...pollResults.map(p => p.uv));
+                    const heightPercent = `${(res.uv / maxVotes) * 100}%`;
+                    return (
+                      <div key={res.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end', gap: '1rem' }}>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>{res.uv}</span>
+                        <motion.div 
+                          initial={{ height: 0 }}
+                          animate={{ height: heightPercent }}
+                          transition={{ type: 'spring', bounce: 0.4 }}
+                          style={{ width: '100%', maxWidth: '80px', background: ['#ef4444', '#3b82f6', '#eab308', '#22c55e'][i], borderRadius: '8px 8px 0 0', minHeight: '4px' }}
+                        />
+                        <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#555' }}>{res.name}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             </div>
@@ -538,9 +549,17 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   };
 
   const formalVariants: any = {
-    enter: (dir: number) => ({ y: dir > 0 ? 30 : -30, opacity: 0 }),
-    center: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.1 } },
-    exit: (dir: number) => ({ y: dir < 0 ? 30 : -30, opacity: 0, transition: { duration: 0.3 } })
+    enter: (dir: number) => {
+      if (data.transition === 'fade') return { opacity: 0 };
+      if (data.transition === 'zoom') return { scale: 0.9, opacity: 0 };
+      return { y: dir > 0 ? 30 : -30, opacity: 0 };
+    },
+    center: { y: 0, scale: 1, opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.1 } },
+    exit: (dir: number) => {
+      if (data.transition === 'fade') return { opacity: 0, transition: { duration: 0.3 } };
+      if (data.transition === 'zoom') return { scale: 1.05, opacity: 0, transition: { duration: 0.3 } };
+      return { y: dir < 0 ? 30 : -30, opacity: 0, transition: { duration: 0.3 } };
+    }
   };
 
   const itemVariants: any = { enter: { x: -40, opacity: 0 }, center: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } } };
@@ -647,19 +666,23 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
               {/* Chart Section */}
               <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
-                <div style={{ flex: 1, minHeight: '400px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={pollResults} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 24, fontWeight: 700, fill: '#111' }} />
-                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 16, fill: '#71717a' }} />
-                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} />
-                      <Bar dataKey="uv" radius={[8, 8, 0, 0]} animationDuration={1000}>
-                        {pollResults.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#ef4444', '#3b82f6', '#eab308', '#22c55e'][index % 4]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '1rem', height: '300px', borderBottom: '2px solid #e5e5e5', paddingBottom: '1rem' }}>
+                  {pollResults.map((res, i) => {
+                    const maxVotes = Math.max(1, ...pollResults.map(p => p.uv));
+                    const heightPercent = `${(res.uv / maxVotes) * 100}%`;
+                    return (
+                      <div key={res.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end', gap: '1rem' }}>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>{res.uv}</span>
+                        <motion.div 
+                          initial={{ height: 0 }}
+                          animate={{ height: heightPercent }}
+                          transition={{ type: 'spring', bounce: 0.4 }}
+                          style={{ width: '100%', maxWidth: '80px', background: ['#ef4444', '#3b82f6', '#eab308', '#22c55e'][i], borderRadius: '8px 8px 0 0', minHeight: '4px' }}
+                        />
+                        <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#555' }}>{res.name}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
             </div>
