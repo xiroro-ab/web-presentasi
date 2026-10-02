@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User } from 'lucide-react';
 import Link from 'next/link';
@@ -735,14 +735,13 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
 }
 
 // --- MAIN WRAPPER ---
-export default function PresentationViewer({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function PresentationViewer({ params }: { params: { id: string } }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/presentations/${resolvedParams.id}`)
+    fetch(`/api/presentations/${params.id}`)
       .then(res => res.json())
       .then(d => { 
         if (d && d.content) {
@@ -753,7 +752,7 @@ export default function PresentationViewer({ params }: { params: Promise<{ id: s
         setLoading(false); 
       })
       .catch(e => { console.error(e); setLoading(false); });
-  }, [resolvedParams.id]);
+  }, [params.id]);
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Loading Experience...</div>;
   if (!data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>Error loading data.</div>;

@@ -5,9 +5,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET(request: Request, context: any) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = context.params;
+    const id = params.id;
     const { data, error } = await supabase
       .from('presentations')
       .select('*')
@@ -16,14 +16,15 @@ export async function GET(request: Request, context: any) {
 
     if (error) throw error;
     return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
+  } catch (error: any) {
+    console.error('GET Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch data' }, { status: 500 });
   }
 }
 
-export async function PUT(request: Request, context: any) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = context.params;
+    const id = params.id;
     const data = await request.json();
     const { error } = await supabase
       .from('presentations')
@@ -32,14 +33,15 @@ export async function PUT(request: Request, context: any) {
 
     if (error) throw error;
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to update data' }, { status: 500 });
+  } catch (error: any) {
+    console.error('PUT Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update data' }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, context: any) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { id } = context.params;
+    const id = params.id;
     const { error } = await supabase
       .from('presentations')
       .delete()
@@ -47,7 +49,8 @@ export async function DELETE(request: Request, context: any) {
 
     if (error) throw error;
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete data' }, { status: 500 });
+  } catch (error: any) {
+    console.error('DELETE Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete data' }, { status: 500 });
   }
 }

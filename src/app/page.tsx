@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MonitorPlay, Search, BookOpen, User, PlusCircle } from 'lucide-react';
+import { MonitorPlay, Search, BookOpen, User, PlusCircle, Settings } from 'lucide-react';
+import { AboutMeModal } from '../../AboutMeModal';
 
 type PresentationMeta = {
   id: string;
@@ -18,6 +19,7 @@ export default function CatalogPage() {
   const [presentations, setPresentations] = useState<PresentationMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/presentations')
@@ -39,8 +41,19 @@ export default function CatalogPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: '2rem' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: '2rem', position: 'relative' }}>
+      
+      {/* Floating Configuration Button */}
+      <Link href="/admin" style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+        <Settings size={18} /> Configuration
+      </Link>
+
+      {/* Floating About Me Button */}
+      <button onClick={() => setIsAboutOpen(true)} style={{ position: 'fixed', top: '2rem', right: '14rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+        <User size={18} /> About Me
+      </button>
+
+      <div style={{ maxWidth: '1200px', margin: '0 auto', marginTop: '4rem' }}>
         
         {/* Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -51,11 +64,12 @@ export default function CatalogPage() {
             </h1>
             <p style={{ color: '#a1a1aa', margin: 0, fontSize: '0.95rem' }}>Eksplorasi modul pembelajaran dari berbagai guru.</p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          {/* Sembunyikan tombol header ini jika sudah ada tombol floating */}
+          {/* <div style={{ display: 'flex', gap: '1rem' }}>
             <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <PlusCircle size={18} /> Kelola Presentasi
             </Link>
-          </div>
+          </div> */}
         </header>
 
         {/* Search */}
@@ -117,6 +131,8 @@ export default function CatalogPage() {
           </div>
         )}
       </div>
+      
+      <AboutMeModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </div>
   );
 }
