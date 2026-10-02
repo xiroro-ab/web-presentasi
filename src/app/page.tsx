@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MonitorPlay, Search, BookOpen, User, PlusCircle, Settings, Image as ImageIcon, X, Upload } from 'lucide-react';
 import { AboutMeModal } from '../../AboutMeModal';
-import { saveBackgroundToDB, getBackgroundFromDB, deleteBackgroundFromDB } from '../../lib/indexedDbHelper';
+import { saveBackgroundToDB, getBackgroundFromDB, deleteBackgroundFromDB } from '../lib/indexedDbHelper';
 
 type PresentationMeta = {
   id: string;

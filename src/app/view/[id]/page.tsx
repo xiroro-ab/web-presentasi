@@ -435,7 +435,7 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', color: '#111', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
         <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={onOpenAbout} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: '100px', transition: 'all 0.2s', border: '1px solid rgba(255,255,255,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+          <button onClick={onOpenAbout} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: '100px', transition: 'all 0.2s', border: '1px solid rgba(255,255,255,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
             <User size={16} /> About Me
           </button>
         </div>
