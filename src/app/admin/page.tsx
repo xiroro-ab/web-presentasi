@@ -276,7 +276,7 @@ export default function AdminPanel() {
 
   if (mode === 'list') {
     return (
-      <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
+      <div style={{ height: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
         
         {/* Dynamic Background */}
         {globalBg && isVideoBg && (
@@ -351,7 +351,7 @@ export default function AdminPanel() {
   const isGaming = data.theme === 'gaming';
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflowY: 'auto', background: isGaming ? (globalBg ? '#000' : '#0a0a0c') : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
+    <div style={{ position: 'relative', height: '100vh', overflowY: 'auto', overflowX: 'hidden', background: isGaming ? (globalBg ? '#000' : '#0a0a0c') : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
       
       {/* Dynamic Background for Editor Mode */}
       {isGaming && globalBg && isVideoBg && (
