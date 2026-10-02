@@ -42,14 +42,17 @@ export async function POST(request: Request) {
     newContent[answer] = (newContent[answer] || 0) + 1;
 
     if (existing) {
-      await supabase.from('presentations').update({ content: newContent }).eq('id', existing.id);
+      const { error } = await supabase.from('presentations').update({ content: newContent }).eq('id', existing.id);
+      if (error) { console.error('Supabase Update Error:', error); throw error; }
     } else {
-      await supabase.from('presentations').insert({ title: `POLL_SESSION_${id}`, content: newContent, user_id: 'default_user_id', subject: 'Poll', theme: 'default', chapters: [] });
+      const { error } = await supabase.from('presentations').insert([{ title: `POLL_SESSION_${id}`, content: newContent, teacher_name: 'SYSTEM', subject: 'Poll', theme: 'formal' }]);
+      if (error) { console.error('Supabase Insert Error:', error); throw error; }
     }
 
     return NextResponse.json({ success: true, results: newContent });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to submit vote' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to submit vote' }, { status: 500 });
   }
 }
 
