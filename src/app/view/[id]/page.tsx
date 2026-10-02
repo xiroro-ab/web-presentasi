@@ -10,7 +10,7 @@ import { QRCodeSVG } from 'qrcode.react';
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
-type PresentationData = { title: string; theme?: 'gaming' | 'formal'; transition?: 'slide' | 'fade' | 'zoom'; chapters: Chapter[] };
+type PresentationData = { title: string; theme?: 'gaming' | 'formal'; transition?: 'slide' | 'fade' | 'zoom' | 'flip' | 'drop' | 'blur' | 'rotate'; chapters: Chapter[] };
 
 const GAMING_IMAGES = [
   'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
@@ -196,15 +196,28 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
 
   const gamingSlideVariants: any = {
     enter: (dir: number) => {
-      if (data.transition === 'fade') return { opacity: 0 };
-      if (data.transition === 'zoom') return { scale: 0.8, opacity: 0 };
-      return { x: dir > 0 ? 100 : -100, opacity: 0 };
+      const t = data.transition || 'slide';
+      if (t === 'fade') return { opacity: 0 };
+      if (t === 'zoom') return { scale: 0.5, opacity: 0 };
+      if (t === 'flip') return { rotateY: dir > 0 ? 90 : -90, opacity: 0, perspective: 1200 };
+      if (t === 'drop') return { y: -300, opacity: 0, scale: 0.6 };
+      if (t === 'blur') return { opacity: 0, filter: 'blur(30px)' };
+      if (t === 'rotate') return { rotate: dir > 0 ? 15 : -15, scale: 0.7, opacity: 0 };
+      return { x: dir > 0 ? '80%' : '-80%', opacity: 0 };
     },
-    center: { x: 0, scale: 1, opacity: 1, transition: { duration: 0.5, type: 'spring', bounce: 0, staggerChildren: 0.1 } },
+    center: {
+      x: 0, y: 0, scale: 1, opacity: 1, rotate: 0, rotateY: 0, filter: 'blur(0px)',
+      transition: { duration: 0.6, type: 'spring', bounce: 0.15, staggerChildren: 0.08 }
+    },
     exit: (dir: number) => {
-      if (data.transition === 'fade') return { opacity: 0, transition: { duration: 0.3 } };
-      if (data.transition === 'zoom') return { scale: 1.1, opacity: 0, transition: { duration: 0.3 } };
-      return { x: dir < 0 ? 100 : -100, opacity: 0, transition: { duration: 0.3 } };
+      const t = data.transition || 'slide';
+      if (t === 'fade') return { opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'zoom') return { scale: 1.5, opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'flip') return { rotateY: dir < 0 ? 90 : -90, opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'drop') return { y: 300, opacity: 0, scale: 0.6, transition: { duration: 0.4 } };
+      if (t === 'blur') return { opacity: 0, filter: 'blur(30px)', transition: { duration: 0.4 } };
+      if (t === 'rotate') return { rotate: dir < 0 ? 15 : -15, scale: 0.7, opacity: 0, transition: { duration: 0.4 } };
+      return { x: dir < 0 ? '80%' : '-80%', opacity: 0, transition: { duration: 0.4 } };
     }
   };
 
@@ -561,15 +574,28 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
 
   const formalVariants: any = {
     enter: (dir: number) => {
-      if (data.transition === 'fade') return { opacity: 0 };
-      if (data.transition === 'zoom') return { scale: 0.9, opacity: 0 };
-      return { y: dir > 0 ? 30 : -30, opacity: 0 };
+      const t = data.transition || 'slide';
+      if (t === 'fade') return { opacity: 0 };
+      if (t === 'zoom') return { scale: 0.5, opacity: 0 };
+      if (t === 'flip') return { rotateY: dir > 0 ? 90 : -90, opacity: 0 };
+      if (t === 'drop') return { y: -300, opacity: 0, scale: 0.6 };
+      if (t === 'blur') return { opacity: 0, filter: 'blur(30px)' };
+      if (t === 'rotate') return { rotate: dir > 0 ? 15 : -15, scale: 0.7, opacity: 0 };
+      return { y: dir > 0 ? 200 : -200, opacity: 0 };
     },
-    center: { y: 0, scale: 1, opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.1 } },
+    center: {
+      y: 0, scale: 1, opacity: 1, rotate: 0, rotateY: 0, filter: 'blur(0px)',
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.08 }
+    },
     exit: (dir: number) => {
-      if (data.transition === 'fade') return { opacity: 0, transition: { duration: 0.3 } };
-      if (data.transition === 'zoom') return { scale: 1.05, opacity: 0, transition: { duration: 0.3 } };
-      return { y: dir < 0 ? 30 : -30, opacity: 0, transition: { duration: 0.3 } };
+      const t = data.transition || 'slide';
+      if (t === 'fade') return { opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'zoom') return { scale: 1.5, opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'flip') return { rotateY: dir < 0 ? 90 : -90, opacity: 0, transition: { duration: 0.4 } };
+      if (t === 'drop') return { y: 300, opacity: 0, scale: 0.6, transition: { duration: 0.4 } };
+      if (t === 'blur') return { opacity: 0, filter: 'blur(30px)', transition: { duration: 0.4 } };
+      if (t === 'rotate') return { rotate: dir < 0 ? 15 : -15, scale: 0.7, opacity: 0, transition: { duration: 0.4 } };
+      return { y: dir < 0 ? 200 : -200, opacity: 0, transition: { duration: 0.4 } };
     }
   };
 

@@ -17,7 +17,7 @@ type PresentationData = {
   subject: string;
   title: string;
   theme: 'gaming' | 'formal';
-  transition?: 'slide' | 'fade' | 'zoom';
+  transition?: 'slide' | 'fade' | 'zoom' | 'flip' | 'drop' | 'blur' | 'rotate';
   chapters: Chapter[];
   content?: any;
 };
@@ -420,10 +420,14 @@ export default function AdminPanel() {
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Transisi Slide (Animasi)</label>
-            <select value={data.transition || 'slide'} onChange={(e) => setData({ ...data, transition: e.target.value as 'slide' | 'fade' | 'zoom' })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}>
+            <select value={data.transition || 'slide'} onChange={(e) => setData({ ...data, transition: e.target.value as any })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}>
               <option value="slide" style={{ color: '#111' }}>Geser (Slide)</option>
               <option value="fade" style={{ color: '#111' }}>Memudar (Fade)</option>
               <option value="zoom" style={{ color: '#111' }}>Perbesar (Zoom)</option>
+              <option value="flip" style={{ color: '#111' }}>Balik (Flip 3D)</option>
+              <option value="drop" style={{ color: '#111' }}>Jatuh (Drop)</option>
+              <option value="blur" style={{ color: '#111' }}>Kabur (Blur)</option>
+              <option value="rotate" style={{ color: '#111' }}>Putar (Rotate)</option>
             </select>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
