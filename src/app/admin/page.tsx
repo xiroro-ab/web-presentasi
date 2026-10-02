@@ -135,6 +135,7 @@ export default function AdminPanel() {
           subject: d.subject,
           title: d.title,
           theme: d.theme || 'gaming',
+          transition: d.content?.transition || 'slide',
           chapters: d.content?.chapters || []
         });
         setMode('editor');
@@ -171,7 +172,7 @@ export default function AdminPanel() {
       subject: data.subject,
       title: data.title,
       theme: data.theme,
-      content: { chapters: data.chapters } // Simpan sisanya di JSONB
+      content: { chapters: data.chapters, transition: data.transition || 'slide' }
     };
 
     try {

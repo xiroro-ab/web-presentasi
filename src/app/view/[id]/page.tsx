@@ -945,7 +945,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Floating Tools Control */}
-      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', alignItems: 'center', gap: '0' }}>
+      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '3rem', left: '3rem', zIndex: 10000, display: 'flex', alignItems: 'center', gap: '0' }}>
         <motion.button
           onClick={() => setToolbarOpen(prev => !prev)}
           animate={{ rotate: toolbarOpen ? 180 : 0 }}
@@ -991,7 +991,7 @@ export default function PresentationViewer({ params }: { params: Promise<{ id: s
       .then(res => res.json())
       .then(d => { 
         if (d && d.content) {
-            setData(d.content); 
+            setData({ ...d.content, theme: d.theme || d.content.theme, transition: d.content.transition || 'slide' }); 
         } else {
             setData(d);
         }
