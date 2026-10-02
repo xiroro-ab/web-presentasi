@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, use } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User, BarChart as BarChartIcon } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User, BarChart as BarChartIcon, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { AboutMeModal } from '../../../../AboutMeModal';
 import { QRCodeSVG } from 'qrcode.react';
@@ -821,6 +821,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
   const [currentLine, setCurrentLine] = useState<{x:number, y:number}[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [scrollOffset, setScrollOffset] = useState({ x: 0, y: 0 });
+  const [toolbarOpen, setToolbarOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = (e: Event) => {
@@ -850,6 +851,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
         if (activeTool !== 'none') setActiveTool('none');
       }
       if (e.key === 'c' || e.key === 'C') setLines([]);
+      if (e.key === 't' || e.key === 'T') setToolbarOpen(prev => !prev);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -943,14 +945,35 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Floating Tools Control */}
-      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.75rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-        <button onClick={() => setActiveTool('none')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'none' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Cursor Normal (0)"><MousePointer2 size={18} /></button>
-        <button onClick={() => setActiveTool('laser')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'laser' ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Laser Pointer (1)"><Target size={18} /></button>
-        <button onClick={() => setActiveTool('flashlight')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'flashlight' ? '#eab308' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Senter / Flashlight (2)"><Lightbulb size={18} /></button>
-        <button onClick={() => setActiveTool('draw')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'draw' ? '#10b981' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Mode Coret / Draw (3)"><Pencil size={18} /></button>
-        {lines.length > 0 && (
-          <button onClick={() => setLines([])} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', marginLeft: '0.5rem' }} title="Hapus Semua Coretan (C)"><Eraser size={18} /></button>
-        )}
+      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '2rem', left: '2rem', zIndex: 10000, display: 'flex', alignItems: 'center', gap: '0' }}>
+        <motion.button
+          onClick={() => setToolbarOpen(prev => !prev)}
+          animate={{ rotate: toolbarOpen ? 180 : 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          style={{ width: '44px', height: '44px', borderRadius: '50%', border: 'none', background: activeTool !== 'none' ? (activeTool === 'laser' ? '#ef4444' : activeTool === 'flashlight' ? '#eab308' : '#10b981') : 'rgba(0,0,0,0.6)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', flexShrink: 0, zIndex: 2 }}
+          title="Buka/Tutup Toolbar (T)"
+        >
+          <ChevronRight size={20} />
+        </motion.button>
+        <AnimatePresence>
+          {toolbarOpen && (
+            <motion.div
+              initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+              animate={{ width: 'auto', opacity: 1, marginLeft: '0.5rem' }}
+              exit={{ width: 0, opacity: 0, marginLeft: 0 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              style={{ display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.6)', padding: '0.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}
+            >
+              <button onClick={() => setActiveTool('none')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'none' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }} title="Cursor Normal (0)"><MousePointer2 size={18} /></button>
+              <button onClick={() => setActiveTool('laser')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'laser' ? '#ef4444' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }} title="Laser Pointer (1)"><Target size={18} /></button>
+              <button onClick={() => setActiveTool('flashlight')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'flashlight' ? '#eab308' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }} title="Senter / Flashlight (2)"><Lightbulb size={18} /></button>
+              <button onClick={() => setActiveTool('draw')} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: activeTool === 'draw' ? '#10b981' : 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }} title="Mode Coret / Draw (3)"><Pencil size={18} /></button>
+              {lines.length > 0 && (
+                <button onClick={() => setLines([])} style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0 }} title="Hapus Semua Coretan (C)"><Eraser size={18} /></button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
