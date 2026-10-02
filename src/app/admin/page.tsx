@@ -513,13 +513,14 @@ export default function AdminPanel() {
                               }}
                               onDoubleClick={(e) => {
                                 const target = e.target as HTMLElement;
+                                const editorDiv = e.currentTarget;
                                 if (target.tagName === 'IMG') {
                                   setConfirmAction({
                                     message: 'Hapus gambar ini?',
                                     onConfirm: () => {
                                       target.remove();
                                       const newData = { ...data };
-                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      newData.chapters[cIdx].slides[sIdx].content = editorDiv.innerHTML;
                                       setData(newData);
                                     }
                                   });
