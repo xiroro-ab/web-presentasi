@@ -27,12 +27,19 @@ export default function CatalogPage() {
 
   useEffect(() => {
     const loadBg = async () => {
-      const savedBg = localStorage.getItem('web_presentasi_bg');
-      if (savedBg === 'INDEXEDDB') {
-        const idbBg = await getBackgroundFromDB();
-        if (idbBg) setGlobalBg(idbBg);
-      } else if (savedBg) {
-        setGlobalBg(savedBg);
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data && data.bg) {
+          if (data.bg === 'INDEXEDDB') {
+            const idbBg = await getBackgroundFromDB();
+            if (idbBg) setGlobalBg(idbBg);
+          } else {
+            setGlobalBg(data.bg);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load global bg', e);
       }
     };
     loadBg();
@@ -40,7 +47,7 @@ export default function CatalogPage() {
     fetch('/api/presentations')
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setPresentations(data);
+        if (Array.isArray(data)) setPresentations(data.filter((d: any) => d.title !== 'GLOBAL_SETTINGS'));
         setLoading(false);
       })
       .catch(e => {
@@ -48,6 +55,13 @@ export default function CatalogPage() {
         setLoading(false);
       });
   }, []);
+
+  const convertGithubLink = (url: string) => {
+    if (url.includes('github.com') && url.includes('/blob/')) {
+      return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+    }
+    return url;
+  };
 
   const filtered = presentations.filter(p => 
     p.teacher_name?.toLowerCase().includes(search.toLowerCase()) || 
@@ -207,17 +221,25 @@ export default function CatalogPage() {
               </div>
               
               <div style={{ display: 'flex', gap: '1rem' }}>
-                <button onClick={async () => { setTempBgUrl(''); setGlobalBg(''); localStorage.removeItem('web_presentasi_bg'); await deleteBackgroundFromDB(); setIsBgConfigOpen(false); }} style={{ flex: 1, padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={async () => { 
+                  setTempBgUrl(''); 
+                  setGlobalBg(''); 
+                  await deleteBackgroundFromDB(); 
+                  await fetch('/api/settings', { method: 'POST', body: JSON.stringify({ bg: '' }) });
+                  setIsBgConfigOpen(false); 
+                }} style={{ flex: 1, padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', fontWeight: 600, cursor: 'pointer' }}>
                   Hapus Background
                 </button>
                 <button onClick={async () => { 
+                  const finalUrl = tempBgUrl.startsWith('data:') ? 'INDEXEDDB' : convertGithubLink(tempBgUrl);
+                  
                   if (tempBgUrl.startsWith('data:')) {
-                    localStorage.setItem('web_presentasi_bg', 'INDEXEDDB');
                     await saveBackgroundToDB(tempBgUrl);
-                  } else {
-                    localStorage.setItem('web_presentasi_bg', tempBgUrl);
                   }
-                  setGlobalBg(tempBgUrl); 
+                  
+                  await fetch('/api/settings', { method: 'POST', body: JSON.stringify({ bg: finalUrl }) });
+                  
+                  setGlobalBg(tempBgUrl.startsWith('data:') ? tempBgUrl : finalUrl); 
                   setIsBgConfigOpen(false); 
                 }} style={{ flex: 1, padding: '1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
                   Simpan Perubahan

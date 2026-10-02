@@ -79,7 +79,7 @@ export default function AdminPanel() {
     fetch('/api/presentations')
       .then(res => res.json())
       .then(d => {
-        if (Array.isArray(d)) setPresentations(d);
+        if (Array.isArray(d)) setPresentations(d.filter((p: any) => p.title !== 'GLOBAL_SETTINGS'));
         setLoading(false);
       })
       .catch(e => { console.error(e); setLoading(false); });
@@ -88,12 +88,19 @@ export default function AdminPanel() {
   useEffect(() => {
     loadPresentations();
     const loadBg = async () => {
-      const savedBg = localStorage.getItem('web_presentasi_bg');
-      if (savedBg === 'INDEXEDDB') {
-        const idbBg = await getBackgroundFromDB();
-        if (idbBg) setGlobalBg(idbBg);
-      } else if (savedBg) {
-        setGlobalBg(savedBg);
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data && data.bg) {
+          if (data.bg === 'INDEXEDDB') {
+            const idbBg = await getBackgroundFromDB();
+            if (idbBg) setGlobalBg(idbBg);
+          } else {
+            setGlobalBg(data.bg);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load global bg', e);
       }
     };
     loadBg();
