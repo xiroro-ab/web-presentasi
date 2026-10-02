@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User } from 'lucide-react';
 import Link from 'next/link';
+import { AboutMeModal } from '../../AboutMeModal';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
@@ -731,6 +732,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
 export default function PresentationViewer() {
   const [data, setData] = useState<PresentationData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/presentation')
@@ -746,6 +748,42 @@ export default function PresentationViewer() {
   return (
     <PresentationToolsOverlay>
       {theme === 'gaming' ? <GamingViewer data={data} /> : <FormalViewer data={data} />}
+      
+      {/* About Me Button Floating */}
+      <button 
+        onClick={() => setIsAboutOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '2rem',
+          right: '2rem',
+          zIndex: 9000,
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          color: '#fff',
+          padding: '0.75rem 1.5rem',
+          borderRadius: '100px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontWeight: 600,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        <User size={18} /> About Me
+      </button>
+
+      <AboutMeModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </PresentationToolsOverlay>
   );
 }
