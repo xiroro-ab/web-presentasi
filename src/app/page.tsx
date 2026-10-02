@@ -24,6 +24,8 @@ export default function CatalogPage() {
   const [globalBg, setGlobalBg] = useState('');
   const [isBgConfigOpen, setIsBgConfigOpen] = useState(false);
   const [tempBgUrl, setTempBgUrl] = useState('');
+  const [globalBgOpacity, setGlobalBgOpacity] = useState(0.6);
+  const [tempBgOpacity, setTempBgOpacity] = useState(0.6);
 
   useEffect(() => {
     const loadBg = async () => {
@@ -37,6 +39,10 @@ export default function CatalogPage() {
           } else {
             setGlobalBg(data.bg);
           }
+        }
+        if (data && data.bgOpacity !== undefined) {
+          setGlobalBgOpacity(data.bgOpacity);
+          setTempBgOpacity(data.bgOpacity);
         }
       } catch (e) {
         console.error('Failed to load global bg', e);
@@ -76,18 +82,18 @@ export default function CatalogPage() {
       
       {/* Dynamic Background */}
       {globalBg && isVideoBg && (
-        <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}>
+        <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: globalBgOpacity }}>
           <source src={globalBg} type="video/mp4" />
         </video>
       )}
       {globalBg && !isVideoBg && (
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: 0.6 }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
       )}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
       
       {/* Floating Buttons */}
       <div style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100, display: 'flex', gap: '1rem' }}>
-        <button onClick={() => { setTempBgUrl(globalBg); setIsBgConfigOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+        <button onClick={() => { setTempBgUrl(globalBg); setTempBgOpacity(globalBgOpacity); setIsBgConfigOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
           <ImageIcon size={18} /> Ganti Background
         </button>
         <button onClick={() => setIsAboutOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
@@ -220,6 +226,20 @@ export default function CatalogPage() {
                 </label>
               </div>
               
+              <div style={{ marginBottom: '2rem' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase' }}>
+                  <span>Kecerahan Background</span>
+                  <span>{Math.round(tempBgOpacity * 100)}%</span>
+                </label>
+                <input 
+                  type="range" 
+                  min="0" max="1" step="0.05"
+                  value={tempBgOpacity} 
+                  onChange={(e) => setTempBgOpacity(parseFloat(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: '#3b82f6' }}
+                />
+              </div>
+              
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <button onClick={async () => { 
                   setTempBgUrl(''); 
@@ -237,9 +257,10 @@ export default function CatalogPage() {
                     await saveBackgroundToDB(tempBgUrl);
                   }
                   
-                  await fetch('/api/settings', { method: 'POST', body: JSON.stringify({ bg: finalUrl }) });
+                  await fetch('/api/settings', { method: 'POST', body: JSON.stringify({ bg: finalUrl, bgOpacity: tempBgOpacity }) });
                   
                   setGlobalBg(tempBgUrl.startsWith('data:') ? tempBgUrl : finalUrl); 
+                  setGlobalBgOpacity(tempBgOpacity);
                   setIsBgConfigOpen(false); 
                 }} style={{ flex: 1, padding: '1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
                   Simpan Perubahan

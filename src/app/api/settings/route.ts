@@ -14,7 +14,7 @@ export async function GET() {
       .maybeSingle();
 
     if (error && error.code !== 'PGRST116') throw error; // ignore no rows error
-    return NextResponse.json({ bg: data?.content?.bg || '' });
+    return NextResponse.json({ bg: data?.content?.bg || '', bgOpacity: data?.content?.bgOpacity ?? 0.6 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
   }
@@ -22,17 +22,21 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { bg } = await request.json();
+    const { bg, bgOpacity } = await request.json();
     const { data: existing } = await supabase
       .from('presentations')
-      .select('id')
+      .select('id, content')
       .eq('title', 'GLOBAL_SETTINGS')
       .maybeSingle();
     
     if (existing) {
+      const newContent = { ...existing.content };
+      if (bg !== undefined) newContent.bg = bg;
+      if (bgOpacity !== undefined) newContent.bgOpacity = bgOpacity;
+      
       const { error } = await supabase
         .from('presentations')
-        .update({ content: { bg } })
+        .update({ content: newContent })
         .eq('id', existing.id);
       if (error) throw error;
     } else {

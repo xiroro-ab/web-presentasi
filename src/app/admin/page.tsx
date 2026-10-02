@@ -68,6 +68,7 @@ export default function AdminPanel() {
   const [mode, setMode] = useState<'list' | 'editor'>('list');
   const [loading, setLoading] = useState(true);
   const [globalBg, setGlobalBg] = useState('');
+  const [globalBgOpacity, setGlobalBgOpacity] = useState(0.6);
 
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -98,6 +99,9 @@ export default function AdminPanel() {
           } else {
             setGlobalBg(data.bg);
           }
+        }
+        if (data && data.bgOpacity !== undefined) {
+          setGlobalBgOpacity(data.bgOpacity);
         }
       } catch (e) {
         console.error('Failed to load global bg', e);
@@ -280,12 +284,12 @@ export default function AdminPanel() {
         
         {/* Dynamic Background */}
         {globalBg && isVideoBg && (
-          <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}>
+          <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: globalBgOpacity }}>
             <source src={globalBg} type="video/mp4" />
           </video>
         )}
         {globalBg && !isVideoBg && (
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: 0.6 }} />
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
         )}
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
 
@@ -355,12 +359,12 @@ export default function AdminPanel() {
       
       {/* Dynamic Background for Editor Mode */}
       {isGaming && globalBg && isVideoBg && (
-        <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}>
+        <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: globalBgOpacity }}>
           <source src={globalBg} type="video/mp4" />
         </video>
       )}
       {isGaming && globalBg && !isVideoBg && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: 0.6 }} />
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
       )}
       {isGaming && globalBg && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
@@ -477,12 +481,50 @@ export default function AdminPanel() {
                           <input type="text" value={slide.title} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].title = e.target.value; setData(newData); }} style={{ width: '100%', fontSize: '1.2rem', fontWeight: 600, background: 'transparent', border: 'none', color: isGaming ? '#fff' : '#111', padding: '0 0 1rem 0', outline: 'none' }} placeholder="Slide Title" />
                           
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem' }}>
-                            <AdminEditorToolbar onUploadStart={() => {}} onUploadSuccess={(url: string) => { const newData: any = { ...data }; newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${url}" /><br/>`; setData(newData); }} isGaming={isGaming} />
+                            <AdminEditorToolbar onUploadStart={() => showToast('Mengunggah gambar...')} onUploadSuccess={(url: string) => { const newData: any = { ...data }; newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${url}" /><br/>`; setData(newData); showToast('Gambar berhasil diunggah!'); }} isGaming={isGaming} />
+                            <div style={{ padding: '0.5rem 1rem', background: isGaming ? 'rgba(255,255,255,0.02)' : '#fafafa', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`, fontSize: '0.75rem', color: isGaming ? '#a1a1aa' : '#71717a' }}>
+                              Ketik teks di bawah ini. Bisa <b>Drag & Drop</b> gambar ke area ini. <i>(Klik ganda pada gambar untuk menghapus)</i>
+                            </div>
                             <div 
                               contentEditable suppressContentEditableWarning className="rich-text-content"
                               onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML; setData(newData); }}
                               dangerouslySetInnerHTML={{ __html: slide.content }}
                               style={{ width: '100%', minHeight: '150px', fontSize: '0.95rem', padding: '1rem', outline: 'none' }}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={async (e) => {
+                                e.preventDefault();
+                                const file = e.dataTransfer.files?.[0];
+                                if (!file || !file.type.startsWith('image/')) return;
+                                showToast('Mengunggah gambar...');
+                                try {
+                                  const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                  const formData = new FormData(); formData.append('file', compressed);
+                                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                  const result = await res.json();
+                                  if (result.url) {
+                                    const newData = { ...data };
+                                    newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${result.url}" /><br/>`;
+                                    setData(newData);
+                                    showToast('Gambar berhasil diunggah!');
+                                  }
+                                } catch (err) {
+                                  showToast('Gagal mengunggah gambar');
+                                }
+                              }}
+                              onDoubleClick={(e) => {
+                                const target = e.target as HTMLElement;
+                                if (target.tagName === 'IMG') {
+                                  setConfirmAction({
+                                    message: 'Hapus gambar ini?',
+                                    onConfirm: () => {
+                                      target.remove();
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                    }
+                                  });
+                                }
+                              }}
                             />
                           </div>
 
