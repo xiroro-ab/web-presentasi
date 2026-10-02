@@ -5,6 +5,7 @@ import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2 } f
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
+import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
@@ -66,6 +67,7 @@ export default function AdminPanel() {
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
   const [mode, setMode] = useState<'list' | 'editor'>('list');
   const [loading, setLoading] = useState(true);
+  const [globalBg, setGlobalBg] = useState('');
 
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -85,6 +87,16 @@ export default function AdminPanel() {
 
   useEffect(() => {
     loadPresentations();
+    const loadBg = async () => {
+      const savedBg = localStorage.getItem('web_presentasi_bg');
+      if (savedBg === 'INDEXEDDB') {
+        const idbBg = await getBackgroundFromDB();
+        if (idbBg) setGlobalBg(idbBg);
+      } else if (savedBg) {
+        setGlobalBg(savedBg);
+      }
+    };
+    loadBg();
   }, []);
 
   const handleCreateNew = () => {
@@ -253,33 +265,49 @@ export default function AdminPanel() {
 
   if (loading && mode === 'list') return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0a0a0c', color: '#fff' }}>Loading data...</div>;
 
+  const isVideoBg = globalBg.match(/\.(mp4|webm|ogg)$/i) || globalBg.startsWith('data:video/');
+
   if (mode === 'list') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0a0a0c', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflow: 'hidden' }}>
+        
+        {/* Dynamic Background */}
+        {globalBg && isVideoBg && (
+          <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}>
+            <source src={globalBg} type="video/mp4" />
+          </video>
+        )}
+        {globalBg && !isVideoBg && (
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: 0.6 }} />
+        )}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
+
+        <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
             <div>
-              <Link href="/" style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', display: 'inline-block' }}>&larr; Ke Halaman Utama</Link>
+              <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '1rem' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                <ArrowLeft size={16} /> Ke Halaman Utama
+              </Link>
               <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Kelola Presentasi</h1>
             </div>
-            <button onClick={handleCreateNew} style={{ background: '#fff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={handleCreateNew} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
               <Plus size={18} /> Buat Presentasi Baru
             </button>
           </header>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {presentations.length === 0 ? (
-               <div style={{ textAlign: 'center', padding: '3rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px' }}>Belum ada presentasi di database.</div>
+               <div style={{ textAlign: 'center', padding: '3rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(5px)' }}>Belum ada presentasi di database.</div>
             ) : (
               presentations.map(p => (
-                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{p.title}</h3>
-                    <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject}</p>
+                    <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject} &middot; Mode: {p.theme}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={14}/> Edit</button>
-                    <button onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={14}/> Hapus</button>
+                    <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={14}/> Edit</button>
+                    <button onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={14}/> Hapus</button>
                   </div>
                 </div>
               ))
@@ -289,13 +317,13 @@ export default function AdminPanel() {
         
         <AnimatePresence>
           {confirmAction && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} style={{ background: '#18181b', padding: '2rem', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>Konfirmasi</h3>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} style={{ background: 'rgba(30,30,35,0.9)', padding: '2.5rem', borderRadius: '24px', maxWidth: '400px', width: '90%', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: '#fff' }}>Konfirmasi</h3>
                 <p style={{ color: '#a1a1aa', marginBottom: '2rem' }}>{confirmAction.message}</p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                  <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '0.75rem', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}>Batal</button>
-                  <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '0.75rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Ya, Lanjutkan</button>
+                  <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>Batal</button>
+                  <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Hapus</button>
                 </div>
               </motion.div>
             </motion.div>
@@ -316,26 +344,40 @@ export default function AdminPanel() {
   const isGaming = data.theme === 'gaming';
 
   return (
-    <div style={{ position: 'relative', height: '100vh', overflowY: 'auto', background: isGaming ? '#0a0a0c' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '4rem 2rem' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', overflowY: 'auto', background: isGaming ? (globalBg ? '#000' : '#0a0a0c') : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
+      
+      {/* Dynamic Background for Editor Mode */}
+      {isGaming && globalBg && isVideoBg && (
+        <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: 0.6 }}>
+          <source src={globalBg} type="video/mp4" />
+        </video>
+      )}
+      {isGaming && globalBg && !isVideoBg && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: 0.6 }} />
+      )}
+      {isGaming && globalBg && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
+      )}
+
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '4rem 2rem', position: 'relative', zIndex: 10 }}>
         
         {/* Header Editor */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
           <div>
-            <button onClick={() => { loadPresentations(); setMode('list'); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#a1a1aa' : '#52525b', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' }}>
+            <button onClick={() => { loadPresentations(); setMode('list'); }} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
               <ArrowLeft size={16} /> Kembali ke Daftar
             </button>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Presentation Editor</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? 'rgba(255,255,255,0.1)' : '#e4e4e7', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
               <Download size={16} /> Export
             </button>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? 'rgba(255,255,255,0.1)' : '#e4e4e7', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
               <Upload size={16} /> Import
               <input type="file" accept="application/json" style={{ display: 'none' }} onChange={importData} />
             </label>
-            <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}>
+            <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
@@ -463,20 +505,20 @@ export default function AdminPanel() {
             ))}
           </AnimatePresence>
 
-          <button onClick={addChapter} style={{ padding: '1.5rem', background: isGaming ? 'rgba(59,130,246,0.1)' : '#111', border: `1px solid ${isGaming ? 'rgba(59,130,246,0.3)' : '#111'}`, color: isGaming ? '#60a5fa' : '#fff', borderRadius: '16px', fontWeight: 600, cursor: 'pointer' }}><Plus size={20} /> Create New Chapter</button>
+          <button onClick={addChapter} style={{ padding: '1.5rem', background: isGaming ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.1)', border: `1px solid rgba(59,130,246,0.3)`, color: '#3b82f6', borderRadius: '16px', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', width: '100%', transition: 'all 0.2s' }}><Plus size={20} /> Create New Chapter</button>
         </div>
       </div>
       
       {/* Modals & Toasts */}
       <AnimatePresence>
         {confirmAction && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} style={{ background: isGaming ? '#18181b' : '#fff', padding: '2rem', borderRadius: '16px', maxWidth: '400px', width: '90%', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Konfirmasi</h3>
-              <p style={{ marginBottom: '2rem' }}>{confirmAction.message}</p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} style={{ background: isGaming ? 'rgba(30,30,35,0.9)' : 'rgba(255,255,255,0.9)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: '2.5rem', borderRadius: '24px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: isGaming ? '#fff' : '#111', fontWeight: 700 }}>Konfirmasi</h3>
+              <p style={{ marginBottom: '2rem', color: isGaming ? '#a1a1aa' : '#52525b' }}>{confirmAction.message}</p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', cursor: 'pointer' }}>Batal</button>
-                <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '0.75rem', background: '#ef4444', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Ya</button>
+                <button onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
+                <button onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Lanjutkan</button>
               </div>
             </motion.div>
           </motion.div>

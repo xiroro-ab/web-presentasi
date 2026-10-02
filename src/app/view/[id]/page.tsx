@@ -177,13 +177,17 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
         <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <button onClick={onOpenAbout} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <button onClick={onOpenAbout} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
             <User size={16} /> About Me
           </button>
-          <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            <Settings size={16} /> Configuration
-          </Link>
         </div>
+      )}
+
+      {/* Home Button for GamingViewer */}
+      {activeChapterIndex === null && (
+        <Link href="/" style={{ position: 'absolute', top: '2.5rem', left: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+          <ArrowLeft size={16} /> Beranda
+        </Link>
       )}
 
       {/* Media Embed Modal */}
@@ -431,13 +435,17 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', color: '#111', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
         <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={onOpenAbout} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#555', fontWeight: 500, fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '100px' }}>
+          <button onClick={onOpenAbout} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: '100px', transition: 'all 0.2s', border: '1px solid rgba(255,255,255,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
             <User size={16} /> About Me
           </button>
-          <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#555', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '100px' }}>
-            <Settings size={16} /> Settings
-          </Link>
         </div>
+      )}
+      
+      {/* Home Button */}
+      {activeChapterIndex === null && (
+        <Link href="/" style={{ position: 'absolute', top: '2.5rem', left: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: '100px', transition: 'all 0.2s', border: '1px solid rgba(255,255,255,0.1)' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+          <ArrowLeft size={16} /> Beranda
+        </Link>
       )}
 
       {/* Frame Modal Overlay */}
