@@ -2,9 +2,11 @@
 
 import { useEffect, useState, useRef, use } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Settings, LayoutGrid, CheckCircle, ExternalLink, X, PenTool, MousePointer2, Target, Lightbulb, Pencil, Eraser, User, BarChart as BarChartIcon } from 'lucide-react';
 import Link from 'next/link';
 import { AboutMeModal } from '../../../../AboutMeModal';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { QRCodeSVG } from 'qrcode.react';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
@@ -130,12 +132,35 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
 
-  useEffect(() => { setShowFrame(false); setShowNotes(false); }, [activeSlideIndex]);
+  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); }, [activeSlideIndex]);
+
+  useEffect(() => {
+    if (!showPoll || !activeSlide) return;
+    const fetchPoll = async () => {
+      try {
+        const id = window.location.pathname.split('/').pop();
+        const res = await fetch(`/api/polls?id=${id}_${activeSlide.id}`);
+        const result = await res.json();
+        if (result.results) {
+          setPollResults([
+            { name: 'A', uv: result.results.A || 0 },
+            { name: 'B', uv: result.results.B || 0 },
+            { name: 'C', uv: result.results.C || 0 },
+            { name: 'D', uv: result.results.D || 0 }
+          ]);
+        }
+      } catch (e) {}
+    };
+    fetchPoll();
+    const interval = setInterval(fetchPoll, 2000);
+    return () => clearInterval(interval);
+  }, [showPoll, activeSlide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (showFrame) { if (e.key === 'Escape') setShowFrame(false); return; }
       if (showNotes) { if (e.key === 'Escape') setShowNotes(false); return; }
+      if (showPoll) { if (e.key === 'Escape') setShowPoll(false); return; }
       
       if (activeChapterIndex !== null) {
         if (e.key === 'ArrowRight') nextSlide();
@@ -242,6 +267,59 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
         )}
       </AnimatePresence>
 
+      {/* Interactive Poll Modal */}
+      <AnimatePresence>
+        {showPoll && activeSlide && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Live Polling: {activeSlide.title}</h2>
+              <button onClick={() => setShowPoll(false)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Polling
+              </button>
+            </div>
+            
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+              {/* QR Code Section */}
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Ikut Menjawab!</h3>
+                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
+                  <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6' }}>{window.location.host}/play</b></p>
+                <button onClick={async () => {
+                  if (confirm('Reset semua jawaban di slide ini?')) {
+                    const id = window.location.pathname.split('/').pop();
+                    await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                    setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
+                  }
+                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                  Reset Hasil Polling
+                </button>
+              </motion.div>
+              
+              {/* Chart Section */}
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
+                <div style={{ flex: 1, minHeight: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={pollResults} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 24, fontWeight: 700, fill: '#111' }} />
+                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 16, fill: '#71717a' }} />
+                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} />
+                      <Bar dataKey="uv" radius={[8, 8, 0, 0]} animationDuration={1000}>
+                        {pollResults.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#ef4444', '#3b82f6', '#eab308', '#22c55e'][index % 4]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {activeChapterIndex === null ? (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.8 }} style={{ width: '100%', height: '100%', overflowY: 'auto', scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }} className="hide-scrollbar">
@@ -309,6 +387,10 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
                     </motion.button>
+                    
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }} onClick={() => setShowPoll(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(59,130,246,0.3)'; e.currentTarget.style.color='#93c5fd'}} onMouseOut={e => {e.currentTarget.style.background='rgba(59,130,246,0.15)'; e.currentTarget.style.color='#60a5fa'}}>
+                      <BarChartIcon size={18} /> Buka Polling / Kuis
+                    </motion.button>
                   </motion.div>
 
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
@@ -349,6 +431,11 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
+  const [showPoll, setShowPoll] = useState(false);
+  const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
+    { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
+  ]);
+
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
     if (saved) setSlideNotes(JSON.parse(saved));
@@ -388,12 +475,35 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
 
-  useEffect(() => { setShowFrame(false); setShowNotes(false); }, [activeSlideIndex]);
+  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); }, [activeSlideIndex]);
+
+  useEffect(() => {
+    if (!showPoll || !activeSlide) return;
+    const fetchPoll = async () => {
+      try {
+        const id = window.location.pathname.split('/').pop();
+        const res = await fetch(`/api/polls?id=${id}_${activeSlide.id}`);
+        const result = await res.json();
+        if (result.results) {
+          setPollResults([
+            { name: 'A', uv: result.results.A || 0 },
+            { name: 'B', uv: result.results.B || 0 },
+            { name: 'C', uv: result.results.C || 0 },
+            { name: 'D', uv: result.results.D || 0 }
+          ]);
+        }
+      } catch (e) {}
+    };
+    fetchPoll();
+    const interval = setInterval(fetchPoll, 2000);
+    return () => clearInterval(interval);
+  }, [showPoll, activeSlide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (showFrame) { if (e.key === 'Escape') setShowFrame(false); return; }
       if (showNotes) { if (e.key === 'Escape') setShowNotes(false); return; }
+      if (showPoll) { if (e.key === 'Escape') setShowPoll(false); return; }
 
       if (activeChapterIndex !== null) {
         if (e.key === 'ArrowRight') nextSlide();
@@ -500,6 +610,59 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
         )}
       </AnimatePresence>
 
+      {/* Interactive Poll Modal */}
+      <AnimatePresence>
+        {showPoll && activeSlide && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Live Polling: {activeSlide.title}</h2>
+              <button onClick={() => setShowPoll(false)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Polling
+              </button>
+            </div>
+            
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+              {/* QR Code Section */}
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Ikut Menjawab!</h3>
+                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
+                  <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6' }}>{window.location.host}/play</b></p>
+                <button onClick={async () => {
+                  if (confirm('Reset semua jawaban di slide ini?')) {
+                    const id = window.location.pathname.split('/').pop();
+                    await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                    setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
+                  }
+                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                  Reset Hasil Polling
+                </button>
+              </motion.div>
+              
+              {/* Chart Section */}
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
+                <div style={{ flex: 1, minHeight: '400px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={pollResults} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 24, fontWeight: 700, fill: '#111' }} />
+                      <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 16, fill: '#71717a' }} />
+                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }} />
+                      <Bar dataKey="uv" radius={[8, 8, 0, 0]} animationDuration={1000}>
+                        {pollResults.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#ef4444', '#3b82f6', '#eab308', '#22c55e'][index % 4]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {activeChapterIndex === null ? (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -40 }} transition={{ duration: 0.8 }} style={{ width: '100%', height: '100%', overflowY: 'auto', scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }} className="hide-scrollbar">
@@ -570,6 +733,10 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     
                     <motion.button animate={{ boxShadow: ['0 0 0px rgba(17,17,17,0)', '0 0 15px rgba(17,17,17,0.2)', '0 0 0px rgba(17,17,17,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #e5e5e5', color: '#555', fontSize: '1rem', fontWeight: 500, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#f4f4f5'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
                       <PenTool size={18} /> Buka Papan Catatan
+                    </motion.button>
+                    
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 15px rgba(59,130,246,0.4)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }} onClick={() => setShowPoll(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(59,130,246,0.2)'}} onMouseOut={e => {e.currentTarget.style.background='rgba(59,130,246,0.1)'}}>
+                      <BarChartIcon size={18} /> Buka Polling / Kuis
                     </motion.button>
                   </motion.div>
 
