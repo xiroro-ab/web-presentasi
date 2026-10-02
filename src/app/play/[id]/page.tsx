@@ -1,8 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
 
-export default function StudentPlayPage({ params }: { params: { id: string } }) {
+export default function StudentPlayPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [selected, setSelected] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -16,7 +17,7 @@ export default function StudentPlayPage({ params }: { params: { id: string } }) 
       await fetch('/api/polls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: params.id, answer: ans })
+        body: JSON.stringify({ id: resolvedParams.id, answer: ans })
       });
       setSelected(ans);
       setSubmitted(true);
