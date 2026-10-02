@@ -92,6 +92,10 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
+  const [showPoll, setShowPoll] = useState(false);
+  const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
+    { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
+  ]);
 
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
