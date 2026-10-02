@@ -92,6 +92,7 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [showNotes, setShowNotes] = useState(false);
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
   const [showPoll, setShowPoll] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
@@ -296,16 +297,25 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                 <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
                   <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
                 </div>
-                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6' }}>{window.location.host}/play</b></p>
-                <button onClick={async () => {
-                  if (confirm('Reset semua jawaban di slide ini?')) {
-                    const id = window.location.pathname.split('/').pop();
-                    await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
-                    setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
-                  }
-                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
-                  Reset Hasil Polling
-                </button>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
+                {showResetConfirm ? (
+                  <div style={{ marginTop: 'auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center', margin: 0, fontWeight: 600 }}>Yakin hapus semua polling?</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setShowResetConfirm(false)} style={{ flex: 1, background: '#f4f4f5', color: '#111', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+                      <button onClick={async () => {
+                        const id = window.location.pathname.split('/').pop();
+                        await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                        setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
+                        setShowResetConfirm(false);
+                      }} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Ya, Reset</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                    Reset Hasil Polling
+                  </button>
+                )}
               </motion.div>
               
               {/* Chart Section */}
@@ -447,6 +457,7 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [slideNotes, setSlideNotes] = useState<Record<string, string>>({});
 
   const [showPoll, setShowPoll] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
@@ -651,16 +662,25 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                 <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
                   <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
                 </div>
-                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6' }}>{window.location.host}/play</b></p>
-                <button onClick={async () => {
-                  if (confirm('Reset semua jawaban di slide ini?')) {
-                    const id = window.location.pathname.split('/').pop();
-                    await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
-                    setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
-                  }
-                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
-                  Reset Hasil Polling
-                </button>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
+                {showResetConfirm ? (
+                  <div style={{ marginTop: 'auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p style={{ color: '#ef4444', fontSize: '0.8rem', textAlign: 'center', margin: 0, fontWeight: 600 }}>Yakin hapus semua polling?</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setShowResetConfirm(false)} style={{ flex: 1, background: '#f4f4f5', color: '#111', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+                      <button onClick={async () => {
+                        const id = window.location.pathname.split('/').pop();
+                        await fetch(`/api/polls?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                        setPollResults([{ name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }]);
+                        setShowResetConfirm(false);
+                      }} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Ya, Reset</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                    Reset Hasil Polling
+                  </button>
+                )}
               </motion.div>
               
               {/* Chart Section */}
