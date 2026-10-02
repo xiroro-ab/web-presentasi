@@ -72,7 +72,7 @@ export default function CatalogPage() {
   const isVideoBg = globalBg.match(/\.(mp4|webm|ogg)$/i) || globalBg.startsWith('data:video/');
 
   return (
-    <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: '2rem', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
       
       {/* Dynamic Background */}
       {globalBg && isVideoBg && (

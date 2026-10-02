@@ -276,7 +276,7 @@ export default function AdminPanel() {
 
   if (mode === 'list') {
     return (
-      <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
         
         {/* Dynamic Background */}
         {globalBg && isVideoBg && (
