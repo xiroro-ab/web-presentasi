@@ -81,7 +81,7 @@ function TiltImage({ src }: { src: string }) {
 }
 
 // --- GAMING VIEWER ---
-function GamingViewer({ data }: { data: PresentationData }) {
+function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbout: () => void }) {
   const [activeChapterIndex, setActiveChapterIndex] = useState<number | null>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [direction, setDirection] = useState(1);
@@ -176,7 +176,10 @@ function GamingViewer({ data }: { data: PresentationData }) {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
-        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100 }}>
+        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <button onClick={onOpenAbout} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <User size={16} /> About Me
+          </button>
           <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             <Settings size={16} /> Configuration
           </Link>
@@ -332,7 +335,7 @@ function GamingViewer({ data }: { data: PresentationData }) {
 }
 
 // --- ELEGANT FORMAL VIEWER ---
-function FormalViewer({ data }: { data: PresentationData }) {
+function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbout: () => void }) {
   const [activeChapterIndex, setActiveChapterIndex] = useState<number | null>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [direction, setDirection] = useState(1);
@@ -427,7 +430,10 @@ function FormalViewer({ data }: { data: PresentationData }) {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#fff', color: '#111', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
-        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100 }}>
+        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button onClick={onOpenAbout} style={{ cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#555', fontWeight: 500, fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '100px' }}>
+            <User size={16} /> About Me
+          </button>
           <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#555', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '100px' }}>
             <Settings size={16} /> Settings
           </Link>
@@ -747,41 +753,7 @@ export default function PresentationViewer() {
   const theme = data.theme || 'gaming';
   return (
     <PresentationToolsOverlay>
-      {theme === 'gaming' ? <GamingViewer data={data} /> : <FormalViewer data={data} />}
-      
-      {/* About Me Button Floating */}
-      <button 
-        onClick={() => setIsAboutOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          zIndex: 9000,
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          color: '#fff',
-          padding: '0.75rem 1.5rem',
-          borderRadius: '100px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontWeight: 600,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-          e.currentTarget.style.transform = 'translateY(-2px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
-      >
-        <User size={18} /> About Me
-      </button>
+      {theme === 'gaming' ? <GamingViewer data={data} onOpenAbout={() => setIsAboutOpen(true)} /> : <FormalViewer data={data} onOpenAbout={() => setIsAboutOpen(true)} />}
 
       <AboutMeModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </PresentationToolsOverlay>
