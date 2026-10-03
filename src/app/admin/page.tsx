@@ -296,15 +296,26 @@ export default function AdminPanel() {
       
       if (result.slides && Array.isArray(result.slides)) {
         const newData = { ...data };
-        // Gabungkan slide baru (kuis) ke dalam chapter yang dipilih
-        newData.chapters[cIdx].slides = [...newData.chapters[cIdx].slides, ...result.slides];
-        // Otomatis centang mode kahoot untuk bab ini
-        newData.chapters[cIdx].isKahootMode = true;
-        if (!newData.chapters[cIdx].kahootReadingTime) {
-          newData.chapters[cIdx].kahootReadingTime = 5;
-        }
+        
+        // Buat chapter baru khusus untuk kuis
+        const newQuizChapter = {
+          id: 'c' + Date.now(),
+          title: `Kuis: ${chapter.title}`,
+          subtitle: `Uji Pemahaman`,
+          isKahootMode: true,
+          kahootReadingTime: 5,
+          slides: result.slides,
+          image: chapter.image // salin cover dari chapter asli
+        };
+
+        // Sisipkan chapter kuis ini TEPAT SETELAH chapter saat ini (cIdx)
+        newData.chapters.splice(cIdx + 1, 0, newQuizChapter);
+        
+        // Pastikan chapter asli dikembalikan ke mode presentasi normal (bukan kahoot)
+        newData.chapters[cIdx].isKahootMode = false;
+
         setData(newData);
-        showToast(`Berhasil menambahkan ${result.slides.length} soal kuis!`);
+        showToast(`Berhasil menambahkan Bab Kuis baru dengan ${result.slides.length} soal!`);
       } else {
         showToast('Format balasan AI tidak sesuai');
       }
