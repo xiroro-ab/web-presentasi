@@ -360,7 +360,7 @@ export default function AdminPanel() {
                 <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{p.title}</h3>
-                    <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject} &middot; Mode: {p.theme}</p>
+                    <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={14}/> Edit</button>
@@ -466,13 +466,7 @@ export default function AdminPanel() {
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Judul Modul / Presentasi</label>
             <input type="text" value={data.title} onChange={(e) => setData({ ...data, title: e.target.value })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }} placeholder="Misal: Bab 1 - Pengenalan Internet" />
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Visual Theme</label>
-            <select value={data.theme || 'gaming'} onChange={(e) => setData({ ...data, theme: e.target.value as 'gaming' | 'formal' })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}>
-              <option value="gaming" style={{ color: '#111' }}>Tema Gelap (Dark Mode)</option>
-              <option value="formal" style={{ color: '#111' }}>Tema Terang (Light Mode)</option>
-            </select>
-          </div>
+
           <div>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Transisi Slide (Animasi)</label>
             <select value={data.transition || 'slide'} onChange={(e) => setData({ ...data, transition: e.target.value as any })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }}>
