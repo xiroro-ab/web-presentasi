@@ -79,6 +79,9 @@ export default function AdminPanel() {
   const [aiModel, setAiModel] = useState('gemini-3.8-flash');
   const [aiCustomModel, setAiCustomModel] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showGlobalQuizModal, setShowGlobalQuizModal] = useState(false);
+  const [quizCount, setQuizCount] = useState(10);
+  
   const showToast = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
@@ -246,97 +249,24 @@ export default function AdminPanel() {
     setIsGenerating(false);
   };
 
-  const handleGenerateQuizAI = async (cIdx: number) => {
-    const chapter = data?.chapters[cIdx];
-    if (!chapter) return;
-    
-    // Kumpulkan materi dari slide
-    let contextText = `Topik Bab: ${chapter.title}\n${chapter.subtitle ? `Subtopik: ${chapter.subtitle}\n` : ''}\nMateri:\n`;
-    chapter.slides.forEach((s: any, i: number) => {
-      // Hapus tag HTML dasar untuk konteks
-      const cleanContent = s.content ? s.content.replace(/<[^>]*>?/gm, ' ') : '';
-      if (!s.isQuiz) {
-        contextText += `Slide ${i+1} (${s.title}): ${cleanContent}\n`;
-      }
-    });
-
-    if (contextText.length < 50) {
-      showToast('Materi di bab ini terlalu sedikit untuk digenerate kuisnya.');
-      return;
-    }
-
-    const countStr = window.prompt("Berapa jumlah soal yang ingin di-generate?", "5");
-    if (!countStr) return; // User cancelled
-    
-    const count = parseInt(countStr);
-    if (isNaN(count) || count < 1 || count > 50) {
-      showToast('Jumlah soal tidak valid (minimal 1, maksimal 50).');
-      return;
-    }
-
-    setIsGenerating(true);
-    showToast(`Sedang membuat ${count} soal kuis, mohon tunggu...`);
-    try {
-      const res = await fetch('/api/ai/generate-quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          context: contextText,
-          questionCount: count,
-          customApiKey: aiApiKey,
-          customModel: aiModel === 'custom' ? aiCustomModel : aiModel
-        })
-      });
-      const result = await res.json();
-      if (!res.ok) {
-        showToast(result.error || 'Gagal generate Kuis AI');
-        setIsGenerating(false);
-        return;
-      }
-      
-      if (result.slides && Array.isArray(result.slides)) {
-        const newData = { ...data };
-        
-        // Buat chapter baru khusus untuk kuis
-        const newQuizChapter = {
-          id: 'c' + Date.now(),
-          title: `Kuis: ${chapter.title}`,
-          subtitle: `Uji Pemahaman`,
-          isKahootMode: true,
-          kahootReadingTime: 5,
-          slides: result.slides,
-          image: chapter.image // salin cover dari chapter asli
-        };
-
-        // Sisipkan chapter kuis ini TEPAT SETELAH chapter saat ini (cIdx)
-        newData.chapters.splice(cIdx + 1, 0, newQuizChapter);
-        
-        // Pastikan chapter asli dikembalikan ke mode presentasi normal (bukan kahoot)
-        newData.chapters[cIdx].isKahootMode = false;
-
-        setData(newData);
-        showToast(`Berhasil menambahkan Bab Kuis baru dengan ${result.slides.length} soal!`);
-      } else {
-        showToast('Format balasan AI tidak sesuai');
-      }
-    } catch (e) {
-      showToast('Gagal terhubung ke AI');
-    }
-    setIsGenerating(false);
-  };
-
-  const handleGenerateGlobalQuizAI = async () => {
+  const triggerGlobalQuizModal = () => {
     if (!data || !data.chapters || data.chapters.length === 0) {
       showToast('Tidak ada bab materi untuk di-generate kuisnya.');
       return;
     }
+    setQuizCount(10);
+    setShowGlobalQuizModal(true);
+  };
 
-    // Kumpulkan seluruh materi dari semua chapter yang BUKAN kahoot mode
+  const executeGenerateGlobalQuiz = async () => {
+    setShowGlobalQuizModal(false);
+    if (!data || !data.chapters || data.chapters.length === 0) return;
+
+    // Kumpulkan seluruh materi dari semua chapter (termasuk yang Kahoot mode agar semua konteks terbaca)
     let contextText = `Materi Keseluruhan Presentasi: ${data.title}\n\n`;
     let validContentFound = false;
 
     data.chapters.forEach((chapter, cIdx) => {
-      if (chapter.isKahootMode) return; // Skip chapter kuis yang sudah ada
       contextText += `--- BAB ${cIdx + 1}: ${chapter.title} ---\n`;
       chapter.slides.forEach((s: any, i: number) => {
         const cleanContent = s.content ? s.content.replace(/<[^>]*>?/gm, ' ') : '';
@@ -348,29 +278,25 @@ export default function AdminPanel() {
       contextText += '\n';
     });
 
-    if (!validContentFound || contextText.length < 100) {
+    if (!validContentFound || contextText.length < 50) {
       showToast('Materi presentasi terlalu sedikit untuk digenerate ujian akhirnya.');
       return;
     }
 
-    const countStr = window.prompt("Berapa jumlah soal Ujian Akhir yang ingin di-generate dari SELURUH BAB?", "10");
-    if (!countStr) return;
-    
-    const count = parseInt(countStr);
-    if (isNaN(count) || count < 1 || count > 50) {
+    if (isNaN(quizCount) || quizCount < 1 || quizCount > 50) {
       showToast('Jumlah soal tidak valid (minimal 1, maksimal 50).');
       return;
     }
 
     setIsGenerating(true);
-    showToast(`Sedang menyusun Ujian Akhir dengan ${count} soal, mohon tunggu...`);
+    showToast(`Sedang menyusun Ujian Akhir dengan ${quizCount} soal, mohon tunggu...`);
     try {
       const res = await fetch('/api/ai/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           context: contextText,
-          questionCount: count,
+          questionCount: quizCount,
           customApiKey: aiApiKey,
           customModel: aiModel === 'custom' ? aiCustomModel : aiModel
         })
@@ -605,17 +531,17 @@ export default function AdminPanel() {
         </div>
 
         {/* AI Generator Banner */}
-        <div style={{ background: isGaming ? 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(59,130,246,0.1) 100%)' : 'linear-gradient(135deg, rgba(168,85,247,0.05) 0%, rgba(59,130,246,0.05) 100%)', border: `1px solid ${isGaming ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.3)'}`, borderRadius: '16px', padding: '2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ background: isGaming ? 'rgba(255,255,255,0.03)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: '2rem', borderRadius: '16px', marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111' }}><Sparkles size={20} color="#a855f7" /> AI Auto-Generator</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111' }}><Sparkles size={20} color={isGaming ? '#a1a1aa' : '#52525b'} /> AI Auto-Generator</h2>
             <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Hemat waktu berjam-jam. Biarkan AI merancang seluruh materi presentasi dan ujian Anda.</p>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)', fontSize: '1rem', transition: 'all 0.2s' }}>
-              <Sparkles size={18} /> Generate Materi Sekarang
+            <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '0.9rem', transition: 'all 0.2s' }}>
+              <Sparkles size={16} /> Generate Materi Baru
             </button>
-            <button onClick={handleGenerateGlobalQuizAI} disabled={isGenerating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: isGenerating ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)', fontSize: '1rem', transition: 'all 0.2s', opacity: isGenerating ? 0.7 : 1 }}>
-              <Target size={18} /> Generate Ujian Akhir (Semua Bab)
+            <button onClick={triggerGlobalQuizModal} disabled={isGenerating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '0.9rem', transition: 'all 0.2s', opacity: isGenerating ? 0.7 : 1 }}>
+              <Target size={16} /> Generate Ujian Akhir (Semua Bab)
             </button>
           </div>
         </div>
@@ -719,9 +645,6 @@ export default function AdminPanel() {
                           <input type="checkbox" checked={chap.isKahootMode || false} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].isKahootMode = e.target.checked; if(e.target.checked && !newData.chapters[cIdx].kahootReadingTime) { newData.chapters[cIdx].kahootReadingTime = 5; } setData(newData); }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
                           Jadikan Chapter ini Kuis Kahoot (Interactive Kahoot Mode)
                         </label>
-                        <button onClick={() => handleGenerateQuizAI(cIdx)} disabled={isGenerating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '0.8rem', opacity: isGenerating ? 0.7 : 1 }}>
-                          <Sparkles size={14} /> Generate Kuis AI dari Bab Ini
-                        </button>
                       </div>
                       {chap.isKahootMode && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1124,6 +1047,32 @@ export default function AdminPanel() {
               </div>
               </>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Quiz Modal */}
+      <AnimatePresence>
+        {showGlobalQuizModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ y: 50, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 50, scale: 0.95 }} style={{ width: '90%', maxWidth: '400px', background: isGaming ? 'rgba(30,30,35,0.95)' : '#fff', padding: '2.5rem', borderRadius: '24px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: isGaming ? '#fff' : '#111' }}>Konfirmasi Ujian Akhir</h3>
+                <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Masukkan jumlah soal yang ingin digenerate dari rangkuman semua bab.</p>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Jumlah Soal (Maks: 50)</label>
+                <input type="number" min="1" max="50" value={quizCount} onChange={(e) => setQuizCount(parseInt(e.target.value) || 10)} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button onClick={() => setShowGlobalQuizModal(false)} style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
+                <button onClick={executeGenerateGlobalQuiz} disabled={isGenerating} style={{ flex: 1, padding: '0.75rem', background: '#3b82f6', color: '#fff', borderRadius: '12px', border: 'none', cursor: isGenerating ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: isGenerating ? 0.6 : 1 }}>
+                  Lanjutkan
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
