@@ -82,7 +82,16 @@ export async function POST(request: Request) {
                   const [promptText, queryString] = promptAndQuery.split('?');
                   // Decode dulu jaga-jaga kalau AI sudah nge-encode sebagian, lalu encode ulang sepenuhnya
                   const cleanPrompt = encodeURIComponent(decodeURIComponent(promptText));
-                  slide.image = `${baseUrl}${cleanPrompt}${queryString ? '?' + queryString : ''}`;
+                  
+                  // Pastikan menggunakan backend flux yang lebih stabil
+                  let finalQuery = queryString || '';
+                  if (!finalQuery.includes('model=')) {
+                    finalQuery += (finalQuery ? '&' : '') + 'model=flux';
+                  } else {
+                    finalQuery = finalQuery.replace(/model=[^&]*/, 'model=flux'); // paksa ganti ke flux
+                  }
+                  
+                  slide.image = `${baseUrl}${cleanPrompt}?${finalQuery}`;
                 } catch(e) {} // abaikan jika gagal parsing
               }
             });
