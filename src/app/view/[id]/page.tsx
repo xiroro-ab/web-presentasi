@@ -406,8 +406,15 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1 1 500px', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' }}>
+                      <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
+                    </div>
+                    {activeSlide?.image && (
+                      <div style={{ flex: '1 1 400px' }}>
+                        <img src={activeSlide.image} alt={activeSlide.title} style={{ width: '100%', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      </div>
+                    )}
                   </motion.div>
 
                   {/* Interactive Elements Area */}
@@ -788,8 +795,15 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  <motion.div variants={itemVariants} style={{ fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify', marginBottom: '3rem' }}>
-                    <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1 1 500px', fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify' }}>
+                      <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
+                    </div>
+                    {activeSlide?.image && (
+                      <div style={{ flex: '1 1 400px' }}>
+                        <img src={activeSlide.image} alt={activeSlide.title} style={{ width: '100%', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }} />
+                      </div>
+                    )}
                   </motion.div>
 
                   {/* Interactive Elements Area */}

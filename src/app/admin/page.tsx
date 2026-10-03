@@ -672,7 +672,17 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
+              {isGenerating ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 0', gap: '2rem' }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} style={{ width: '60px', height: '60px', border: '4px solid rgba(59,130,246,0.2)', borderTopColor: '#3b82f6', borderRadius: '50%' }} />
+                  <div style={{ textAlign: 'center' }}>
+                    <h4 style={{ color: isGaming ? '#fff' : '#111', fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 600 }}>Sedang Meracik Materi...</h4>
+                    <p style={{ color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Proses ini membutuhkan waktu beberapa detik tergantung seberapa rumit topik Anda.</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Topik / Perintah Utama (Wajib)</label>
                 <textarea 
                   value={aiPrompt} 
@@ -725,6 +735,8 @@ export default function AdminPanel() {
                   {isGenerating ? 'Sedang Memikirkan...' : '✨ Generate Sekarang'}
                 </button>
               </div>
+              </>
+              )}
             </motion.div>
           </motion.div>
         )}
