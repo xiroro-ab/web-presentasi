@@ -565,6 +565,20 @@ export default function AdminPanel() {
                           </div>
                           <input type="text" value={slide.title} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].title = e.target.value; setData(newData); }} style={{ width: '100%', fontSize: '1.2rem', fontWeight: 600, background: 'transparent', border: 'none', color: isGaming ? '#fff' : '#111', padding: '0 0 1rem 0', outline: 'none' }} placeholder="Slide Title" />
                           
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>URL Gambar Utama Slide</label>
+                            <input 
+                              type="text" 
+                              value={slide.image || ''} 
+                              onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].image = e.target.value; setData(newData); }} 
+                              placeholder="Contoh: https://image.pollinations.ai/prompt/indonesia?width=1200&height=800" 
+                              style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none', fontSize: '0.85rem' }} 
+                            />
+                            {slide.image && (
+                               <a href={slide.image} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: '#3b82f6', marginTop: '0.25rem', display: 'inline-block' }}>Lihat Gambar &rarr;</a>
+                            )}
+                          </div>
+                          
                           <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem' }}>
                             <AdminEditorToolbar onUploadStart={() => showToast('Mengunggah gambar...')} onUploadSuccess={(url: string) => { const newData: any = { ...data }; newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${url}" /><br/>`; setData(newData); showToast('Gambar berhasil diunggah!'); }} isGaming={isGaming} />
                             <div style={{ padding: '0.5rem 1rem', background: isGaming ? 'rgba(255,255,255,0.02)' : '#fafafa', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`, fontSize: '0.75rem', color: isGaming ? '#a1a1aa' : '#71717a' }}>

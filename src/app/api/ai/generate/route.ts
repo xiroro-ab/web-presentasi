@@ -68,6 +68,27 @@ export async function POST(request: Request) {
       const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
       const cleanedText = jsonMatch ? jsonMatch[1].trim() : responseText.trim();
       parsedData = JSON.parse(cleanedText);
+      
+      // Bersihkan dan format URL gambar pollinations agar tidak pecah/rusak akibat spasi atau karakter ilegal
+      if (parsedData && Array.isArray(parsedData.chapters)) {
+        parsedData.chapters.forEach((chapter: any) => {
+          if (Array.isArray(chapter.slides)) {
+            chapter.slides.forEach((slide: any) => {
+              if (slide.image && slide.image.includes('pollinations.ai/prompt/')) {
+                try {
+                  const parts = slide.image.split('pollinations.ai/prompt/');
+                  const baseUrl = parts[0] + 'pollinations.ai/prompt/';
+                  const promptAndQuery = parts[1];
+                  const [promptText, queryString] = promptAndQuery.split('?');
+                  // Decode dulu jaga-jaga kalau AI sudah nge-encode sebagian, lalu encode ulang sepenuhnya
+                  const cleanPrompt = encodeURIComponent(decodeURIComponent(promptText));
+                  slide.image = `${baseUrl}${cleanPrompt}${queryString ? '?' + queryString : ''}`;
+                } catch(e) {} // abaikan jika gagal parsing
+              }
+            });
+          }
+        });
+      }
     } catch (e) {
       console.error('Failed to parse AI output. Raw text:', responseText);
       return NextResponse.json({ error: 'AI mengembalikan format yang tidak valid. Silakan coba lagi.' }, { status: 500 });
