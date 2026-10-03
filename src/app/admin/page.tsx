@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles, Target } from 'lucide-react';
+import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles, Target, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
@@ -81,6 +81,7 @@ export default function AdminPanel() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGlobalQuizModal, setShowGlobalQuizModal] = useState(false);
   const [quizCount, setQuizCount] = useState(10);
+  const [showAiSettings, setShowAiSettings] = useState(false);
   
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -259,7 +260,6 @@ export default function AdminPanel() {
   };
 
   const executeGenerateGlobalQuiz = async () => {
-    setShowGlobalQuizModal(false);
     if (!data || !data.chapters || data.chapters.length === 0) return;
 
     // Kumpulkan seluruh materi dari semua chapter (termasuk yang Kahoot mode agar semua konteks terbaca)
@@ -326,6 +326,7 @@ export default function AdminPanel() {
         newData.chapters.push(newQuizChapter);
         setData(newData);
         showToast(`Berhasil menambahkan Bab Ujian Akhir dengan ${result.slides.length} soal!`);
+        setShowGlobalQuizModal(false);
       } else {
         showToast('Format balasan AI tidak sesuai');
       }
@@ -1002,42 +1003,54 @@ export default function AdminPanel() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>API Key Anda (Opsional)</label>
-                  <input 
-                    type="password" 
-                    value={aiApiKey} 
-                    onChange={(e) => setAiApiKey(e.target.value)} 
-                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} 
-                    placeholder="Kosongkan jika ingin gunakan milik server" 
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
-                  <select 
-                    value={aiModel} 
-                    onChange={(e) => setAiModel(e.target.value)} 
-                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none', marginBottom: '0.5rem' }}
-                  >
-                    <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash (Cepat)</option>
-                    <option value="gemini-3.8-flash" style={{color: '#111'}}>Gemini 3.8 Flash (Paling Baru & Cepat)</option>
-                    <option value="gemini-3-flash-preview" style={{color: '#111'}}>Gemini 3 Flash Preview (Eksperimental)</option>
-                    <option value="gemini-3.1-pro-preview" style={{color: '#111'}}>Gemini 3.1 Pro Preview (Paling Pintar)</option>
-                    <option value="custom" style={{color: '#111'}}>Ketik Manual / Model Lainnya...</option>
-                  </select>
-                  
-                  {aiModel === 'custom' && (
-                    <input 
-                      type="text"
-                      value={aiCustomModel} 
-                      onChange={(e) => setAiCustomModel(e.target.value)} 
-                      style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#fff', border: `1px dashed ${isGaming ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} 
-                      placeholder="Misal: gemini-4.0-pro" 
-                    />
-                  )}
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                <button onClick={() => setShowAiSettings(!showAiSettings)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: isGaming ? '#94a3b8' : '#64748b', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <Settings size={14} /> Pengaturan Model & API (Opsional)
+                </button>
               </div>
+
+              <AnimatePresence>
+                {showAiSettings && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem', padding: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f8fafc', borderRadius: '12px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}` }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>API Key Anda</label>
+                        <input 
+                          type="password" 
+                          value={aiApiKey} 
+                          onChange={(e) => setAiApiKey(e.target.value)} 
+                          style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.4)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none' }} 
+                          placeholder="Kosongkan jika pakai default" 
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
+                        <select 
+                          value={aiModel} 
+                          onChange={(e) => setAiModel(e.target.value)} 
+                          style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.4)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none', marginBottom: '0.5rem' }}
+                        >
+                          <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash</option>
+                          <option value="gemini-3.8-flash" style={{color: '#111'}}>Gemini 3.8 Flash (Paling Cepat)</option>
+                          <option value="gemini-3-flash-preview" style={{color: '#111'}}>Gemini 3 Flash Preview</option>
+                          <option value="gemini-3.1-pro-preview" style={{color: '#111'}}>Gemini 3.1 Pro (Pintar)</option>
+                          <option value="custom" style={{color: '#111'}}>Manual / Lainnya...</option>
+                        </select>
+                        
+                        {aiModel === 'custom' && (
+                          <input 
+                            type="text"
+                            value={aiCustomModel} 
+                            onChange={(e) => setAiCustomModel(e.target.value)} 
+                            style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.5)' : '#fff', border: `1px dashed ${isGaming ? 'rgba(255,255,255,0.3)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none' }} 
+                            placeholder="Misal: gemini-4.0-pro" 
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                 <button onClick={() => setShowAiModal(false)} disabled={isGenerating} style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
@@ -1062,17 +1075,61 @@ export default function AdminPanel() {
                 <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Masukkan jumlah soal yang ingin digenerate dari rangkuman semua bab.</p>
               </div>
 
+              {isGenerating ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', gap: '1.5rem' }}>
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} style={{ width: '50px', height: '50px', border: '4px solid rgba(245,158,11,0.2)', borderTopColor: '#f59e0b', borderRadius: '50%' }} />
+                  <div style={{ textAlign: 'center' }}>
+                    <h4 style={{ color: isGaming ? '#fff' : '#111', fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 600 }}>Sedang Menyusun Ujian...</h4>
+                    <p style={{ color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.85rem', margin: 0 }}>Menganalisis seluruh materi bab Anda.</p>
+                  </div>
+                </div>
+              ) : (
+                <>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Jumlah Soal (Maks: 50)</label>
                 <input type="number" min="1" max="50" value={quizCount} onChange={(e) => setQuizCount(parseInt(e.target.value) || 10)} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }} />
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button onClick={() => setShowAiSettings(!showAiSettings)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: isGaming ? '#94a3b8' : '#64748b', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <Settings size={14} /> Pengaturan Model & API
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {showAiSettings && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1rem', padding: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f8fafc', borderRadius: '12px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}` }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>API Key Anda</label>
+                        <input type="password" value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.4)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none' }} placeholder="Kosongkan jika pakai default" />
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
+                        <select value={aiModel} onChange={(e) => setAiModel(e.target.value)} style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.4)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none', marginBottom: '0.5rem' }}>
+                          <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash</option>
+                          <option value="gemini-3.8-flash" style={{color: '#111'}}>Gemini 3.8 Flash (Paling Cepat)</option>
+                          <option value="gemini-3-flash-preview" style={{color: '#111'}}>Gemini 3 Flash Preview</option>
+                          <option value="gemini-3.1-pro-preview" style={{color: '#111'}}>Gemini 3.1 Pro (Pintar)</option>
+                          <option value="custom" style={{color: '#111'}}>Manual / Lainnya...</option>
+                        </select>
+                        {aiModel === 'custom' && (
+                          <input type="text" value={aiCustomModel} onChange={(e) => setAiCustomModel(e.target.value)} style={{ width: '100%', fontSize: '0.85rem', background: isGaming ? 'rgba(0,0,0,0.5)' : '#fff', border: `1px dashed ${isGaming ? 'rgba(255,255,255,0.3)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.6rem', borderRadius: '6px', outline: 'none' }} placeholder="Misal: gemini-4.0-pro" />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                 <button onClick={() => setShowGlobalQuizModal(false)} style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
                 <button onClick={executeGenerateGlobalQuiz} disabled={isGenerating} style={{ flex: 1, padding: '0.75rem', background: '#3b82f6', color: '#fff', borderRadius: '12px', border: 'none', cursor: isGenerating ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: isGenerating ? 0.6 : 1 }}>
                   Lanjutkan
                 </button>
               </div>
+              </>
+              )}
             </motion.div>
           </motion.div>
         )}

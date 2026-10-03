@@ -259,7 +259,12 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
           <div style={{ background: '#fff', padding: '2rem', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
             <h2 style={{ color: '#111', fontSize: '1.5rem', margin: '0 0 1.5rem 0', fontWeight: 700 }}>Scan untuk Bergabung</h2>
             <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/kahoot/${presentationId}_${chapter.id}`} size={300} />
-            <div style={{ marginTop: '1.5rem', color: '#3b82f6', fontWeight: 700, fontSize: '1.25rem' }}>{presentationId}_{chapter.id}</div>
+            <div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#111' }}>
+              <span style={{ fontSize: '1rem', fontWeight: 600 }}>Atau ketik di browser Anda:</span><br/>
+              <span style={{ color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem', wordBreak: 'break-all' }}>
+                {typeof window !== 'undefined' ? `${window.location.host}/kahoot/${presentationId}_${chapter.id}` : ''}
+              </span>
+            </div>
           </div>
           
           <div style={{ width: '400px' }}>
