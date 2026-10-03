@@ -330,14 +330,14 @@ export default function AdminPanel() {
         
         {/* Dynamic Background */}
         {globalBg && isVideoBg && (
-          <video autoPlay loop muted playsInline style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: globalBgOpacity }}>
+          <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', objectFit: 'cover', zIndex: 0, opacity: globalBgOpacity }}>
             <source src={globalBg} type="video/mp4" />
           </video>
         )}
         {globalBg && !isVideoBg && (
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
         )}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
 
         <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
           <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
