@@ -146,7 +146,7 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', padding: '2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
+    <div style={{ height: '100vh', maxHeight: '100vh', background: '#09090b', color: '#fff', padding: '2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', overflowX: 'hidden' }}>
       <div style={{ width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 1rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa' }}>
           Peserta: <b>{studentName}</b>
