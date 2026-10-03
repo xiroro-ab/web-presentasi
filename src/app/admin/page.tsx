@@ -695,7 +695,7 @@ export default function AdminPanel() {
                               </select>
                               
                               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Durasi Timer (Detik)</label>
-                              <input type="number" min="5" max="300" value={slide.quizTimer || 30} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizTimer = parseInt(e.target.value) || 30; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }} placeholder="Contoh: 30" />
+                              <input type="number" min="5" max="300" value={slide.quizTimer === undefined ? 30 : slide.quizTimer} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizTimer = e.target.value === '' ? ('' as any) : parseInt(e.target.value); setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }} placeholder="Contoh: 30" />
                             </div>
                           )}
                           <div style={{ marginBottom: '1rem' }}>
