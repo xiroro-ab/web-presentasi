@@ -246,6 +246,64 @@ export default function AdminPanel() {
     setIsGenerating(false);
   };
 
+  const handleGenerateQuizAI = async (cIdx: number) => {
+    const chapter = data?.chapters[cIdx];
+    if (!chapter) return;
+    
+    // Kumpulkan materi dari slide
+    let contextText = `Topik Bab: ${chapter.title}\n${chapter.subtitle ? `Subtopik: ${chapter.subtitle}\n` : ''}\nMateri:\n`;
+    chapter.slides.forEach((s: any, i: number) => {
+      // Hapus tag HTML dasar untuk konteks
+      const cleanContent = s.content ? s.content.replace(/<[^>]*>?/gm, ' ') : '';
+      if (!s.isQuiz) {
+        contextText += `Slide ${i+1} (${s.title}): ${cleanContent}\n`;
+      }
+    });
+
+    if (contextText.length < 50) {
+      showToast('Materi di bab ini terlalu sedikit untuk digenerate kuisnya.');
+      return;
+    }
+
+    setIsGenerating(true);
+    showToast('Sedang membuat soal kuis, mohon tunggu...');
+    try {
+      const res = await fetch('/api/ai/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          context: contextText,
+          customApiKey: aiApiKey,
+          customModel: aiModel === 'custom' ? aiCustomModel : aiModel
+        })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result.error || 'Gagal generate Kuis AI');
+        setIsGenerating(false);
+        return;
+      }
+      
+      if (result.slides && Array.isArray(result.slides)) {
+        const newData = { ...data };
+        // Gabungkan slide baru (kuis) ke dalam chapter yang dipilih
+        newData.chapters[cIdx].slides = [...newData.chapters[cIdx].slides, ...result.slides];
+        // Otomatis centang mode kahoot untuk bab ini
+        newData.chapters[cIdx].isKahootMode = true;
+        if (!newData.chapters[cIdx].kahootReadingTime) {
+          newData.chapters[cIdx].kahootReadingTime = 5;
+        }
+        setData(newData);
+        showToast(`Berhasil menambahkan ${result.slides.length} soal kuis!`);
+      } else {
+        showToast('Format balasan AI tidak sesuai');
+      }
+    } catch (e) {
+      showToast('Gagal terhubung ke AI');
+    }
+    setIsGenerating(false);
+  };
+
   const exportData = () => {
     if (!data) return;
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -546,10 +604,15 @@ export default function AdminPanel() {
                     
                     {/* Kahoot Mode Toggle */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: isGaming ? 'rgba(59,130,246,0.05)' : '#f0f9ff', padding: '1rem', borderRadius: '8px', border: `1px solid ${isGaming ? 'rgba(59,130,246,0.2)' : '#bae6fd'}` }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: isGaming ? '#fff' : '#0369a1', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={chap.isKahootMode || false} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].isKahootMode = e.target.checked; if(e.target.checked && !newData.chapters[cIdx].kahootReadingTime) { newData.chapters[cIdx].kahootReadingTime = 5; } setData(newData); }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
-                        Jadikan Chapter ini Kuis Kahoot (Interactive Kahoot Mode)
-                      </label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: isGaming ? '#fff' : '#0369a1', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={chap.isKahootMode || false} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].isKahootMode = e.target.checked; if(e.target.checked && !newData.chapters[cIdx].kahootReadingTime) { newData.chapters[cIdx].kahootReadingTime = 5; } setData(newData); }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                          Jadikan Chapter ini Kuis Kahoot (Interactive Kahoot Mode)
+                        </label>
+                        <button onClick={() => handleGenerateQuizAI(cIdx)} disabled={isGenerating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '0.8rem', opacity: isGenerating ? 0.7 : 1 }}>
+                          <Sparkles size={14} /> Generate Kuis AI dari Bab Ini
+                        </button>
+                      </div>
                       {chap.isKahootMode && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                           <div style={{ flex: 1 }}>
