@@ -75,6 +75,6 @@ export async function POST(request: Request) {
     return NextResponse.json(parsedData);
   } catch (error: any) {
     console.error('AI Generation Error:', error);
-    return NextResponse.json({ error: error.message || 'Gagal generate materi dari AI' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Gagal generate materi dari AI' }, { status: 500 });
   }
 }

@@ -702,7 +702,8 @@ export default function AdminPanel() {
                   >
                     <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash (Cepat)</option>
                     <option value="gemini-3.8-flash" style={{color: '#111'}}>Gemini 3.8 Flash (Paling Baru & Cepat)</option>
-                    <option value="gemini-3-preview" style={{color: '#111'}}>Gemini 3 Preview (Eksperimental)</option>
+                    <option value="gemini-3-flash-preview" style={{color: '#111'}}>Gemini 3 Flash Preview (Eksperimental)</option>
+                    <option value="gemini-3.1-pro-preview" style={{color: '#111'}}>Gemini 3.1 Pro Preview (Paling Pintar)</option>
                     <option value="custom" style={{color: '#111'}}>Ketik Manual / Model Lainnya...</option>
                   </select>
                   
