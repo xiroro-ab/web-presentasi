@@ -320,7 +320,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
   // Reading, Answering, Result phase
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100vw', height: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
         <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>Pertanyaan {kahootSlides.findIndex((s: any) => s.id === activeSlide.id) + 1} / {kahootSlides.length}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
@@ -331,7 +331,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minHeight: 0 }}>
         
         <div style={{ width: '100%', maxWidth: '1200px', height: '25vh', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0' }}>
           <AutoResizeText 
@@ -365,7 +365,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
                 <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
                   <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
                   <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center' }}>
-                    <AutoResizeText text={text} maxFontSize={40} minFontSize={16} align="left" />
+                    <AutoResizeText text={text} maxFontSize={40} minFontSize={10} align="left" />
                   </div>
                   
                   {kahootState === 'result' && isCorrect && (
