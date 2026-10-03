@@ -4,11 +4,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { context, customApiKey, customModel } = body;
+    const { context, questionCount, customApiKey, customModel } = body;
 
     if (!context) {
       return NextResponse.json({ error: 'Context is required' }, { status: 400 });
     }
+
+    const count = questionCount || 5; // Default ke 5 jika tidak ada
 
     // Gunakan custom API key jika ada, jika tidak gunakan dari server (env)
     const apiKey = customApiKey || process.env.GEMINI_API_KEY;
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
 
     const systemPrompt = `
       Anda adalah pembuat soal kuis Kahoot profesional.
-      Tugas Anda adalah membaca materi presentasi yang diberikan, lalu membuat 3-5 pertanyaan pilihan ganda yang menarik, edukatif, dan menguji pemahaman audiens terhadap materi tersebut.
+      Tugas Anda adalah membaca materi presentasi yang diberikan, lalu membuat tepat ${count} pertanyaan pilihan ganda yang menarik, edukatif, dan menguji pemahaman audiens terhadap materi tersebut.
       
       Struktur yang HARUS Anda kembalikan adalah format JSON MURNI (tanpa markdown \`\`\`json) berupa array objek slide kuis, dengan skema berikut:
       [
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
 
       PERATURAN PENTING:
       1. Hasil HARUS BERUPA ARRAY JSON MURNI. Anda Boleh membungkusnya dalam markdown \`\`\`json.
-      2. Buat tepat 3 hingga 5 pertanyaan kuis berdasarkan materi.
+      2. Buat TEPAT ${count} pertanyaan kuis berdasarkan materi. JANGAN KURANG DAN JANGAN LEBIH!
       3. Kunci jawaban (quizCorrectAnswer) HARUS benar dan sesuai materi, gunakan HANYA huruf "A", "B", "C", atau "D".
       4. Gunakan bahasa Indonesia yang baik dan benar.
       5. Jangan tambahkan penjelasan apapun di luar JSON.

@@ -265,14 +265,24 @@ export default function AdminPanel() {
       return;
     }
 
+    const countStr = window.prompt("Berapa jumlah soal yang ingin di-generate?", "5");
+    if (!countStr) return; // User cancelled
+    
+    const count = parseInt(countStr);
+    if (isNaN(count) || count < 1 || count > 50) {
+      showToast('Jumlah soal tidak valid (minimal 1, maksimal 50).');
+      return;
+    }
+
     setIsGenerating(true);
-    showToast('Sedang membuat soal kuis, mohon tunggu...');
+    showToast(`Sedang membuat ${count} soal kuis, mohon tunggu...`);
     try {
       const res = await fetch('/api/ai/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           context: contextText,
+          questionCount: count,
           customApiKey: aiApiKey,
           customModel: aiModel === 'custom' ? aiCustomModel : aiModel
         })
