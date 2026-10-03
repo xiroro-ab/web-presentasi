@@ -55,6 +55,13 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   
   const channelRef = useRef<any>(null);
   const timerRef = useRef<any>(null);
+  const stateRef = useRef(kahootState);
+  const slideIndexRef = useRef(activeSlideIndex);
+
+  useEffect(() => {
+    stateRef.current = kahootState;
+    slideIndexRef.current = activeSlideIndex;
+  }, [kahootState, activeSlideIndex]);
 
   const activeSlide = chapter.slides[activeSlideIndex];
   const kahootSlides = chapter.slides.filter((s: any) => s.isQuiz);
@@ -84,10 +91,10 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
         });
       })
       .on('broadcast', { event: 'request_state' }, () => {
-        broadcastState(kahootState, activeSlideIndex);
+        broadcastState(stateRef.current, slideIndexRef.current);
       })
       .on('broadcast', { event: 'submit_answer' }, ({ payload }) => {
-        if (kahootState === 'answering') {
+        if (stateRef.current === 'answering') {
           setCurrentAnswers(prev => ({
             ...prev,
             [payload.id]: { answer: payload.answer, timeTaken: payload.timeTaken }
