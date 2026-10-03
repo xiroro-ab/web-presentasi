@@ -594,6 +594,11 @@ export default function AdminPanel() {
                                 e.preventDefault();
                                 const file = e.dataTransfer.files?.[0];
                                 if (!file || !file.type.startsWith('image/')) return;
+                                
+                                let savedRange: Range | null = null;
+                                const sel = window.getSelection();
+                                if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0);
+
                                 showToast('Mengunggah gambar...');
                                 try {
                                   const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
@@ -601,9 +606,58 @@ export default function AdminPanel() {
                                   const res = await fetch('/api/upload', { method: 'POST', body: formData });
                                   const result = await res.json();
                                   if (result.url) {
-                                    const newData = { ...data };
-                                    newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${result.url}" /><br/>`;
-                                    setData(newData);
+                                    if (savedRange) {
+                                      sel?.removeAllRanges();
+                                      sel?.addRange(savedRange);
+                                      document.execCommand('insertHTML', false, `<br/><img src="${result.url}" /><br/>`);
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                    } else {
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${result.url}" /><br/>`;
+                                      setData(newData);
+                                    }
+                                    showToast('Gambar berhasil diunggah!');
+                                  }
+                                } catch (err) {
+                                  showToast('Gagal mengunggah gambar');
+                                }
+                              }}
+                              onPaste={async (e) => {
+                                const items = e.clipboardData?.items;
+                                if (!items) return;
+                                const imageItem = Array.from(items).find(item => item.type.startsWith('image/'));
+                                if (!imageItem) return;
+                                
+                                const file = imageItem.getAsFile();
+                                if (!file) return;
+
+                                e.preventDefault();
+                                
+                                let savedRange: Range | null = null;
+                                const sel = window.getSelection();
+                                if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0);
+
+                                showToast('Mengunggah gambar...');
+                                try {
+                                  const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                  const formData = new FormData(); formData.append('file', compressed);
+                                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                  const result = await res.json();
+                                  if (result.url) {
+                                    if (savedRange) {
+                                      sel?.removeAllRanges();
+                                      sel?.addRange(savedRange);
+                                      document.execCommand('insertHTML', false, `<br/><img src="${result.url}" /><br/>`);
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = e.currentTarget.innerHTML;
+                                      setData(newData);
+                                    } else {
+                                      const newData = { ...data };
+                                      newData.chapters[cIdx].slides[sIdx].content = (newData.chapters[cIdx].slides[sIdx].content || '') + `<br/><img src="${result.url}" /><br/>`;
+                                      setData(newData);
+                                    }
                                     showToast('Gambar berhasil diunggah!');
                                   }
                                 } catch (err) {
