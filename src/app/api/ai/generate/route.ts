@@ -48,8 +48,9 @@ export async function POST(request: Request) {
       PERATURAN PENTING:
       1. Hasil HARUS BERUPA OBJEK JSON MURNI. Anda Boleh membungkusnya dalam markdown \`\`\`json.
       2. Buat materi selengkap mungkin, 3-5 chapter, masing-masing 3-6 slide.
-      3. Gunakan bahasa Indonesia yang baik, benar, dan edukatif (kecuali topik meminta bahasa lain).
-      4. Untuk properti "image", JIKA materi slide tersebut sangat terbantu dengan gambar, hasilkan prompt bahasa Inggris yang deskriptif untuk gambar tersebut dan format menjadi URL pollinations.ai (misal: https://image.pollinations.ai/prompt/astronaut%20walking%20on%20mars?width=1200&height=800&nologo=true). Biarkan kosong/undefined jika tidak butuh gambar.
+      3. Gunakan bahasa Indonesia yang baik, benar, dan edukatif.
+      4. KONTEN INTERAKTIF: Pada properti "content", WAJIB gunakan elemen HTML kaya untuk membuatnya menarik. Gunakan kombinasi <p>, <ul>, <ol>, <li>, <strong>, <blockquote> (untuk kutipan), dan <a href="..." target="_blank"> (untuk memberikan link sumber/referensi eksternal yang relevan).
+      5. VISUALISASI GAMBAR: Pada properti "image", Anda WAJIB memberikan gambar minimal pada 80% slide Anda. Hasilkan prompt gambar yang sangat spesifik dan deskriptif dalam BAHASA INGGRIS, lalu format menjadi URL pollinations.ai. Contoh yang benar: https://image.pollinations.ai/prompt/a%20beautiful%20futuristic%20classroom%20with%20holograms?width=1200&height=800&nologo=true
     `;
 
     const result = await model.generateContent({
