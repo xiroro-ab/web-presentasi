@@ -441,14 +441,14 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               const isFaded = kahootState === 'result' && !isCorrect;
 
               return (
-                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
+                <motion.div key={opt} style={{ position: 'relative', background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
                   <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
                   <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center' }}>
                     <AutoResizeText text={text} maxFontSize={40} minFontSize={10} align="left" />
                   </div>
                   
                   {kahootState === 'result' && isCorrect && (
-                    <div style={{ marginLeft: '1rem', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: 'clamp(0.8rem, 1.2vw, 1.5rem)', flexShrink: 0, whiteSpace: 'nowrap' }}>✓ BENAR</div>
+                    <div style={{ position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: 'clamp(0.8rem, 1.2vw, 1.5rem)', flexShrink: 0, whiteSpace: 'nowrap', backdropFilter: 'blur(4px)' }}>✓ BENAR</div>
                   )}
                 </motion.div>
               );
@@ -458,13 +458,14 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
       </div>
 
-      {kahootState === 'result' && (
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'flex-end', background: '#fff', borderTop: '1px solid #e2e8f0' }}>
+      {/* Footer Area Reserved Space */}
+      <div style={{ height: '90px', padding: '0 2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: kahootState === 'result' ? '#fff' : 'transparent', borderTop: kahootState === 'result' ? '1px solid #e2e8f0' : '1px solid transparent', flexShrink: 0, transition: 'all 0.3s' }}>
+        {kahootState === 'result' && (
           <button onClick={showInterimLeaderboard} style={{ background: '#2563eb', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             Lihat Klasemen <ArrowRight size={24} />
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
