@@ -257,37 +257,68 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   }
 
   if (kahootState === 'podium') {
-    const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 3);
-    return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)' }}>
-        <h1 style={{ fontSize: '4rem', fontWeight: 900, marginBottom: '4rem', color: '#eab308' }}><Trophy size={64} style={{ display: 'inline', verticalAlign: 'middle' }} /> PODIUM JUARA</h1>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2rem', height: '300px' }}>
-          {leaderboard[1] && (
-            <motion.div initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} style={{ width: '200px', height: '200px', background: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
-              <div style={{ fontSize: '3rem' }}>{leaderboard[1].avatar}</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{leaderboard[1].name}</div>
-              <div style={{ color: '#334155', fontWeight: 600 }}>{leaderboard[1].score} pts</div>
-              <div style={{ fontSize: '4rem', fontWeight: 900, color: '#cbd5e1', marginTop: 'auto' }}>2</div>
-            </motion.div>
-          )}
-          {leaderboard[0] && (
-            <motion.div initial={{ y: 300, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} style={{ width: '220px', height: '300px', background: '#eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0', boxShadow: '0 0 50px rgba(234, 179, 8, 0.4)' }}>
-              <div style={{ fontSize: '3rem' }}>{leaderboard[0].avatar}</div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{leaderboard[0].name}</div>
-              <div style={{ color: '#713f12', fontWeight: 700 }}>{leaderboard[0].score} pts</div>
-              <div style={{ fontSize: '5rem', fontWeight: 900, color: '#fef08a', marginTop: 'auto' }}>1</div>
-            </motion.div>
-          )}
-          {leaderboard[2] && (
-            <motion.div initial={{ y: 150, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }} style={{ width: '200px', height: '150px', background: '#b45309', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
-              <div style={{ fontSize: '3rem' }}>{leaderboard[2].avatar}</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{leaderboard[2].name}</div>
-              <div style={{ color: '#fde68a', fontWeight: 600 }}>{leaderboard[2].score} pts</div>
-              <div style={{ fontSize: '3rem', fontWeight: 900, color: '#d97706', marginTop: 'auto' }}>3</div>
-            </motion.div>
-          )}
+    const leaderboardAll = Object.values(players).sort((a, b) => b.score - a.score);
+    const podium = leaderboardAll.slice(0, 3);
+    const runnersUp = leaderboardAll.slice(3, 10).map((p, i) => ({ ...p, rank: i + 4 }));
+    
+    const leftRunners = runnersUp.filter((_, i) => i % 2 === 0);
+    const rightRunners = runnersUp.filter((_, i) => i % 2 !== 0);
+
+    const renderRunnerUp = (p: any, isLeft: boolean, index: number) => (
+      <motion.div key={p.id} initial={{ opacity: 0, x: isLeft ? -50 : 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.5 + (index * 0.2) }} style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '300px' }}>
+        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#94a3b8' }}>#{p.rank}</div>
+        <div style={{ fontSize: '1.5rem' }}>{p.avatar}</div>
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+          <div style={{ fontSize: '1rem', color: '#cbd5e1' }}>{p.score} pts</div>
         </div>
-        <button onClick={onExit} style={{ marginTop: '4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Selesai</button>
+      </motion.div>
+    );
+
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', overflow: 'hidden' }}>
+        <h1 style={{ fontSize: '4rem', fontWeight: 900, marginBottom: '2rem', color: '#eab308' }}><Trophy size={64} style={{ display: 'inline', verticalAlign: 'middle' }} /> PODIUM JUARA</h1>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', width: '100%', padding: '0 2rem' }}>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, alignItems: 'flex-end' }}>
+            {leftRunners.map((p, i) => renderRunnerUp(p, true, i))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2rem', height: '300px' }}>
+            {podium[1] && (
+              <motion.div initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} style={{ width: '200px', height: '200px', background: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
+                <div style={{ fontSize: '3rem' }}>{podium[1].avatar}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{podium[1].name}</div>
+                <div style={{ color: '#334155', fontWeight: 600 }}>{podium[1].score} pts</div>
+                <div style={{ fontSize: '4rem', fontWeight: 900, color: '#cbd5e1', marginTop: 'auto' }}>2</div>
+              </motion.div>
+            )}
+            {podium[0] && (
+              <motion.div initial={{ y: 300, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} style={{ width: '220px', height: '300px', background: '#eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0', boxShadow: '0 0 50px rgba(234, 179, 8, 0.4)' }}>
+                <div style={{ fontSize: '3rem' }}>{podium[0].avatar}</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{podium[0].name}</div>
+                <div style={{ color: '#713f12', fontWeight: 700 }}>{podium[0].score} pts</div>
+                <div style={{ fontSize: '5rem', fontWeight: 900, color: '#fef08a', marginTop: 'auto' }}>1</div>
+              </motion.div>
+            )}
+            {podium[2] && (
+              <motion.div initial={{ y: 150, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }} style={{ width: '200px', height: '150px', background: '#b45309', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
+                <div style={{ fontSize: '3rem' }}>{podium[2].avatar}</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{podium[2].name}</div>
+                <div style={{ color: '#fde68a', fontWeight: 600 }}>{podium[2].score} pts</div>
+                <div style={{ fontSize: '3rem', fontWeight: 900, color: '#d97706', marginTop: 'auto' }}>3</div>
+              </motion.div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, alignItems: 'flex-start' }}>
+            {rightRunners.map((p, i) => renderRunnerUp(p, false, i))}
+          </div>
+
+        </div>
+
+        <button onClick={onExit} style={{ marginTop: '3rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Selesai</button>
       </div>
     );
   }
