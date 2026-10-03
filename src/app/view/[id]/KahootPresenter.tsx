@@ -1,0 +1,316 @@
+"use client";
+
+import { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
+import { Users, Play, ArrowRight, X, Trophy } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+type Player = { id: string; name: string; avatar: string; score: number };
+
+export default function KahootPresenter({ chapter, presentationId, onExit }: any) {
+  const [kahootState, setKahootState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'podium'>('lobby');
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [players, setPlayers] = useState<Record<string, Player>>({});
+  const [currentAnswers, setCurrentAnswers] = useState<Record<string, any>>({});
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  
+  const channelRef = useRef<any>(null);
+  const timerRef = useRef<any>(null);
+
+  const activeSlide = chapter.slides[activeSlideIndex];
+  const kahootSlides = chapter.slides.filter((s: any) => s.isQuiz);
+
+  useEffect(() => {
+    const roomId = `kahoot-${presentationId}-${chapter.id}`;
+    const channel = supabase.channel(roomId, {
+      config: { presence: { key: 'host' } }
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const newPlayers: Record<string, Player> = { ...players };
+        for (const key in state) {
+          const clients = state[key] as any[];
+          for (const client of clients) {
+            if (!client.isHost && client.id) {
+              if (!newPlayers[client.id]) {
+                newPlayers[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
+              }
+            }
+          }
+        }
+        setPlayers(prev => ({ ...prev, ...newPlayers }));
+      })
+      .on('broadcast', { event: 'request_state' }, () => {
+        broadcastState(kahootState, activeSlideIndex);
+      })
+      .on('broadcast', { event: 'submit_answer' }, ({ payload }) => {
+        if (kahootState === 'answering') {
+          setCurrentAnswers(prev => ({
+            ...prev,
+            [payload.id]: { answer: payload.answer, timeTaken: payload.timeTaken }
+          }));
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ isHost: true });
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      channel.unsubscribe();
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const broadcastState = (state: string, slideIdx: number, extra = {}) => {
+    if (!channelRef.current) return;
+    channelRef.current.send({
+      type: 'broadcast',
+      event: 'state_change',
+      payload: { state, slideIndex: slideIdx, ...extra }
+    });
+  };
+
+  // State Transitions
+  const startReading = () => {
+    const readingTime = chapter.kahootReadingTime || 5;
+    setKahootState('reading');
+    setTimeLeft(readingTime);
+    setCurrentAnswers({});
+    broadcastState('reading', activeSlideIndex, { timeLeft: readingTime });
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          startAnswering();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const startAnswering = () => {
+    const answerTime = activeSlide?.quizTimer || 20;
+    setKahootState('answering');
+    setTimeLeft(answerTime);
+    broadcastState('answering', activeSlideIndex, { timeLeft: answerTime });
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          showResult();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const showResult = () => {
+    setKahootState('result');
+    
+    // Calculate scores
+    const newPlayers = { ...players };
+    const maxTime = activeSlide?.quizTimer || 20;
+    const correctAns = activeSlide?.quizCorrectAnswer || 'A';
+    
+    Object.keys(currentAnswers).forEach(pid => {
+      const ans = currentAnswers[pid];
+      if (ans.answer === correctAns) {
+        // Kahoot style scoring: max 1000, min 500 if correct
+        const score = Math.round((1 - (ans.timeTaken / maxTime) / 2) * 1000);
+        if (newPlayers[pid]) {
+          newPlayers[pid].score += score;
+        }
+      }
+    });
+    setPlayers(newPlayers);
+    
+    // Create leaderboard data to broadcast
+    const leaderboard = Object.values(newPlayers).sort((a, b) => b.score - a.score).slice(0, 5);
+    
+    broadcastState('result', activeSlideIndex, { 
+      correctAnswer: correctAns, 
+      leaderboard,
+      playerResults: currentAnswers
+    });
+  };
+
+  const nextSlide = () => {
+    if (activeSlideIndex < kahootSlides.length - 1) {
+      setActiveSlideIndex(prev => prev + 1);
+      startReading();
+    } else {
+      setKahootState('podium');
+      const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 3);
+      broadcastState('podium', activeSlideIndex, { leaderboard });
+    }
+  };
+
+  // RENDERS
+  if (kahootState === 'lobby') {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800 }}>Mulai Kahoot!</div>
+          <button onClick={onExit} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={32}/></button>
+        </div>
+        
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4rem' }}>
+          <div style={{ background: '#fff', padding: '2rem', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <h2 style={{ color: '#111', fontSize: '1.5rem', margin: '0 0 1.5rem 0', fontWeight: 700 }}>Scan untuk Bergabung</h2>
+            <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/kahoot/${presentationId}_${chapter.id}`} size={300} />
+            <div style={{ marginTop: '1.5rem', color: '#3b82f6', fontWeight: 700, fontSize: '1.25rem' }}>{presentationId}_{chapter.id}</div>
+          </div>
+          
+          <div style={{ width: '400px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <Users size={32} />
+              <span style={{ fontSize: '2rem', fontWeight: 700 }}>{Object.keys(players).length} Peserta</span>
+            </div>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+              <AnimatePresence>
+                {Object.values(players).map(p => (
+                  <motion.div key={p.id} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>{p.avatar}</span> {p.name}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <button onClick={() => {
+            // Find first quiz slide
+            const firstQuizIdx = chapter.slides.findIndex((s: any) => s.isQuiz);
+            if (firstQuizIdx !== -1) {
+              setActiveSlideIndex(firstQuizIdx);
+              startReading();
+            } else {
+              alert('Tidak ada slide kuis di chapter ini!');
+            }
+          }} style={{ background: '#fff', color: '#2563eb', padding: '1rem 4rem', fontSize: '1.5rem', fontWeight: 800, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
+            Mulai Kuis <Play fill="currentColor" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kahootState === 'podium') {
+    const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 3);
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)' }}>
+        <h1 style={{ fontSize: '4rem', fontWeight: 900, marginBottom: '4rem', color: '#eab308' }}><Trophy size={64} style={{ display: 'inline', verticalAlign: 'middle' }} /> PODIUM JUARA</h1>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2rem', height: '300px' }}>
+          {leaderboard[1] && (
+            <motion.div initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} style={{ width: '200px', height: '200px', background: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
+              <div style={{ fontSize: '3rem' }}>{leaderboard[1].avatar}</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{leaderboard[1].name}</div>
+              <div style={{ color: '#334155', fontWeight: 600 }}>{leaderboard[1].score} pts</div>
+              <div style={{ fontSize: '4rem', fontWeight: 900, color: '#cbd5e1', marginTop: 'auto' }}>2</div>
+            </motion.div>
+          )}
+          {leaderboard[0] && (
+            <motion.div initial={{ y: 300, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} style={{ width: '220px', height: '300px', background: '#eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0', boxShadow: '0 0 50px rgba(234, 179, 8, 0.4)' }}>
+              <div style={{ fontSize: '3rem' }}>{leaderboard[0].avatar}</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{leaderboard[0].name}</div>
+              <div style={{ color: '#713f12', fontWeight: 700 }}>{leaderboard[0].score} pts</div>
+              <div style={{ fontSize: '5rem', fontWeight: 900, color: '#fef08a', marginTop: 'auto' }}>1</div>
+            </motion.div>
+          )}
+          {leaderboard[2] && (
+            <motion.div initial={{ y: 150, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }} style={{ width: '200px', height: '150px', background: '#b45309', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
+              <div style={{ fontSize: '3rem' }}>{leaderboard[2].avatar}</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{leaderboard[2].name}</div>
+              <div style={{ color: '#fde68a', fontWeight: 600 }}>{leaderboard[2].score} pts</div>
+              <div style={{ fontSize: '3rem', fontWeight: 900, color: '#d97706', marginTop: 'auto' }}>3</div>
+            </motion.div>
+          )}
+        </div>
+        <button onClick={onExit} style={{ marginTop: '4rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Selesai</button>
+      </div>
+    );
+  }
+
+  // Reading, Answering, Result phase
+  return (
+    <div style={{ width: '100vw', height: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>Pertanyaan {kahootSlides.findIndex((s: any) => s.id === activeSlide.id) + 1} / {kahootSlides.length}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 800, background: '#ef4444', color: '#fff', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {timeLeft}
+          </div>
+          <button onClick={onExit} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}><X size={24}/></button>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        
+        <h1 style={{ fontSize: '3.5rem', fontWeight: 800, textAlign: 'center', margin: '0 0 4rem 0', maxWidth: '1200px' }}>
+          {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
+        </h1>
+
+        {kahootState === 'reading' && (
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: '2rem', fontWeight: 600, color: '#64748b', textAlign: 'center' }}>
+              Baca soal dan persiapkan jawaban Anda!<br/>
+              <span style={{ fontSize: '4rem', color: '#3b82f6', fontWeight: 800, display: 'block', marginTop: '1rem' }}>{timeLeft}</span>
+            </div>
+          </motion.div>
+        )}
+
+        {(kahootState === 'answering' || kahootState === 'result') && (
+          <div style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', flex: 1 }}>
+            {['A', 'B', 'C', 'D'].map((opt, i) => {
+              const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
+              const shapes = ['▲', '◆', '●', '■'];
+              const isCorrect = activeSlide.quizCorrectAnswer === opt;
+              const text = activeSlide[`quizOption${opt}`] || `Pilihan ${opt}`;
+              
+              const isFaded = kahootState === 'result' && !isCorrect;
+
+              return (
+                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '2rem', color: '#fff', fontSize: '2rem', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s' }}>
+                  <span style={{ fontSize: '3rem', marginRight: '2rem', opacity: 0.8 }}>{shapes[i]}</span>
+                  {text}
+                  
+                  {kahootState === 'result' && isCorrect && (
+                    <div style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: '1.5rem' }}>✓ BENAR</div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+
+      </div>
+
+      {kahootState === 'result' && (
+        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'flex-end', background: '#fff', borderTop: '1px solid #e2e8f0' }}>
+          <button onClick={nextSlide} style={{ background: '#2563eb', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            Lanjut <ArrowRight size={24} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

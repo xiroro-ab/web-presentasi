@@ -7,10 +7,12 @@ import Link from 'next/link';
 import { AboutMeModal } from '../../../../AboutMeModal';
 import { QRCodeSVG } from 'qrcode.react';
 
+import KahootPresenter from './KahootPresenter';
+
 type EmbedLink = { title: string; url: string; };
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
-type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
-type PresentationData = { title: string; theme?: 'gaming' | 'formal'; transition?: 'slide' | 'fade' | 'zoom' | 'flip' | 'drop' | 'blur' | 'rotate'; chapters: Chapter[] };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; quizTimer?: number; };
+type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[]; isKahootMode?: boolean; kahootReadingTime?: number; };
+type PresentationData = { id?: string; title: string; theme?: 'gaming' | 'formal'; transition?: 'slide' | 'fade' | 'zoom' | 'flip' | 'drop' | 'blur' | 'rotate'; chapters: Chapter[] };
 
 const GAMING_IMAGES = [
   'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop',
@@ -468,6 +470,8 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
               );
             })}
           </motion.div>
+        ) : activeChapter?.isKahootMode ? (
+          <KahootPresenter chapter={activeChapter} presentationId={data.id} onExit={() => setActiveChapterIndex(null)} />
         ) : (
           <motion.div key="slide-view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }} style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
             <motion.div initial={{ x: '-100%', opacity: 1 }} animate={{ x: '100%', opacity: 0 }} exit={{ x: '-100%', transition: { duration: 0.2 } }} transition={{ duration: 1.2, ease: 'easeOut' }} style={{ position: 'absolute', top: 0, left: 0, width: '200%', height: '100%', background: 'linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.4) 50%, transparent 100%)', filter: 'blur(20px)', zIndex: 9999, pointerEvents: 'none' }} />

@@ -9,7 +9,7 @@ import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; quizTimer?: number; };
-type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
+type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[]; isKahootMode?: boolean; kahootReadingTime?: number; };
 
 type PresentationData = {
   id?: string;
@@ -542,6 +542,25 @@ export default function AdminPanel() {
                           </label>
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Kahoot Mode Toggle */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: isGaming ? 'rgba(59,130,246,0.05)' : '#f0f9ff', padding: '1rem', borderRadius: '8px', border: `1px solid ${isGaming ? 'rgba(59,130,246,0.2)' : '#bae6fd'}` }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: isGaming ? '#fff' : '#0369a1', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={chap.isKahootMode || false} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].isKahootMode = e.target.checked; if(e.target.checked && !newData.chapters[cIdx].kahootReadingTime) { newData.chapters[cIdx].kahootReadingTime = 5; } setData(newData); }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                        Jadikan Chapter ini Kuis Kahoot (Interactive Kahoot Mode)
+                      </label>
+                      {chap.isKahootMode && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#93c5fd' : '#0284c7', marginBottom: '0.5rem' }}>Waktu Membaca Soal (detik)</label>
+                            <input type="number" min={1} value={chap.kahootReadingTime || 5} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].kahootReadingTime = parseInt(e.target.value) || 5; setData(newData); }} style={{ width: '100%', fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#fff', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="5" />
+                          </div>
+                          <div style={{ flex: 2, fontSize: '0.8rem', color: isGaming ? '#94a3b8' : '#64748b' }}>
+                            Di mode Kahoot, slide yang dicentang "Jadikan Kuis Interaktif" akan menjadi soal Kahoot. Slide pertama akan memunculkan Lobby Code.
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
