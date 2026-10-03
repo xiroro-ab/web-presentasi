@@ -97,6 +97,7 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showQuizResetConfirm, setShowQuizResetConfirm] = useState(false);
   const [quizScores, setQuizScores] = useState<{name: string, score: number}[]>([]);
 
   useEffect(() => {
@@ -399,13 +400,24 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                   <QRCodeSVG value={`${window.location.origin}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
-                <button onClick={async () => {
-                  const id = window.location.pathname.split('/').pop();
-                  await fetch(`/api/quiz?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
-                  setQuizScores([]);
-                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
-                  Reset Skor Kuis
-                </button>
+                {showQuizResetConfirm ? (
+                  <div style={{ marginTop: 'auto', width: '100%', background: '#fef2f2', border: '1px solid #f87171', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#991b1b', textAlign: 'center', fontWeight: 600 }}>Yakin hapus skor kuis?</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setShowQuizResetConfirm(false)} style={{ flex: 1, background: '#f4f4f5', color: '#111', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+                      <button onClick={async () => {
+                        const id = window.location.pathname.split('/').pop();
+                        await fetch(`/api/quiz?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                        setQuizScores([]);
+                        setShowQuizResetConfirm(false);
+                      }} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Hapus</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowQuizResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                    Reset Skor Kuis
+                  </button>
+                )}
               </motion.div>
               
               {/* Leaderboard Section */}
@@ -566,6 +578,7 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showQuizResetConfirm, setShowQuizResetConfirm] = useState(false);
   const [quizScores, setQuizScores] = useState<{name: string, score: number}[]>([]);
 
   useEffect(() => {
@@ -841,6 +854,71 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                       </div>
                     );
                   })}
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Interactive Quiz Modal for FormalViewer */}
+      <AnimatePresence>
+        {showQuiz && activeSlide && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ color: '#111', fontSize: '2rem', fontWeight: 700 }}>Kuis: {activeSlide.title}</h2>
+              <button onClick={() => setShowQuiz(false)} style={{ background: '#111', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Kuis
+              </button>
+            </div>
+            
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+              {/* QR Code Section */}
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', border: '1px solid #e5e5e5', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Masuk Kuis!</h3>
+                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
+                  <QRCodeSVG value={`${window.location.origin}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
+                {showQuizResetConfirm ? (
+                  <div style={{ marginTop: 'auto', width: '100%', background: '#fef2f2', border: '1px solid #f87171', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#991b1b', textAlign: 'center', fontWeight: 600 }}>Yakin hapus skor kuis?</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setShowQuizResetConfirm(false)} style={{ flex: 1, background: '#f4f4f5', color: '#111', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
+                      <button onClick={async () => {
+                        const id = window.location.pathname.split('/').pop();
+                        await fetch(`/api/quiz?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                        setQuizScores([]);
+                        setShowQuizResetConfirm(false);
+                      }} style={{ flex: 1, background: '#ef4444', color: '#fff', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Hapus</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowQuizResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                    Reset Skor Kuis
+                  </button>
+                )}
+              </motion.div>
+              
+              {/* Leaderboard Section */}
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', border: '1px solid #e5e5e5', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="#3b82f6" /> Live Leaderboard</h3>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '1rem' }} className="hide-scrollbar">
+                  {quizScores.length === 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a1a1aa', fontWeight: 600 }}>Belum ada peserta yang menjawab.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {quizScores.map((score, idx) => (
+                        <motion.div key={score.name} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: idx === 0 ? 'linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.05) 100%)' : '#f4f4f5', border: `1px solid ${idx === 0 ? 'rgba(234,179,8,0.5)' : 'transparent'}`, padding: '1rem 1.5rem', borderRadius: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#a1a1aa' }}>#{idx + 1}</span>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#111' }}>{score.name}</span>
+                          </div>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#3b82f6' }}>{score.score} pts</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </div>

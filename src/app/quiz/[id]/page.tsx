@@ -133,7 +133,11 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
     <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', padding: '2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: '2rem', width: '100%', maxWidth: '600px' }}>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.25rem 1rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa', marginBottom: '1rem' }}>Peserta: {studentName}</div>
-        <h1 style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0 0 0.5rem 0', lineHeight: 1.4 }}>{slideData.quizQuestion || 'Kuis Interaktif'}</h1>
+        {slideData.quizQuestion ? (
+          <div className="quiz-question-html" style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0 0 0.5rem 0', lineHeight: 1.4, textAlign: 'left' }} dangerouslySetInnerHTML={{ __html: slideData.quizQuestion }} />
+        ) : (
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0 0 0.5rem 0', lineHeight: 1.4 }}>Kuis Interaktif</h1>
+        )}
       </div>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '600px', flex: 1 }}>

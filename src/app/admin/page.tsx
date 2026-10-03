@@ -577,7 +577,105 @@ export default function AdminPanel() {
                               <h4 style={{ margin: '0 0 1rem 0', color: isGaming ? '#93c5fd' : '#2563eb', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Pengaturan Kuis</h4>
                               
                               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Pertanyaan</label>
-                              <textarea value={slide.quizQuestion || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizQuestion = e.target.value; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', marginBottom: '1rem', outline: 'none' }} placeholder="Masukkan pertanyaan kuis..." rows={2} />
+                              <div style={{ border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px', marginBottom: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff' }}>
+                                <AdminEditorToolbar onUploadStart={() => showToast('Mengunggah gambar...')} onUploadSuccess={(url: string) => { const newData: any = { ...data }; newData.chapters[cIdx].slides[sIdx].quizQuestion = (newData.chapters[cIdx].slides[sIdx].quizQuestion || '') + `<br/><img src="${url}" /><br/>`; setData(newData); showToast('Gambar berhasil diunggah!'); }} isGaming={isGaming} />
+                                <div style={{ padding: '0.5rem 1rem', background: isGaming ? 'rgba(255,255,255,0.02)' : '#fafafa', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`, fontSize: '0.75rem', color: isGaming ? '#a1a1aa' : '#71717a' }}>
+                                  Ketik teks soal kuis di bawah ini. Bisa <b>Drag & Drop</b> gambar ke area ini. <i>(Klik ganda pada gambar untuk menghapus)</i>
+                                </div>
+                                <div 
+                                  contentEditable suppressContentEditableWarning className="rich-text-content"
+                                  onBlur={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizQuestion = e.currentTarget.innerHTML; setData(newData); }}
+                                  dangerouslySetInnerHTML={{ __html: slide.quizQuestion || '' }}
+                                  style={{ width: '100%', minHeight: '100px', fontSize: '0.95rem', padding: '1rem', outline: 'none', color: isGaming ? '#fff' : '#111' }}
+                                  onDragOver={(e) => e.preventDefault()}
+                                  onDrop={async (e) => {
+                                    e.preventDefault();
+                                    const file = e.dataTransfer.files?.[0];
+                                    if (!file || !file.type.startsWith('image/')) return;
+                                    
+                                    let savedRange: Range | null = null;
+                                    const sel = window.getSelection();
+                                    if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0);
+
+                                    showToast('Mengunggah gambar...');
+                                    try {
+                                      const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                      const formData = new FormData(); formData.append('file', compressed);
+                                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                      const result = await res.json();
+                                      if (result.url) {
+                                        if (savedRange) {
+                                          sel?.removeAllRanges();
+                                          sel?.addRange(savedRange);
+                                          document.execCommand('insertHTML', false, `<br/><img src="${result.url}" /><br/>`);
+                                          const newData = { ...data };
+                                          newData.chapters[cIdx].slides[sIdx].quizQuestion = e.currentTarget.innerHTML;
+                                          setData(newData);
+                                        } else {
+                                          const newData = { ...data };
+                                          newData.chapters[cIdx].slides[sIdx].quizQuestion = (newData.chapters[cIdx].slides[sIdx].quizQuestion || '') + `<br/><img src="${result.url}" /><br/>`;
+                                          setData(newData);
+                                        }
+                                        showToast('Gambar berhasil diunggah!');
+                                      }
+                                    } catch (err) {
+                                      showToast('Gagal mengunggah gambar');
+                                    }
+                                  }}
+                                  onPaste={async (e) => {
+                                    const items = e.clipboardData?.items;
+                                    if (!items) return;
+                                    const imageItem = Array.from(items).find(item => item.type.startsWith('image/'));
+                                    if (!imageItem) return;
+                                    
+                                    const file = imageItem.getAsFile();
+                                    if (!file) return;
+
+                                    e.preventDefault();
+                                    
+                                    let savedRange: Range | null = null;
+                                    const sel = window.getSelection();
+                                    if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0);
+
+                                    showToast('Mengunggah gambar...');
+                                    try {
+                                      const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 });
+                                      const formData = new FormData(); formData.append('file', compressed);
+                                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                      const result = await res.json();
+                                      if (result.url) {
+                                        if (savedRange) {
+                                          sel?.removeAllRanges();
+                                          sel?.addRange(savedRange);
+                                          document.execCommand('insertHTML', false, `<br/><img src="${result.url}" /><br/>`);
+                                          const newData = { ...data };
+                                          newData.chapters[cIdx].slides[sIdx].quizQuestion = e.currentTarget.innerHTML;
+                                          setData(newData);
+                                        } else {
+                                          const newData = { ...data };
+                                          newData.chapters[cIdx].slides[sIdx].quizQuestion = (newData.chapters[cIdx].slides[sIdx].quizQuestion || '') + `<br/><img src="${result.url}" /><br/>`;
+                                          setData(newData);
+                                        }
+                                        showToast('Gambar berhasil diunggah!');
+                                      }
+                                    } catch (err) {
+                                      showToast('Gagal mengunggah gambar');
+                                    }
+                                  }}
+                                  onDoubleClick={(e) => {
+                                    const target = e.target as HTMLElement;
+                                    const editorDiv = e.currentTarget;
+                                    if (target.tagName === 'IMG') {
+                                      if (confirm('Hapus gambar ini?')) {
+                                        target.remove();
+                                        const newData = { ...data };
+                                        newData.chapters[cIdx].slides[sIdx].quizQuestion = editorDiv.innerHTML;
+                                        setData(newData);
+                                      }
+                                    }
+                                  }}
+                                />
+                              </div>
                               
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                                 {['A', 'B', 'C', 'D'].map((opt) => (
