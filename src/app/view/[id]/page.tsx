@@ -565,6 +565,8 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizScores, setQuizScores] = useState<{name: string, score: number}[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
@@ -628,6 +630,25 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
     const interval = setInterval(fetchPoll, 2000);
     return () => clearInterval(interval);
   }, [showPoll, activeSlide]);
+
+  useEffect(() => {
+    if (!showQuiz || !activeSlide) return;
+    const fetchQuiz = async () => {
+      try {
+        const id = window.location.pathname.split('/').pop();
+        const res = await fetch(`/api/quiz?id=${id}_${activeSlide.id}`);
+        const result = await res.json();
+        if (result.results) {
+          const scores = Object.keys(result.results).map(name => ({ name, score: result.results[name] }));
+          scores.sort((a, b) => b.score - a.score);
+          setQuizScores(scores);
+        }
+      } catch (e) {}
+    };
+    fetchQuiz();
+    const interval = setInterval(fetchQuiz, 2000);
+    return () => clearInterval(interval);
+  }, [showQuiz, activeSlide]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
