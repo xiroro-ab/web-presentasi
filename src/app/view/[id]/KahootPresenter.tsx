@@ -299,8 +299,8 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
       <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         
-        <div style={{ width: '100%', maxWidth: '1200px', flex: '0 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0', overflowY: 'auto', maxHeight: '30vh', padding: '1rem' }}>
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%', lineHeight: 1.2 }}>
+        <div style={{ width: '100%', maxWidth: '1200px', flex: '0 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0', overflowY: 'auto', maxHeight: '30vh', padding: '1rem', minWidth: 0 }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%', lineHeight: 1.2, minWidth: 0 }}>
             {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
           </h1>
         </div>
@@ -325,9 +325,9 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               const isFaded = kahootState === 'result' && !isCorrect;
 
               return (
-                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden' }}>
+                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0 }}>
                   <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
-                  <div style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word', fontSize: 'clamp(1rem, 1.8vw, 2rem)', lineHeight: 1.3 }}>
+                  <div style={{ flex: 1, minWidth: 0, wordWrap: 'break-word', overflowWrap: 'break-word', fontSize: 'clamp(1rem, 1.8vw, 2rem)', lineHeight: 1.3 }}>
                     {text}
                   </div>
                   
