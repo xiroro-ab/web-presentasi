@@ -406,8 +406,11 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: activeSlide?.image?.trim() ? '1 1 500px' : '1 1 auto', width: activeSlide?.image?.trim() ? 'auto' : '100%', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', width: '100%' }}>
+                    <div style={activeSlide?.image?.trim() 
+                      ? { flex: '1 1 500px', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' } 
+                      : { flex: '0 0 100%', width: '100%', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' }
+                    }>
                       <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
                     </div>
                     {activeSlide?.image?.trim() ? (
@@ -795,8 +798,11 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: activeSlide?.image?.trim() ? '1 1 500px' : '1 1 auto', width: activeSlide?.image?.trim() ? 'auto' : '100%', fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', width: '100%' }}>
+                    <div style={activeSlide?.image?.trim()
+                      ? { flex: '1 1 500px', fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify' }
+                      : { flex: '0 0 100%', width: '100%', fontSize: '1.4rem', color: '#555', lineHeight: 1.8, fontWeight: 300, textAlign: 'justify' }
+                    }>
                       <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
                     </div>
                     {activeSlide?.image?.trim() ? (
