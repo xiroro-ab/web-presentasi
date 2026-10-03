@@ -40,6 +40,11 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
           setAnswerResult(null);
         } else if (payload.state === 'answering') {
           answeringStartTimeRef.current = Date.now();
+          if (payload.answeredPlayers && payload.answeredPlayers.includes(uid)) {
+            setHasAnswered(true);
+          } else {
+            setHasAnswered(false);
+          }
         } else if (payload.state === 'result') {
           if (payload.playerResults && payload.playerResults[uid]) {
             const myAns = payload.playerResults[uid].answer;
