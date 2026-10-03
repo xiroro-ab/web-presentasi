@@ -299,8 +299,8 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
       <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         
-        <div style={{ width: '100%', maxWidth: '1200px', minHeight: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0' }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', flex: '0 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0', overflowY: 'auto', maxHeight: '30vh', padding: '1rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%', lineHeight: 1.2 }}>
             {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
           </h1>
         </div>
@@ -325,12 +325,14 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               const isFaded = kahootState === 'result' && !isCorrect;
 
               return (
-                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '2rem', color: '#fff', fontSize: '2rem', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s' }}>
-                  <span style={{ fontSize: '3rem', marginRight: '2rem', opacity: 0.8 }}>{shapes[i]}</span>
-                  {text}
+                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden' }}>
+                  <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
+                  <div style={{ flex: 1, wordWrap: 'break-word', overflowWrap: 'break-word', fontSize: 'clamp(1rem, 1.8vw, 2rem)', lineHeight: 1.3 }}>
+                    {text}
+                  </div>
                   
                   {kahootState === 'result' && isCorrect && (
-                    <div style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: '1.5rem' }}>✓ BENAR</div>
+                    <div style={{ marginLeft: '1rem', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: 'clamp(0.8rem, 1.2vw, 1.5rem)', flexShrink: 0, whiteSpace: 'nowrap' }}>✓ BENAR</div>
                   )}
                 </motion.div>
               );
