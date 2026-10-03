@@ -426,9 +426,7 @@ export default function AdminPanel() {
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Presentation Editor</h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.75rem 1rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)' }}>
-              <Sparkles size={16} /> Generate with AI
-            </button>
+
             <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
               <Download size={16} /> Export
             </button>
@@ -440,6 +438,17 @@ export default function AdminPanel() {
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
+        </div>
+
+        {/* AI Generator Banner */}
+        <div style={{ background: isGaming ? 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(59,130,246,0.1) 100%)' : 'linear-gradient(135deg, rgba(168,85,247,0.05) 0%, rgba(59,130,246,0.05) 100%)', border: `1px solid ${isGaming ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.3)'}`, borderRadius: '16px', padding: '2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111' }}><Sparkles size={20} color="#a855f7" /> AI Auto-Generator</h2>
+            <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Hemat waktu berjam-jam. Biarkan AI merancang seluruh materi presentasi Anda.</p>
+          </div>
+          <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)', fontSize: '1rem', transition: 'all 0.2s' }}>
+            <Sparkles size={18} /> Generate Materi Sekarang
+          </button>
         </div>
 
         {/* Global Settings */}
@@ -685,18 +694,26 @@ export default function AdminPanel() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
-                  <input 
-                    list="ai-models-list"
-                    value={aiModel} 
-                    onChange={(e) => setAiModel(e.target.value)} 
-                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }}
-                    placeholder="Ketik nama model (contoh: gemini-3.8-flash)"
-                  />
-                  <datalist id="ai-models-list">
-                    <option value="gemini-3.6-flash">Gemini 3.6 Flash (Cepat)</option>
-                    <option value="gemini-3-preview">Gemini 3 Preview (Eksperimental)</option>
-                    <option value="gemini-3.5-pro">Gemini 3.5 Pro (Pintar)</option>
-                  </datalist>
+                  <select 
+                    value={aiModel.startsWith('gemini') ? aiModel : 'custom'} 
+                    onChange={(e) => setAiModel(e.target.value === 'custom' ? '' : e.target.value)} 
+                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none', marginBottom: '0.5rem' }}
+                  >
+                    <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash (Rekomendasi / Cepat)</option>
+                    <option value="gemini-3-preview" style={{color: '#111'}}>Gemini 3 Preview (Eksperimental)</option>
+                    <option value="gemini-3.5-pro" style={{color: '#111'}}>Gemini 3.5 Pro (Pintar)</option>
+                    <option value="custom" style={{color: '#111'}}>Ketik Manual / Model Lainnya...</option>
+                  </select>
+                  
+                  {(!aiModel.startsWith('gemini-3') && !aiModel.startsWith('gemini-1') && !aiModel.startsWith('gemini-2')) || aiModel === '' ? (
+                    <input 
+                      type="text"
+                      value={aiModel} 
+                      onChange={(e) => setAiModel(e.target.value)} 
+                      style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#fff', border: `1px dashed ${isGaming ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} 
+                      placeholder="Misal: gemini-4.0-pro" 
+                    />
+                  ) : null}
                 </div>
               </div>
 
