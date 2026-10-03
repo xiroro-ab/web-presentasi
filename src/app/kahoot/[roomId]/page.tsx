@@ -18,7 +18,7 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
   const [myId, setMyId] = useState('');
   const [avatar, setAvatar] = useState('');
   
-  const [gameState, setGameState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'podium'>('lobby');
+  const [gameState, setGameState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'interim_leaderboard' | 'podium'>('lobby');
   const [hasAnswered, setHasAnswered] = useState(false);
   const [answerResult, setAnswerResult] = useState<{ isCorrect: boolean, scoreAdded: number } | null>(null);
   
@@ -173,6 +173,13 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
                 <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>Coba lagi lebih cepat & teliti!</div>
               </>
             )}
+          </motion.div>
+        )}
+
+        {gameState === 'interim_leaderboard' && (
+          <motion.div key="interim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#3b82f6', color: '#fff', textAlign: 'center', padding: '2rem' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>Klasemen Sementara</h2>
+            <p style={{ fontSize: '1.5rem', fontWeight: 600 }}>Cek posisi Anda di layar proyektor!</p>
           </motion.div>
         )}
 

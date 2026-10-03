@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 type Player = { id: string; name: string; avatar: string; score: number };
 
 export default function KahootPresenter({ chapter, presentationId, onExit }: any) {
-  const [kahootState, setKahootState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'podium'>('lobby');
+  const [kahootState, setKahootState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'interim_leaderboard' | 'podium'>('lobby');
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [players, setPlayers] = useState<Record<string, Player>>({});
   const [currentAnswers, setCurrentAnswers] = useState<Record<string, any>>({});
@@ -153,6 +153,12 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     });
   };
 
+  const showInterimLeaderboard = () => {
+    setKahootState('interim_leaderboard');
+    const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 5);
+    broadcastState('interim_leaderboard', activeSlideIndex, { leaderboard });
+  };
+
   const nextSlide = () => {
     if (activeSlideIndex < kahootSlides.length - 1) {
       setActiveSlideIndex(prev => prev + 1);
@@ -252,6 +258,32 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     );
   }
 
+  if (kahootState === 'interim_leaderboard') {
+    const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 5);
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', padding: '2rem' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '3rem', color: '#fff' }}>KLASEMEN SEMENTARA</h1>
+        <div style={{ width: '100%', maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <AnimatePresence>
+            {leaderboard.map((p, i) => (
+              <motion.div key={p.id} initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }} style={{ background: i === 0 ? '#eab308' : 'rgba(255,255,255,0.1)', padding: '1.5rem 2rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1.5rem', color: i === 0 ? '#111' : '#fff' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 800, width: '40px' }}>#{i+1}</div>
+                <div style={{ fontSize: '2.5rem' }}>{p.avatar}</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 700, flex: 1 }}>{p.name}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800 }}>{p.score}</div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+        <div style={{ marginTop: '4rem', display: 'flex', gap: '2rem' }}>
+          <button onClick={nextSlide} style={{ background: '#3b82f6', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            Lanjut ke Soal Berikutnya <ArrowRight size={24} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Reading, Answering, Result phase
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
@@ -265,11 +297,13 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         
-        <h1 style={{ fontSize: '3.5rem', fontWeight: 800, textAlign: 'center', margin: '0 0 4rem 0', maxWidth: '1200px' }}>
-          {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
-        </h1>
+        <div style={{ width: '100%', maxWidth: '1200px', minHeight: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0' }}>
+          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%' }}>
+            {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
+          </h1>
+        </div>
 
         {kahootState === 'reading' && (
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -308,8 +342,8 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
       {kahootState === 'result' && (
         <div style={{ padding: '2rem', display: 'flex', justifyContent: 'flex-end', background: '#fff', borderTop: '1px solid #e2e8f0' }}>
-          <button onClick={nextSlide} style={{ background: '#2563eb', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            Lanjut <ArrowRight size={24} />
+          <button onClick={showInterimLeaderboard} style={{ background: '#2563eb', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            Lihat Klasemen <ArrowRight size={24} />
           </button>
         </div>
       )}
