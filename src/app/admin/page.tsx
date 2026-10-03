@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
@@ -71,7 +71,13 @@ export default function AdminPanel() {
   const [globalBg, setGlobalBg] = useState('');
   const [globalBgOpacity, setGlobalBgOpacity] = useState(0.6);
   const [uploadingChapter, setUploadingChapter] = useState<number | null>(null);
-
+  
+  // AI State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiModel, setAiModel] = useState('gemini-1.5-flash');
+  const [isGenerating, setIsGenerating] = useState(false);
   const showToast = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
@@ -201,6 +207,42 @@ export default function AdminPanel() {
       showToast('Gagal menyimpan perubahan.');
     }
     setSaving(false);
+  };
+
+  const handleGenerateAI = async () => {
+    if (!aiPrompt) {
+      showToast('Mohon masukkan topik/prompt untuk AI');
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          customApiKey: aiApiKey,
+          customModel: aiModel
+        })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result.error || 'Gagal generate AI');
+        setIsGenerating(false);
+        return;
+      }
+      
+      if (result.chapters) {
+        setData(prev => prev ? { ...prev, chapters: result.chapters } : prev);
+        showToast('Materi berhasil digenerate AI!');
+        setShowAiModal(false);
+      } else {
+        showToast('Format balasan AI tidak sesuai');
+      }
+    } catch (e) {
+      showToast('Gagal terhubung ke AI');
+    }
+    setIsGenerating(false);
   };
 
   const exportData = () => {
@@ -383,7 +425,10 @@ export default function AdminPanel() {
             </button>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Presentation Editor</h1>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.75rem 1rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)' }}>
+              <Sparkles size={16} /> Generate with AI
+            </button>
             <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
               <Download size={16} /> Export
             </button>
@@ -599,6 +644,64 @@ export default function AdminPanel() {
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                 <button onMouseDown={(e) => e.preventDefault()} onClick={() => setConfirmAction(null)} style={{ flex: 1, padding: '1rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
                 <button onMouseDown={(e) => e.preventDefault()} onClick={() => { setConfirmAction(null); setTimeout(() => confirmAction.onConfirm(), 10); }} style={{ flex: 1, padding: '1rem', background: '#ef4444', color: '#fff', borderRadius: '12px', border: 'none', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}>Ya, Lanjutkan</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showAiModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} style={{ background: isGaming ? 'rgba(30,30,35,0.9)' : 'rgba(255,255,255,0.9)', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: '2.5rem', borderRadius: '24px', maxWidth: '600px', width: '90%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', padding: '0.75rem', borderRadius: '50%', color: '#fff' }}>
+                  <Sparkles size={24} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.5rem', color: isGaming ? '#fff' : '#111', fontWeight: 700, margin: 0 }}>AI Auto-Generator</h3>
+                  <p style={{ color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem', margin: 0 }}>Buat presentasi otomatis dari satu kalimat perintah.</p>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Topik / Perintah Utama (Wajib)</label>
+                <textarea 
+                  value={aiPrompt} 
+                  onChange={(e) => setAiPrompt(e.target.value)} 
+                  style={{ width: '100%', height: '100px', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '1rem', borderRadius: '12px', outline: 'none', resize: 'vertical' }} 
+                  placeholder="Misal: Buatkan materi tentang Sejarah Kemerdekaan Indonesia, buat 3 chapter dan masing-masing 4 slide."
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>API Key Anda (Opsional)</label>
+                  <input 
+                    type="password" 
+                    value={aiApiKey} 
+                    onChange={(e) => setAiApiKey(e.target.value)} 
+                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} 
+                    placeholder="Kosongkan jika ingin gunakan milik server" 
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
+                  <select 
+                    value={aiModel} 
+                    onChange={(e) => setAiModel(e.target.value)} 
+                    style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }}
+                  >
+                    <option style={{color: '#111'}} value="gemini-1.5-flash">Gemini 1.5 Flash (Cepat)</option>
+                    <option style={{color: '#111'}} value="gemini-1.5-pro">Gemini 1.5 Pro (Pintar)</option>
+                    <option style={{color: '#111'}} value="gemini-2.0-flash">Gemini 2.0 Flash (Terbaru)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button onClick={() => setShowAiModal(false)} disabled={isGenerating} style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', cursor: 'pointer', background: isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', color: isGaming ? '#fff' : '#111', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, fontWeight: 600 }}>Batal</button>
+                <button onClick={handleGenerateAI} disabled={isGenerating || !aiPrompt} style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', borderRadius: '12px', border: 'none', cursor: isGenerating || !aiPrompt ? 'not-allowed' : 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(168, 85, 247, 0.4)', opacity: (isGenerating || !aiPrompt) ? 0.6 : 1 }}>
+                  {isGenerating ? 'Sedang Memikirkan...' : '✨ Generate Sekarang'}
+                </button>
               </div>
             </motion.div>
           </motion.div>
