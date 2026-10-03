@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
@@ -325,6 +325,90 @@ export default function AdminPanel() {
     setIsGenerating(false);
   };
 
+  const handleGenerateGlobalQuizAI = async () => {
+    if (!data || !data.chapters || data.chapters.length === 0) {
+      showToast('Tidak ada bab materi untuk di-generate kuisnya.');
+      return;
+    }
+
+    // Kumpulkan seluruh materi dari semua chapter yang BUKAN kahoot mode
+    let contextText = `Materi Keseluruhan Presentasi: ${data.title}\n\n`;
+    let validContentFound = false;
+
+    data.chapters.forEach((chapter, cIdx) => {
+      if (chapter.isKahootMode) return; // Skip chapter kuis yang sudah ada
+      contextText += `--- BAB ${cIdx + 1}: ${chapter.title} ---\n`;
+      chapter.slides.forEach((s: any, i: number) => {
+        const cleanContent = s.content ? s.content.replace(/<[^>]*>?/gm, ' ') : '';
+        if (!s.isQuiz) {
+          contextText += `Slide ${i+1} (${s.title}): ${cleanContent}\n`;
+          validContentFound = true;
+        }
+      });
+      contextText += '\n';
+    });
+
+    if (!validContentFound || contextText.length < 100) {
+      showToast('Materi presentasi terlalu sedikit untuk digenerate ujian akhirnya.');
+      return;
+    }
+
+    const countStr = window.prompt("Berapa jumlah soal Ujian Akhir yang ingin di-generate dari SELURUH BAB?", "10");
+    if (!countStr) return;
+    
+    const count = parseInt(countStr);
+    if (isNaN(count) || count < 1 || count > 50) {
+      showToast('Jumlah soal tidak valid (minimal 1, maksimal 50).');
+      return;
+    }
+
+    setIsGenerating(true);
+    showToast(`Sedang menyusun Ujian Akhir dengan ${count} soal, mohon tunggu...`);
+    try {
+      const res = await fetch('/api/ai/generate-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          context: contextText,
+          questionCount: count,
+          customApiKey: aiApiKey,
+          customModel: aiModel === 'custom' ? aiCustomModel : aiModel
+        })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result.error || 'Gagal generate Ujian Akhir AI');
+        setIsGenerating(false);
+        return;
+      }
+      
+      if (result.slides && Array.isArray(result.slides)) {
+        const newData = { ...data };
+        
+        // Buat chapter UJIAN AKHIR
+        const newQuizChapter = {
+          id: 'c' + Date.now(),
+          title: `Ujian Akhir: ${data.title || 'Presentasi'}`,
+          subtitle: `Evaluasi Komprehensif Seluruh Bab`,
+          isKahootMode: true,
+          kahootReadingTime: 5,
+          slides: result.slides,
+          image: data.chapters[0]?.image || '' 
+        };
+
+        // Tambahkan ke paling akhir
+        newData.chapters.push(newQuizChapter);
+        setData(newData);
+        showToast(`Berhasil menambahkan Bab Ujian Akhir dengan ${result.slides.length} soal!`);
+      } else {
+        showToast('Format balasan AI tidak sesuai');
+      }
+    } catch (e) {
+      showToast('Gagal terhubung ke AI');
+    }
+    setIsGenerating(false);
+  };
+
   const exportData = () => {
     if (!data) return;
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
@@ -524,11 +608,16 @@ export default function AdminPanel() {
         <div style={{ background: isGaming ? 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(59,130,246,0.1) 100%)' : 'linear-gradient(135deg, rgba(168,85,247,0.05) 0%, rgba(59,130,246,0.05) 100%)', border: `1px solid ${isGaming ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.3)'}`, borderRadius: '16px', padding: '2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111' }}><Sparkles size={20} color="#a855f7" /> AI Auto-Generator</h2>
-            <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Hemat waktu berjam-jam. Biarkan AI merancang seluruh materi presentasi Anda.</p>
+            <p style={{ margin: 0, color: isGaming ? '#a1a1aa' : '#52525b', fontSize: '0.9rem' }}>Hemat waktu berjam-jam. Biarkan AI merancang seluruh materi presentasi dan ujian Anda.</p>
           </div>
-          <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)', fontSize: '1rem', transition: 'all 0.2s' }}>
-            <Sparkles size={18} /> Generate Materi Sekarang
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button onClick={() => setShowAiModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 15px rgba(168, 85, 247, 0.4)', fontSize: '1rem', transition: 'all 0.2s' }}>
+              <Sparkles size={18} /> Generate Materi Sekarang
+            </button>
+            <button onClick={handleGenerateGlobalQuizAI} disabled={isGenerating} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: isGenerating ? 'not-allowed' : 'pointer', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)', fontSize: '1rem', transition: 'all 0.2s', opacity: isGenerating ? 0.7 : 1 }}>
+              <Target size={18} /> Generate Ujian Akhir (Semua Bab)
+            </button>
+          </div>
         </div>
 
         {/* Global Settings */}
