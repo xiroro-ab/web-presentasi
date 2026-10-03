@@ -16,8 +16,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'API Key tidak ditemukan. Silakan masukkan API Key Anda.' }, { status: 400 });
     }
 
-    // Gunakan custom model jika ada, jika tidak default ke gemini-1.5-flash
-    const modelName = customModel || process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    // Gunakan custom model jika ada, jika tidak default ke gemini-3.8-flash
+    const modelName = customModel || process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName });
