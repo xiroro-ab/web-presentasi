@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       }
 
       PERATURAN PENTING:
-      1. Hasil HARUS BERUPA OBJEK JSON MURNI. Jangan tambahkan teks apapun sebelum atau sesudah JSON. Jangan gunakan blockquote markdown.
+      1. Hasil HARUS BERUPA OBJEK JSON MURNI. Anda Boleh membungkusnya dalam markdown \`\`\`json.
       2. Buat materi selengkap mungkin, 3-5 chapter, masing-masing 3-6 slide.
       3. Gunakan bahasa Indonesia yang baik, benar, dan edukatif (kecuali topik meminta bahasa lain).
       4. Untuk properti "image", JIKA materi slide tersebut sangat terbantu dengan gambar, hasilkan prompt bahasa Inggris yang deskriptif untuk gambar tersebut dan format menjadi URL pollinations.ai (misal: https://image.pollinations.ai/prompt/astronaut%20walking%20on%20mars?width=1200&height=800&nologo=true). Biarkan kosong/undefined jika tidak butuh gambar.
@@ -55,8 +55,7 @@ export async function POST(request: Request) {
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nTopik/Permintaan User: ${prompt}` }] }],
       generationConfig: {
-        temperature: 0.7,
-        responseMimeType: "application/json",
+        temperature: 0.7
       }
     });
 
@@ -64,11 +63,13 @@ export async function POST(request: Request) {
     let parsedData;
     
     try {
-      parsedData = JSON.parse(responseText);
-    } catch (e) {
-      // Jika masih ada sisa markdown meski sudah diset responseMimeType
-      const cleanedText = responseText.replace(/```json\n?|\n?```/g, '').trim();
+      // Cari blok JSON jika dibungkus dengan markdown
+      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      const cleanedText = jsonMatch ? jsonMatch[1].trim() : responseText.trim();
       parsedData = JSON.parse(cleanedText);
+    } catch (e) {
+      console.error('Failed to parse AI output. Raw text:', responseText);
+      return NextResponse.json({ error: 'AI mengembalikan format yang tidak valid. Silakan coba lagi.' }, { status: 500 });
     }
 
     return NextResponse.json(parsedData);
