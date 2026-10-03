@@ -77,20 +77,36 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        setPlayers(prev => {
-          const updated: Record<string, Player> = { ...prev };
+        
+        if (stateRef.current === 'lobby') {
+          // Exact match in lobby to remove disconnected players
+          const lobbyPlayers: Record<string, Player> = {};
           for (const key in state) {
             const clients = state[key] as any[];
             for (const client of clients) {
               if (!client.isHost && client.id) {
-                if (!updated[client.id]) {
-                  updated[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
-                }
+                lobbyPlayers[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
               }
             }
           }
-          return updated;
-        });
+          setPlayers(lobbyPlayers);
+        } else {
+          // Accumulate during game to preserve scores
+          setPlayers(prev => {
+            const updated: Record<string, Player> = { ...prev };
+            for (const key in state) {
+              const clients = state[key] as any[];
+              for (const client of clients) {
+                if (!client.isHost && client.id) {
+                  if (!updated[client.id]) {
+                    updated[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
+                  }
+                }
+              }
+            }
+            return updated;
+          });
+        }
       })
       .on('broadcast', { event: 'request_state' }, () => {
         broadcastState(stateRef.current, slideIndexRef.current, { 
@@ -108,6 +124,13 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({ isHost: true });
+          
+          // Force all lingering student sessions to reset
+          channel.send({
+            type: 'broadcast',
+            event: 'reset_game',
+            payload: {}
+          });
         }
       });
 
@@ -179,8 +202,10 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     const maxTime = currentSlide?.quizTimer || 20;
     const correctAns = currentSlide?.quizCorrectAnswer || 'A';
     
-    Object.keys(currentAnswers).forEach(pid => {
-      const ans = currentAnswers[pid];
+    const currentAnswersLatest = answersRef.current;
+    
+    Object.keys(currentAnswersLatest).forEach(pid => {
+      const ans = currentAnswersLatest[pid];
       if (ans.answer === correctAns) {
         // Kahoot style scoring: max 1000, min 500 if correct
         const score = Math.round((1 - (ans.timeTaken / maxTime) / 2) * 1000);
@@ -197,7 +222,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     broadcastState('result', slideIndexRef.current, { 
       correctAnswer: correctAns, 
       leaderboard,
-      playerResults: currentAnswers
+      playerResults: currentAnswersLatest
     });
   };
 

@@ -61,6 +61,10 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
           localStorage.removeItem(`kahoot_session_${resolvedParams.roomId}`);
         }
       })
+      .on('broadcast', { event: 'reset_game' }, () => {
+        localStorage.removeItem(`kahoot_session_${resolvedParams.roomId}`);
+        window.location.reload();
+      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({ id: uid, name: uName, avatar: uAvatar, isHost: false });
