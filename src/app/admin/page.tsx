@@ -76,7 +76,7 @@ export default function AdminPanel() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiApiKey, setAiApiKey] = useState('');
-  const [aiModel, setAiModel] = useState('gemini-3.6-flash');
+  const [aiModel, setAiModel] = useState('gemini-1.5-flash');
   const [aiCustomModel, setAiCustomModel] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const showToast = (msg: string) => {
@@ -700,9 +700,9 @@ export default function AdminPanel() {
                     onChange={(e) => setAiModel(e.target.value)} 
                     style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none', marginBottom: '0.5rem' }}
                   >
-                    <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash (Rekomendasi / Cepat)</option>
-                    <option value="gemini-3-preview" style={{color: '#111'}}>Gemini 3 Preview (Eksperimental)</option>
-                    <option value="gemini-3.5-pro" style={{color: '#111'}}>Gemini 3.5 Pro (Pintar)</option>
+                    <option value="gemini-1.5-flash" style={{color: '#111'}}>Gemini 1.5 Flash (Rekomendasi / Cepat)</option>
+                    <option value="gemini-1.5-pro" style={{color: '#111'}}>Gemini 1.5 Pro (Sangat Pintar / Lambat)</option>
+                    <option value="gemini-1.5-flash-8b" style={{color: '#111'}}>Gemini 1.5 Flash-8B (Super Cepat)</option>
                     <option value="custom" style={{color: '#111'}}>Ketik Manual / Model Lainnya...</option>
                   </select>
                   
