@@ -76,7 +76,7 @@ export default function AdminPanel() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiApiKey, setAiApiKey] = useState('');
-  const [aiModel, setAiModel] = useState('gemini-1.5-flash');
+  const [aiModel, setAiModel] = useState('gemini-3.6-flash');
   const [isGenerating, setIsGenerating] = useState(false);
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -690,9 +690,9 @@ export default function AdminPanel() {
                     onChange={(e) => setAiModel(e.target.value)} 
                     style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }}
                   >
-                    <option style={{color: '#111'}} value="gemini-1.5-flash">Gemini 1.5 Flash (Cepat)</option>
-                    <option style={{color: '#111'}} value="gemini-1.5-pro">Gemini 1.5 Pro (Pintar)</option>
-                    <option style={{color: '#111'}} value="gemini-2.0-flash">Gemini 2.0 Flash (Terbaru)</option>
+                    <option style={{color: '#111'}} value="gemini-3.6-flash">Gemini 3.6 Flash (Cepat)</option>
+                    <option style={{color: '#111'}} value="gemini-3-preview">Gemini 3 Preview (Eksperimental)</option>
+                    <option style={{color: '#111'}} value="gemini-3.5-pro">Gemini 3.5 Pro (Pintar)</option>
                   </select>
                 </div>
               </div>
