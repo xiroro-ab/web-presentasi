@@ -77,6 +77,7 @@ export default function AdminPanel() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiApiKey, setAiApiKey] = useState('');
   const [aiModel, setAiModel] = useState('gemini-3.6-flash');
+  const [aiCustomModel, setAiCustomModel] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const showToast = (msg: string) => {
     setMessage(msg);
@@ -222,7 +223,7 @@ export default function AdminPanel() {
         body: JSON.stringify({
           prompt: aiPrompt,
           customApiKey: aiApiKey,
-          customModel: aiModel
+          customModel: aiModel === 'custom' ? aiCustomModel : aiModel
         })
       });
       const result = await res.json();
@@ -695,8 +696,8 @@ export default function AdminPanel() {
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Pilih Model AI</label>
                   <select 
-                    value={aiModel.startsWith('gemini') ? aiModel : 'custom'} 
-                    onChange={(e) => setAiModel(e.target.value === 'custom' ? '' : e.target.value)} 
+                    value={aiModel} 
+                    onChange={(e) => setAiModel(e.target.value)} 
                     style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none', marginBottom: '0.5rem' }}
                   >
                     <option value="gemini-3.6-flash" style={{color: '#111'}}>Gemini 3.6 Flash (Rekomendasi / Cepat)</option>
@@ -705,15 +706,15 @@ export default function AdminPanel() {
                     <option value="custom" style={{color: '#111'}}>Ketik Manual / Model Lainnya...</option>
                   </select>
                   
-                  {(!aiModel.startsWith('gemini-3') && !aiModel.startsWith('gemini-1') && !aiModel.startsWith('gemini-2')) || aiModel === '' ? (
+                  {aiModel === 'custom' && (
                     <input 
                       type="text"
-                      value={aiModel} 
-                      onChange={(e) => setAiModel(e.target.value)} 
+                      value={aiCustomModel} 
+                      onChange={(e) => setAiCustomModel(e.target.value)} 
                       style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#fff', border: `1px dashed ${isGaming ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} 
                       placeholder="Misal: gemini-4.0-pro" 
                     />
-                  ) : null}
+                  )}
                 </div>
               </div>
 
