@@ -25,19 +25,10 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
   const channelRef = useRef<any>(null);
   const answeringStartTimeRef = useRef<number>(0);
 
-  useEffect(() => {
-    // Generate unique ID for this player
-    setMyId(Math.random().toString(36).substring(2, 10));
-    setAvatar(AVATARS[Math.floor(Math.random() * AVATARS.length)]);
-  }, []);
-
-  const handleJoin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-
+  const connectToRoom = (uid: string, uName: string, uAvatar: string) => {
     const roomId = `kahoot-${resolvedParams.roomId}`;
     const channel = supabase.channel(roomId, {
-      config: { presence: { key: myId } }
+      config: { presence: { key: uid } }
     });
 
     channel
@@ -50,13 +41,11 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
         } else if (payload.state === 'answering') {
           answeringStartTimeRef.current = Date.now();
         } else if (payload.state === 'result') {
-          // Check if my answer was correct
-          if (payload.playerResults && payload.playerResults[myId]) {
-            const myAns = payload.playerResults[myId].answer;
+          if (payload.playerResults && payload.playerResults[uid]) {
+            const myAns = payload.playerResults[uid].answer;
             const isCorrect = myAns === payload.correctAnswer;
-            // Calculate what my score was for display
             const maxTime = 20; // fallback
-            const timeTaken = payload.playerResults[myId].timeTaken;
+            const timeTaken = payload.playerResults[uid].timeTaken;
             const scoreAdded = isCorrect ? Math.round((1 - (timeTaken / maxTime) / 2) * 1000) : 0;
             setAnswerResult({ isCorrect, scoreAdded });
           } else {
@@ -66,10 +55,9 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ id: myId, name, avatar, isHost: false });
+          await channel.track({ id: uid, name: uName, avatar: uAvatar, isHost: false });
           setJoined(true);
           
-          // Request current state from host
           channel.send({
             type: 'broadcast',
             event: 'request_state',
@@ -79,6 +67,37 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
       });
 
     channelRef.current = channel;
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`kahoot_session_${resolvedParams.roomId}`);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.id && data.name && data.avatar) {
+          setMyId(data.id);
+          setName(data.name);
+          setAvatar(data.avatar);
+          connectToRoom(data.id, data.name, data.avatar);
+          return;
+        }
+      } catch (e) {
+        // Fallback below
+      }
+    }
+    
+    // Generate unique ID for this player if no session found
+    setMyId(Math.random().toString(36).substring(2, 10));
+    setAvatar(AVATARS[Math.floor(Math.random() * AVATARS.length)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedParams.roomId]);
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    localStorage.setItem(`kahoot_session_${resolvedParams.roomId}`, JSON.stringify({ id: myId, name, avatar }));
+    connectToRoom(myId, name, avatar);
   };
 
   const submitAnswer = (ans: string) => {
