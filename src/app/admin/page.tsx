@@ -8,7 +8,7 @@ import imageCompression from 'browser-image-compression';
 import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
 
 type EmbedLink = { title: string; url: string; };
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 
 type PresentationData = {
@@ -565,6 +565,38 @@ export default function AdminPanel() {
                           </div>
                           <input type="text" value={slide.title} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].title = e.target.value; setData(newData); }} style={{ width: '100%', fontSize: '1.2rem', fontWeight: 600, background: 'transparent', border: 'none', color: isGaming ? '#fff' : '#111', padding: '0 0 1rem 0', outline: 'none' }} placeholder="Slide Title" />
                           
+                          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: isGaming ? '#a1a1aa' : '#71717a', fontWeight: 600 }}>
+                              <input type="checkbox" checked={slide.isQuiz || false} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].isQuiz = e.target.checked; setData(newData); }} style={{ width: '16px', height: '16px', cursor: 'pointer' }} />
+                              Jadikan Slide ini sebagai Kuis Interaktif
+                            </label>
+                          </div>
+
+                          {slide.isQuiz && (
+                            <div style={{ background: isGaming ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)', padding: '1.5rem', borderRadius: '12px', border: `1px solid ${isGaming ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.1)'}`, marginBottom: '1.5rem' }}>
+                              <h4 style={{ margin: '0 0 1rem 0', color: isGaming ? '#93c5fd' : '#2563eb', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>Pengaturan Kuis</h4>
+                              
+                              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Pertanyaan</label>
+                              <textarea value={slide.quizQuestion || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizQuestion = e.target.value; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', marginBottom: '1rem', outline: 'none' }} placeholder="Masukkan pertanyaan kuis..." rows={2} />
+                              
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                {['A', 'B', 'C', 'D'].map((opt) => (
+                                  <div key={opt}>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Opsi {opt}</label>
+                                    <input type="text" value={(slide as any)[`quizOption${opt}`] || ''} onChange={(e) => { const newData = { ...data }; (newData.chapters[cIdx].slides[sIdx] as any)[`quizOption${opt}`] = e.target.value; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }} placeholder={`Jawaban ${opt}`} />
+                                  </div>
+                                ))}
+                              </div>
+                              
+                              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Kunci Jawaban Benar</label>
+                              <select value={slide.quizCorrectAnswer || 'A'} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizCorrectAnswer = e.target.value as any; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }}>
+                                <option value="A">Opsi A</option>
+                                <option value="B">Opsi B</option>
+                                <option value="C">Opsi C</option>
+                                <option value="D">Opsi D</option>
+                              </select>
+                            </div>
+                          )}
                           <div style={{ marginBottom: '1rem' }}>
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>URL Gambar Utama Slide</label>
                             <input 

@@ -96,6 +96,8 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const [pollResults, setPollResults] = useState<{name: string, uv: number}[]>([
     { name: 'A', uv: 0 }, { name: 'B', uv: 0 }, { name: 'C', uv: 0 }, { name: 'D', uv: 0 }
   ]);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizScores, setQuizScores] = useState<{name: string, score: number}[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('presentation_notes');
@@ -136,7 +138,7 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
 
-  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); }, [activeSlideIndex]);
+  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); setShowQuiz(false); }, [activeSlideIndex]);
 
   useEffect(() => {
     if (!showPoll || !activeSlide) return;
@@ -161,10 +163,30 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   }, [showPoll, activeSlide]);
 
   useEffect(() => {
+    if (!showQuiz || !activeSlide) return;
+    const fetchQuiz = async () => {
+      try {
+        const id = window.location.pathname.split('/').pop();
+        const res = await fetch(`/api/quiz?id=${id}_${activeSlide.id}`);
+        const result = await res.json();
+        if (result.results) {
+          const scores = Object.keys(result.results).map(name => ({ name, score: result.results[name] }));
+          scores.sort((a, b) => b.score - a.score);
+          setQuizScores(scores);
+        }
+      } catch (e) {}
+    };
+    fetchQuiz();
+    const interval = setInterval(fetchQuiz, 2000);
+    return () => clearInterval(interval);
+  }, [showQuiz, activeSlide]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (showFrame) { if (e.key === 'Escape') setShowFrame(false); return; }
       if (showNotes) { if (e.key === 'Escape') setShowNotes(false); return; }
       if (showPoll) { if (e.key === 'Escape') setShowPoll(false); return; }
+      if (showQuiz) { if (e.key === 'Escape') setShowQuiz(false); return; }
       
       if (activeChapterIndex !== null) {
         if (e.key === 'ArrowRight') nextSlide();
@@ -358,6 +380,60 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
         )}
       </AnimatePresence>
 
+      {/* Interactive Quiz Modal */}
+      <AnimatePresence>
+        {showQuiz && activeSlide && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Kuis: {activeSlide.title}</h2>
+              <button onClick={() => setShowQuiz(false)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <X size={18} /> Tutup Kuis
+              </button>
+            </div>
+            
+            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+              {/* QR Code Section */}
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Masuk Kuis!</h3>
+                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
+                  <QRCodeSVG value={`${window.location.origin}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
+                <button onClick={async () => {
+                  const id = window.location.pathname.split('/').pop();
+                  await fetch(`/api/quiz?id=${id}_${activeSlide.id}`, { method: 'DELETE' });
+                  setQuizScores([]);
+                }} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                  Reset Skor Kuis
+                </button>
+              </motion.div>
+              
+              {/* Leaderboard Section */}
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="#3b82f6" /> Live Leaderboard</h3>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '1rem' }} className="hide-scrollbar">
+                  {quizScores.length === 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a1a1aa', fontWeight: 600 }}>Belum ada peserta yang menjawab.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {quizScores.map((score, idx) => (
+                        <motion.div key={score.name} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: idx === 0 ? 'linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.05) 100%)' : '#f4f4f5', border: `1px solid ${idx === 0 ? 'rgba(234,179,8,0.5)' : 'transparent'}`, padding: '1rem 1.5rem', borderRadius: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#a1a1aa' }}>#{idx + 1}</span>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#111' }}>{score.name}</span>
+                          </div>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#3b82f6' }}>{score.score} pts</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {activeChapterIndex === null ? (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.8 }} style={{ width: '100%', height: '100%', overflowY: 'auto', scrollSnapType: 'y mandatory', scrollBehavior: 'smooth' }} className="hide-scrollbar">
@@ -437,8 +513,13 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     </motion.button>
                     
                     <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }} onClick={() => setShowPoll(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(59,130,246,0.3)'; e.currentTarget.style.color='#93c5fd'}} onMouseOut={e => {e.currentTarget.style.background='rgba(59,130,246,0.15)'; e.currentTarget.style.color='#60a5fa'}}>
-                      <BarChartIcon size={18} /> Buka Polling / Kuis
+                      <BarChartIcon size={18} /> Buka Polling
                     </motion.button>
+                    {(activeSlide as any)?.isQuiz && (
+                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(168,85,247,0)', '0 0 20px rgba(168,85,247,0.6)', '0 0 0px rgba(168,85,247,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.7 }} onClick={() => setShowQuiz(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)', border: '1px solid rgba(168,85,247,0.4)', color: '#d8b4fe', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.4) 0%, rgba(59,130,246,0.4) 100%)'; e.currentTarget.style.color='#f3e8ff'}} onMouseOut={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)'; e.currentTarget.style.color='#d8b4fe'}}>
+                        <Target size={18} /> Buka Kuis Interaktif
+                      </motion.button>
+                    )}
                   </motion.div>
 
                   <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
@@ -524,7 +605,7 @@ function FormalViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   const activeSlide = activeChapter ? activeChapter.slides[activeSlideIndex] : null;
   const progressPercent = activeChapter && activeChapter.slides.length > 0 ? ((activeSlideIndex + 1) / activeChapter.slides.length) * 100 : 0;
 
-  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); }, [activeSlideIndex]);
+  useEffect(() => { setShowFrame(false); setShowNotes(false); setShowPoll(false); setShowQuiz(false); }, [activeSlideIndex]);
 
   useEffect(() => {
     if (!showPoll || !activeSlide) return;
