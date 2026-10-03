@@ -208,13 +208,16 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   };
 
   const nextSlide = () => {
-    if (activeSlideIndex < kahootSlides.length - 1) {
-      setActiveSlideIndex(prev => prev + 1);
-      startReading();
+    // Find the NEXT quiz slide in chapter.slides
+    const nextIdx = chapter.slides.findIndex((s: any, idx: number) => idx > slideIndexRef.current && s.isQuiz);
+    
+    if (nextIdx !== -1) {
+      setActiveSlideIndex(nextIdx);
+      startReading(nextIdx);
     } else {
       setKahootState('podium');
       const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 3);
-      broadcastState('podium', activeSlideIndex, { leaderboard });
+      broadcastState('podium', slideIndexRef.current, { leaderboard });
     }
   };
 

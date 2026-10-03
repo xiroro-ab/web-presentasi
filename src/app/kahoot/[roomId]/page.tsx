@@ -151,6 +151,15 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
             <div style={{ fontSize: '6rem', marginBottom: '1rem' }}>{avatar}</div>
             <h2 style={{ fontSize: '2rem', fontWeight: 800 }}>Halo, {name}!</h2>
             <p style={{ fontSize: '1.25rem', marginTop: '2rem', fontWeight: 600, opacity: 0.8 }}>Tunggu guru memulai kuis...</p>
+            <button 
+              onClick={() => {
+                localStorage.removeItem(`kahoot_session_${resolvedParams.roomId}`);
+                window.location.reload();
+              }} 
+              style={{ marginTop: '3rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              Ganti Nama / Keluar
+            </button>
           </motion.div>
         )}
 
