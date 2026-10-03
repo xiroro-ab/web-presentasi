@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 type Player = { id: string; name: string; avatar: string; score: number };
 
-function AutoResizeText({ text, maxFontSize = 60, minFontSize = 16, align = 'center' }: { text: string, maxFontSize?: number, minFontSize?: number, align?: 'center' | 'left' }) {
+function AutoResizeText({ text, maxFontSize = 60, minFontSize = 16, align = 'center' }: { text: string, maxFontSize?: number, minFontSize?: number, align?: 'center' | 'left' | 'justify' }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   
@@ -338,6 +338,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
             text={activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'} 
             maxFontSize={80} 
             minFontSize={20} 
+            align="justify"
           />
         </div>
 
@@ -351,7 +352,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
         )}
 
         {(kahootState === 'answering' || kahootState === 'result') && (
-          <div style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', flex: 1 }}>
+          <div style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '1.5rem', flex: 1, minHeight: 0 }}>
             {['A', 'B', 'C', 'D'].map((opt, i) => {
               const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
               const shapes = ['▲', '◆', '●', '■'];
@@ -361,7 +362,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               const isFaded = kahootState === 'result' && !isCorrect;
 
               return (
-                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0 }}>
+                <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
                   <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
                   <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center' }}>
                     <AutoResizeText text={text} maxFontSize={40} minFontSize={16} align="left" />
