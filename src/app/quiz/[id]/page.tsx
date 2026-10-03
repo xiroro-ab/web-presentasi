@@ -17,6 +17,16 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (hasJoined && timeLeft !== null && timeLeft > 0 && !submitted) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (hasJoined && timeLeft === 0 && !submitted) {
+      handleSubmit('TIMEOUT');
+    }
+  }, [hasJoined, timeLeft, submitted]);
 
   useEffect(() => {
     // Fetch presentation to get quiz data
@@ -46,18 +56,20 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
     e.preventDefault();
     if (!studentName.trim()) return;
     setHasJoined(true);
+    setTimeLeft(slideData?.quizTimer || 30);
   };
 
   const handleSubmit = async (ans: string) => {
     if (submitting) return;
     setSubmitting(true);
-    setSelected(ans);
+    setSelected(ans === 'TIMEOUT' ? 'Waktu Habis!' : ans);
     
     const correctAns = slideData?.quizCorrectAnswer || 'A';
     const correct = ans === correctAns;
     setIsCorrect(correct);
 
-    const points = correct ? 100 : 0;
+    const maxTime = slideData?.quizTimer || 30;
+    const points = correct ? Math.max(10, Math.round(((timeLeft || 1) / maxTime) * 100)) : 0;
 
     try {
       await fetch('/api/quiz', {
@@ -90,10 +102,14 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
 
   if (!hasJoined) {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #09090b 0%, #171720 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'var(--font-sans)' }}>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #09090b 0%, #171720 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'var(--font-sans)', overflowY: 'auto' }}>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '3rem 2rem', borderRadius: '24px', width: '100%', maxWidth: '400px', textAlign: 'center', backdropFilter: 'blur(10px)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', color: '#3b82f6' }}>Siap Bermain?</h1>
-          <p style={{ color: '#a1a1aa', marginBottom: '2rem' }}>Masukkan nama kamu untuk ikut kuis ini.</p>
+          <p style={{ color: '#a1a1aa', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Masukkan nama kamu untuk ikut kuis ini.</p>
+          <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
+            <p style={{ margin: 0, color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600 }}>⏱ Waktu Menjawab: {slideData?.quizTimer || 30} Detik</p>
+            <p style={{ margin: '0.5rem 0 0 0', color: '#bfdbfe', fontSize: '0.8rem' }}>Semakin cepat kamu menjawab dengan benar, <b>semakin tinggi poin yang didapat!</b></p>
+          </div>
           
           <form onSubmit={handleJoin}>
             <input 
@@ -130,9 +146,16 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', padding: '2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ minHeight: '100vh', background: '#09090b', color: '#fff', padding: '2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
+      <div style={{ width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 1rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa' }}>
+          Peserta: <b>{studentName}</b>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: (timeLeft || 0) <= 5 ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)', padding: '0.4rem 1rem', borderRadius: '100px', color: (timeLeft || 0) <= 5 ? '#ef4444' : '#60a5fa', fontWeight: 800, border: `1px solid ${(timeLeft || 0) <= 5 ? 'rgba(239,68,68,0.5)' : 'rgba(59,130,246,0.5)'}` }}>
+          ⏱ {timeLeft}s
+        </div>
+      </div>
       <div style={{ textAlign: 'center', marginBottom: '2rem', width: '100%', maxWidth: '600px' }}>
-        <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.25rem 1rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa', marginBottom: '1rem' }}>Peserta: {studentName}</div>
         {slideData.quizQuestion ? (
           <div className="quiz-question-html" style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0 0 0.5rem 0', lineHeight: 1.4, textAlign: 'left' }} dangerouslySetInnerHTML={{ __html: slideData.quizQuestion }} />
         ) : (

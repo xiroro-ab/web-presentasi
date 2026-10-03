@@ -8,7 +8,7 @@ import imageCompression from 'browser-image-compression';
 import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
 
 type EmbedLink = { title: string; url: string; };
-type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; };
+type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; quizTimer?: number; };
 type Chapter = { id: string; title: string; subtitle?: string; image?: string; slides: Slide[] };
 
 type PresentationData = {
@@ -687,12 +687,15 @@ export default function AdminPanel() {
                               </div>
                               
                               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Kunci Jawaban Benar</label>
-                              <select value={slide.quizCorrectAnswer || 'A'} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizCorrectAnswer = e.target.value as any; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }}>
+                              <select value={slide.quizCorrectAnswer || 'A'} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizCorrectAnswer = e.target.value as any; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none', marginBottom: '1rem' }}>
                                 <option value="A">Opsi A</option>
                                 <option value="B">Opsi B</option>
                                 <option value="C">Opsi C</option>
                                 <option value="D">Opsi D</option>
                               </select>
+                              
+                              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Durasi Timer (Detik)</label>
+                              <input type="number" min="5" max="300" value={slide.quizTimer || 30} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].slides[sIdx].quizTimer = parseInt(e.target.value) || 30; setData(newData); }} style={{ width: '100%', padding: '0.75rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, color: isGaming ? '#fff' : '#111', borderRadius: '8px', outline: 'none' }} placeholder="Contoh: 30" />
                             </div>
                           )}
                           <div style={{ marginBottom: '1rem' }}>
