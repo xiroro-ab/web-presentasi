@@ -12,6 +12,40 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 type Player = { id: string; name: string; avatar: string; score: number };
 
+function AutoResizeText({ text, maxFontSize = 60, minFontSize = 16, align = 'center' }: { text: string, maxFontSize?: number, minFontSize?: number, align?: 'center' | 'left' }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const adjustFontSize = () => {
+      if (!containerRef.current || !textRef.current) return;
+      let currentSize = maxFontSize;
+      textRef.current.style.fontSize = `${currentSize}px`;
+
+      while (
+        currentSize > minFontSize &&
+        (textRef.current.scrollHeight > containerRef.current.clientHeight ||
+         textRef.current.scrollWidth > containerRef.current.clientWidth)
+      ) {
+        currentSize -= 2;
+        textRef.current.style.fontSize = `${currentSize}px`;
+      }
+    };
+
+    adjustFontSize();
+    window.addEventListener('resize', adjustFontSize);
+    return () => window.removeEventListener('resize', adjustFontSize);
+  }, [text, maxFontSize, minFontSize]);
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: align === 'center' ? 'center' : 'flex-start', overflow: 'hidden' }}>
+      <div ref={textRef} style={{ fontWeight: 800, textAlign: align, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%', lineHeight: 1.2 }}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
 export default function KahootPresenter({ chapter, presentationId, onExit }: any) {
   const [kahootState, setKahootState] = useState<'lobby' | 'reading' | 'answering' | 'result' | 'interim_leaderboard' | 'podium'>('lobby');
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -299,10 +333,12 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
       <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         
-        <div style={{ width: '100%', maxWidth: '1200px', flex: '0 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0', overflowY: 'auto', maxHeight: '30vh', padding: '1rem', minWidth: 0 }}>
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 3.5rem)', fontWeight: 800, textAlign: 'center', margin: 0, wordWrap: 'break-word', overflowWrap: 'break-word', width: '100%', lineHeight: 1.2, minWidth: 0 }}>
-            {activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'}
-          </h1>
+        <div style={{ width: '100%', maxWidth: '1200px', height: '25vh', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0' }}>
+          <AutoResizeText 
+            text={activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'} 
+            maxFontSize={80} 
+            minFontSize={20} 
+          />
         </div>
 
         {kahootState === 'reading' && (
@@ -327,8 +363,8 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               return (
                 <motion.div key={opt} style={{ background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0 }}>
                   <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
-                  <div style={{ flex: 1, minWidth: 0, wordWrap: 'break-word', overflowWrap: 'break-word', fontSize: 'clamp(1rem, 1.8vw, 2rem)', lineHeight: 1.3 }}>
-                    {text}
+                  <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center' }}>
+                    <AutoResizeText text={text} maxFontSize={40} minFontSize={16} align="left" />
                   </div>
                   
                   {kahootState === 'result' && isCorrect && (
