@@ -26,7 +26,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   const kahootSlides = chapter.slides.filter((s: any) => s.isQuiz);
 
   useEffect(() => {
-    const roomId = `kahoot-${presentationId}-${chapter.id}`;
+    const roomId = `kahoot-${presentationId}_${chapter.id}`;
     const channel = supabase.channel(roomId, {
       config: { presence: { key: 'host' } }
     });
@@ -34,18 +34,20 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        const newPlayers: Record<string, Player> = { ...players };
-        for (const key in state) {
-          const clients = state[key] as any[];
-          for (const client of clients) {
-            if (!client.isHost && client.id) {
-              if (!newPlayers[client.id]) {
-                newPlayers[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
+        setPlayers(prev => {
+          const updated: Record<string, Player> = { ...prev };
+          for (const key in state) {
+            const clients = state[key] as any[];
+            for (const client of clients) {
+              if (!client.isHost && client.id) {
+                if (!updated[client.id]) {
+                  updated[client.id] = { id: client.id, name: client.name, avatar: client.avatar, score: 0 };
+                }
               }
             }
           }
-        }
-        setPlayers(prev => ({ ...prev, ...newPlayers }));
+          return updated;
+        });
       })
       .on('broadcast', { event: 'request_state' }, () => {
         broadcastState(kahootState, activeSlideIndex);
