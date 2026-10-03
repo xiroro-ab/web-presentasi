@@ -129,12 +129,13 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   };
 
   // State Transitions
-  const startReading = () => {
+  const startReading = (overrideIndex?: number) => {
+    const idx = overrideIndex !== undefined ? overrideIndex : slideIndexRef.current;
     const readingTime = chapter.kahootReadingTime || 5;
     setKahootState('reading');
     setTimeLeft(readingTime);
     setCurrentAnswers({});
-    broadcastState('reading', activeSlideIndex, { timeLeft: readingTime });
+    broadcastState('reading', idx, { timeLeft: readingTime });
 
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -150,10 +151,11 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   };
 
   const startAnswering = () => {
-    const answerTime = activeSlide?.quizTimer || 20;
+    const currentSlide = chapter.slides[slideIndexRef.current];
+    const answerTime = currentSlide?.quizTimer || 20;
     setKahootState('answering');
     setTimeLeft(answerTime);
-    broadcastState('answering', activeSlideIndex, { timeLeft: answerTime });
+    broadcastState('answering', slideIndexRef.current, { timeLeft: answerTime });
 
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -173,8 +175,9 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     
     // Calculate scores
     const newPlayers = { ...players };
-    const maxTime = activeSlide?.quizTimer || 20;
-    const correctAns = activeSlide?.quizCorrectAnswer || 'A';
+    const currentSlide = chapter.slides[slideIndexRef.current];
+    const maxTime = currentSlide?.quizTimer || 20;
+    const correctAns = currentSlide?.quizCorrectAnswer || 'A';
     
     Object.keys(currentAnswers).forEach(pid => {
       const ans = currentAnswers[pid];
@@ -191,7 +194,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     // Create leaderboard data to broadcast
     const leaderboard = Object.values(newPlayers).sort((a, b) => b.score - a.score).slice(0, 5);
     
-    broadcastState('result', activeSlideIndex, { 
+    broadcastState('result', slideIndexRef.current, { 
       correctAnswer: correctAns, 
       leaderboard,
       playerResults: currentAnswers
@@ -255,7 +258,8 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
             const firstQuizIdx = chapter.slides.findIndex((s: any) => s.isQuiz);
             if (firstQuizIdx !== -1) {
               setActiveSlideIndex(firstQuizIdx);
-              startReading();
+              // Provide index explicitly since state update is async
+              startReading(firstQuizIdx);
             } else {
               alert('Tidak ada slide kuis di chapter ini!');
             }

@@ -56,6 +56,9 @@ export default function KahootStudentView({ params }: { params: Promise<{ roomId
           } else {
             setAnswerResult({ isCorrect: false, scoreAdded: 0 }); // Missed
           }
+        } else if (payload.state === 'podium') {
+          // Game over, clear session so next time they must enter name
+          localStorage.removeItem(`kahoot_session_${resolvedParams.roomId}`);
         }
       })
       .subscribe(async (status) => {
