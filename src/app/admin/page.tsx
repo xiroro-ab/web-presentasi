@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles, Target, Settings } from 'lucide-react';
+import { Plus, Trash2, Save, MonitorPlay, Download, Upload, ArrowLeft, Edit2, Sparkles, Target, Settings, LogOut, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
+import { createClient } from '@supabase/supabase-js';
 import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 type EmbedLink = { title: string; url: string; };
 type Slide = { id: string; title: string; content: string; image?: string; embedUrl?: string; embedTitle?: string; embeds?: EmbedLink[]; isQuiz?: boolean; quizQuestion?: string; quizOptionA?: string; quizOptionB?: string; quizOptionC?: string; quizOptionD?: string; quizCorrectAnswer?: 'A' | 'B' | 'C' | 'D'; quizTimer?: number; };
@@ -83,6 +89,35 @@ export default function AdminPanel() {
   const [quizCount, setQuizCount] = useState(10);
   const [showAiSettings, setShowAiSettings] = useState(false);
   
+  // Auth State
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setIsAuthorized(true);
+        setAuthChecking(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.replace('/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
   const showToast = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(''), 3000);
@@ -100,6 +135,7 @@ export default function AdminPanel() {
   };
 
   useEffect(() => {
+    if (!isAuthorized) return;
     loadPresentations();
     const loadBg = async () => {
       try {
@@ -121,7 +157,24 @@ export default function AdminPanel() {
       }
     };
     loadBg();
-  }, []);
+  }, [isAuthorized]);
+
+  if (authChecking) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f8fafc' }}>
+        <Loader2 className="animate-spin" size={48} color="#3b82f6" />
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .animate-spin {
+            animation: spin 1s linear infinite;
+          }
+        `}} />
+      </div>
+    );
+  }
 
   const handleCreateNew = () => {
     setData({
@@ -437,9 +490,14 @@ export default function AdminPanel() {
               </Link>
               <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Kelola Presentasi</h1>
             </div>
-            <button onClick={handleCreateNew} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
-              <Plus size={18} /> Buat Presentasi Baru
-            </button>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button onClick={handleCreateNew} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+                <Plus size={18} /> Buat Presentasi Baru
+              </button>
+              <button onClick={handleLogout} style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '0.75rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(239, 68, 68, 0.3)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }} title="Keluar / Logout" onMouseOver={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.4)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.2)'}>
+                <LogOut size={18} />
+              </button>
+            </div>
           </header>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
