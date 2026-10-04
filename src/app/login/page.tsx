@@ -126,9 +126,7 @@ export default function LoginPage() {
         style={{ width: '100%', maxWidth: '440px', padding: '2rem', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       >
         
-        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '2.5rem' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='rgba(255,255,255,0.7)'}}>
-          <ArrowLeft size={16} /> Kembali ke Halaman Utama
-        </Link>
+        {/* Link removed from here */}
 
         {/* Animated Avatar Box */}
         <div style={{ marginBottom: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -163,7 +161,7 @@ export default function LoginPage() {
           <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Alamat Email</label>
             <div style={{ position: 'relative' }}>
-              <Mail size={20} color={focusState === 'email' ? '#60a5fa' : "rgba(255,255,255,0.4)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s' }} />
+              <Mail size={20} color={focusState === 'email' ? '#60a5fa' : "rgba(255,255,255,0.7)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s', zIndex: 10, pointerEvents: 'none' }} />
               <input 
                 type="email" 
                 required
@@ -182,7 +180,7 @@ export default function LoginPage() {
           <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Kata Sandi</label>
             <div style={{ position: 'relative' }}>
-              <Key size={20} color={focusState === 'password' ? '#60a5fa' : "rgba(255,255,255,0.4)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s' }} />
+              <Key size={20} color={focusState === 'password' ? '#60a5fa' : "rgba(255,255,255,0.7)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s', zIndex: 10, pointerEvents: 'none' }} />
               <input 
                 type="password" 
                 required
@@ -215,8 +213,11 @@ export default function LoginPage() {
           </motion.button>
         </form>
         
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)' }}>
-          Hanya guru yang berwenang yang dapat mengakses.
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+          <span>Hanya guru yang berwenang yang dapat mengakses.</span>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='rgba(255,255,255,0.7)'}}>
+            <ArrowLeft size={16} /> Kembali ke Halaman Utama
+          </Link>
         </motion.div>
       </motion.div>
     </div>
