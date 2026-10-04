@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { Lock, Mail, Key, ArrowRight, AlertCircle, Loader2, ArrowLeft, Sparkles } from 'lucide-react';
+import { Mail, Key, ArrowRight, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getBackgroundFromDB } from '../../lib/indexedDbHelper';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -18,6 +19,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+
+  // Animation State
+  const [focusState, setFocusState] = useState<'idle' | 'email' | 'password'>('idle');
 
   // Background state
   const [globalBg, setGlobalBg] = useState('');
@@ -93,8 +97,15 @@ export default function LoginPage() {
     );
   }
 
+  // Animasi untuk Avatar Emoji
+  const getAvatarEmoji = () => {
+    if (focusState === 'password') return '🙈';
+    if (focusState === 'email') return '👀';
+    return '👋';
+  };
+
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', position: 'relative', overflow: 'hidden' }}>
       
       {/* Dynamic Background */}
       {globalBg && isVideoBg && (
@@ -103,105 +114,111 @@ export default function LoginPage() {
         </video>
       )}
       {globalBg && !isVideoBg && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: `url(${globalBg})`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundImage: \`url(\${globalBg})\`, backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0, opacity: globalBgOpacity }} />
       )}
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
 
-      {/* Kiri: Form Login */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '2rem', zIndex: 1 }}>
-        <div style={{ width: '100%', maxWidth: '400px' }}>
-          
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '2rem' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
-            <ArrowLeft size={16} /> Kembali ke Halaman Utama
-          </Link>
+      {/* Main Form Container */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ width: '100%', maxWidth: '440px', padding: '2rem', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+      >
+        
+        <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '2.5rem' }} onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#fff'}} onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)'; e.currentTarget.style.color='rgba(255,255,255,0.7)'}}>
+          <ArrowLeft size={16} /> Kembali ke Halaman Utama
+        </Link>
 
-          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-            <div style={{ width: '64px', height: '64px', background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.4)', borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#60a5fa', margin: '0 auto 1.5rem auto', boxShadow: '0 0 30px rgba(59,130,246,0.2)', backdropFilter: 'blur(10px)' }}>
-              <Lock size={32} />
-            </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Ruang Guru</h1>
-            <p style={{ color: 'rgba(255,255,255,0.7)', margin: 0, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Masuk untuk mengelola presentasi dan kuis</p>
-          </div>
-
-          {error && (
-            <div style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 500, backdropFilter: 'blur(10px)' }}>
-              <AlertCircle size={20} />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'rgba(0,0,0,0.3)', padding: '2rem', borderRadius: '24px', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Alamat Email</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={20} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input 
-                  type="email" 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)', outline: 'none', fontSize: '1rem', color: '#fff', transition: 'border 0.2s' }}
-                  onFocus={e=>e.currentTarget.style.border='1px solid rgba(59,130,246,0.5)'}
-                  onBlur={e=>e.currentTarget.style.border='1px solid rgba(255,255,255,0.1)'}
-                  placeholder="guru@sekolah.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Kata Sandi</label>
-              <div style={{ position: 'relative' }}>
-                <Key size={20} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input 
-                  type="password" 
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 3rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)', outline: 'none', fontSize: '1rem', color: '#fff', transition: 'border 0.2s' }}
-                  onFocus={e=>e.currentTarget.style.border='1px solid rgba(59,130,246,0.5)'}
-                  onBlur={e=>e.currentTarget.style.border='1px solid rgba(255,255,255,0.1)'}
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', opacity: loading ? 0.7 : 1, boxShadow: '0 4px 12px rgba(59,130,246,0.3)', transition: 'all 0.2s' }}
-              onMouseOver={e=> { if(!loading) e.currentTarget.style.background='#2563eb' }}
-              onMouseOut={e=> { if(!loading) e.currentTarget.style.background='#3b82f6' }}
-            >
-              {loading ? <Loader2 size={20} className="animate-spin" /> : (
-                <>Masuk Sekarang <ArrowRight size={20} /></>
-              )}
-            </button>
-          </form>
-          
-          <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)' }}>
-            Tambahkan akun guru baru melalui Dashboard Supabase.
-          </div>
+        {/* Animated Avatar Box */}
+        <div style={{ marginBottom: '2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <motion.div 
+            key={focusState}
+            initial={{ scale: 0.8, rotate: focusState === 'password' ? -10 : focusState === 'email' ? 10 : 0 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+            style={{ width: '80px', height: '80px', background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.4)', borderRadius: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '2.5rem', margin: '0 auto 1.5rem auto', boxShadow: '0 0 40px rgba(59,130,246,0.2)', backdropFilter: 'blur(10px)' }}
+          >
+            {getAvatarEmoji()}
+          </motion.div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Ruang Guru</h1>
         </div>
-      </div>
 
-      {/* Kanan: Ilustrasi / Dekorasi (Bisa dihilangkan jika di layar HP) */}
-      <div style={{ flex: 1, background: 'rgba(0,0,0,0.3)', borderLeft: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '4rem', color: '#fff', zIndex: 1, backdropFilter: 'blur(20px)' }} className="hide-on-mobile">
-        <div style={{ maxWidth: '400px', textAlign: 'center' }}>
-          <div style={{ width: '80px', height: '80px', background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.4)', borderRadius: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#c084fc', margin: '0 auto 2rem auto', boxShadow: '0 0 40px rgba(168,85,247,0.2)' }}>
-            <Sparkles size={40} />
-          </div>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.2, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Selamat Datang Kembali, Guru Hebat!</h2>
-          <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Kelola materi presentasi Anda, atur kuis interaktif, dan jadikan proses belajar mengajar lebih menyenangkan dengan sentuhan magis AI.</p>
-        </div>
-      </div>
+        <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'rgba(0,0,0,0.4)', padding: '2.5rem', borderRadius: '32px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+          
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginBottom: '0.5rem' }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#f87171', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', fontWeight: 500 }}
+              >
+                <AlertCircle size={20} />
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <style dangerouslySetInnerHTML={{__html: `
-        @media (max-width: 768px) {
-          .hide-on-mobile {
-            display: none !important;
-          }
-        }
-      `}} />
+          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Alamat Email</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={20} color={focusState === 'email' ? '#60a5fa' : "rgba(255,255,255,0.4)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s' }} />
+              <input 
+                type="email" 
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setFocusState('email')}
+                onBlur={() => setFocusState('idle')}
+                style={{ width: '100%', padding: '1rem 1rem 1rem 3.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', outline: 'none', fontSize: '1rem', color: '#fff', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}
+                onMouseOver={e=>{if(focusState !== 'email') e.currentTarget.style.border='1px solid rgba(255,255,255,0.2)'}}
+                onMouseOut={e=>{if(focusState !== 'email') e.currentTarget.style.border='1px solid rgba(255,255,255,0.1)'}}
+                placeholder="guru@sekolah.com"
+              />
+            </div>
+          </motion.div>
+
+          <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem' }}>Kata Sandi</label>
+            <div style={{ position: 'relative' }}>
+              <Key size={20} color={focusState === 'password' ? '#60a5fa' : "rgba(255,255,255,0.4)"} style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', transition: 'color 0.2s' }} />
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setFocusState('password')}
+                onBlur={() => setFocusState('idle')}
+                style={{ width: '100%', padding: '1rem 1rem 1rem 3.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', outline: 'none', fontSize: '1rem', color: '#fff', transition: 'all 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}
+                onMouseOver={e=>{if(focusState !== 'password') e.currentTarget.style.border='1px solid rgba(255,255,255,0.2)'}}
+                onMouseOut={e=>{if(focusState !== 'password') e.currentTarget.style.border='1px solid rgba(255,255,255,0.1)'}}
+                placeholder="••••••••"
+              />
+            </div>
+          </motion.div>
+
+          <motion.button 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.3 }}
+            type="submit" 
+            disabled={loading}
+            style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)', color: '#fff', border: 'none', padding: '1.25rem', borderRadius: '16px', fontSize: '1rem', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', opacity: loading ? 0.7 : 1, boxShadow: '0 10px 25px -5px rgba(59,130,246,0.5)', transition: 'all 0.2s' }}
+            onMouseOver={e=> { if(!loading) e.currentTarget.style.transform='translateY(-2px)' }}
+            onMouseOut={e=> { if(!loading) e.currentTarget.style.transform='translateY(0)' }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {loading ? <Loader2 size={20} className="animate-spin" /> : (
+              <>Masuk Sekarang <ArrowRight size={20} /></>
+            )}
+          </motion.button>
+        </form>
+        
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)' }}>
+          Hanya guru yang berwenang yang dapat mengakses.
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
