@@ -469,7 +469,7 @@ export default function AdminPanel() {
 
   if (mode === 'list') {
     return (
-      <div style={{ height: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: '4rem 2rem', fontFamily: 'var(--font-sans)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
+      <div style={{ minHeight: '100dvh', height: '100%', background: globalBg ? '#000' : '#09090b', color: '#fff', padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem)', fontFamily: 'var(--font-sans)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
         
         {/* Dynamic Background */}
         {globalBg && isVideoBg && (
@@ -483,19 +483,19 @@ export default function AdminPanel() {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
 
         <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-            <div>
-              <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '1rem' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'clamp(1.5rem, 4vh, 3rem)', flexWrap: 'wrap', gap: '1.25rem' }}>
+            <div style={{ minWidth: 0, flex: '1 1 260px' }}>
+              <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', marginBottom: '0.75rem' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
                 <ArrowLeft size={16} /> Ke Halaman Utama
               </Link>
-              <h1 style={{ fontSize: '2.5rem', margin: 0 }}>Kelola Presentasi</h1>
+              <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', margin: 0, fontWeight: 700, wordBreak: 'break-word' }}>Kelola Presentasi</h1>
             </div>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <button onClick={handleCreateNew} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button onClick={handleCreateNew} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.65rem 1.25rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', fontSize: '0.85rem' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.2)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
                 <Plus size={18} /> Buat Presentasi Baru
               </button>
-              <button onClick={handleLogout} style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '0.75rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(239, 68, 68, 0.3)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }} title="Keluar / Logout" onMouseOver={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.4)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.2)'}>
-                <LogOut size={18} />
+              <button onClick={handleLogout} style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '0.65rem 1.25rem', borderRadius: '100px', fontWeight: 600, border: '1px solid rgba(239, 68, 68, 0.3)', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s', fontSize: '0.85rem' }} title="Keluar / Logout" onMouseOver={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.4)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.2)'}>
+                <LogOut size={18} /> <span>Keluar</span>
               </button>
             </div>
           </header>
@@ -505,14 +505,14 @@ export default function AdminPanel() {
                <div style={{ textAlign: 'center', padding: '3rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(5px)' }}>Belum ada presentasi di database.</div>
             ) : (
               presentations.map(p => (
-                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{p.title}</h3>
+                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: 'clamp(1rem, 3vw, 1.5rem)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div style={{ minWidth: 0, flex: '1 1 200px' }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', wordBreak: 'break-word' }}>{p.title}</h3>
                     <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject}</p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={14}/> Edit</button>
-                    <button onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={14}/> Hapus</button>
+                    <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem' }}><Edit2 size={14}/> Edit</button>
+                    <button onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem' }}><Trash2 size={14}/> Hapus</button>
                   </div>
                 </div>
               ))
@@ -536,7 +536,7 @@ export default function AdminPanel() {
         </AnimatePresence>
         
         {message && (
-          <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', zIndex: 9999 }}>
+          <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', zIndex: 9999, maxWidth: '90vw', textAlign: 'center', wordBreak: 'break-word', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
             {message}
           </div>
         )}
@@ -585,6 +585,9 @@ export default function AdminPanel() {
             </label>
             <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: '#fff', padding: '0.65rem 1.25rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 12px rgba(59,130,246,0.3)', fontSize: '0.9rem' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '0.65rem 1.25rem', borderRadius: '100px', border: '1px solid rgba(239, 68, 68, 0.3)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '0.9rem', transition: 'all 0.2s' }} title="Keluar / Logout" onMouseOver={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.4)'} onMouseOut={e=>e.currentTarget.style.background='rgba(239, 68, 68, 0.2)'}>
+              <LogOut size={16} /> <span>Keluar</span>
             </button>
           </div>
         </div>
@@ -1142,7 +1145,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
       </AnimatePresence>
-      {message && <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', zIndex: 9999 }}>{message}</div>}
+      {message && <div style={{ position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', zIndex: 9999, maxWidth: '90vw', textAlign: 'center', wordBreak: 'break-word', fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>{message}</div>}
     </div>
   );
 }
