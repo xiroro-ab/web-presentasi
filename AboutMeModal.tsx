@@ -334,10 +334,45 @@ export function AboutMeModal({ isOpen, onClose }: Props) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
         .font-poppins { font-family: 'Poppins', sans-serif; }
+        @media (max-width: 768px) {
+          .about-modal-nav {
+            top: 1rem !important;
+            width: 95% !important;
+            padding: 0.6rem 1rem !important;
+          }
+          .about-modal-nav-links {
+            gap: 0.75rem !important;
+          }
+          .about-modal-nav-links button {
+            font-size: 0.8rem !important;
+            padding: 0.25rem 0 !important;
+          }
+          .about-hero-sec {
+            flex-direction: column !important;
+            min-height: auto !important;
+          }
+          .about-hero-left {
+            width: 100% !important;
+            height: 380px !important;
+          }
+          .about-hero-right {
+            width: 100% !important;
+            padding: 1.5rem !important;
+            text-align: center !important;
+          }
+          .about-grid-portfolio {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .about-modal-nav-links {
+            display: none !important;
+          }
+        }
       `}</style>
 
       {/* Desktop Navbar */}
-      <nav style={{
+      <nav className="about-modal-nav" style={{
         position: 'fixed',
         top: '1.5rem',
         left: '50%',
@@ -359,7 +394,7 @@ export function AboutMeModal({ isOpen, onClose }: Props) {
         <div style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: '1.5rem', color: '#fff', letterSpacing: '-0.02em' }}>
           A.B
         </div>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+        <div className="about-modal-nav-links" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <button onClick={() => smoothScrollTo('home')} style={navBtnStyle('home')}>Home</button>
           <button onClick={() => smoothScrollTo('tentang')} style={navBtnStyle('tentang')}>Tentang</button>
           <button onClick={() => smoothScrollTo('skill')} style={navBtnStyle('skill')}>Skill</button>
@@ -401,21 +436,21 @@ export function AboutMeModal({ isOpen, onClose }: Props) {
         fontFamily: "'Poppins', sans-serif",
       }}>
         {/* HERO SECTION */}
-        <section id="home" style={{
+        <section id="home" className="about-hero-sec" style={{
           background: '#141416',
           borderRadius: '32px',
           border: '1px solid rgba(255,255,255,0.06)',
           boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
           display: 'flex',
-          flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+          flexDirection: typeof window !== 'undefined' && window.innerWidth < 768 ? 'column' : 'row',
           overflow: 'hidden',
-          minHeight: window.innerWidth < 768 ? 'auto' : '500px',
+          minHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'auto' : '500px',
         }}>
           {/* Left: Card & Canvas */}
-          <div style={{
+          <div className="about-hero-left" style={{
             position: 'relative',
-            width: window.innerWidth < 768 ? '100%' : '50%',
-            height: window.innerWidth < 768 ? '400px' : '500px',
+            width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : '50%',
+            height: typeof window !== 'undefined' && window.innerWidth < 768 ? '400px' : '500px',
             flexShrink: 0,
           }}>
             <canvas ref={canvasRef} style={{
@@ -562,19 +597,19 @@ export function AboutMeModal({ isOpen, onClose }: Props) {
           </div>
 
           {/* Right: Text Content */}
-          <div style={{
-            width: window.innerWidth < 768 ? '100%' : '50%',
+          <div className="about-hero-right" style={{
+            width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : '50%',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            padding: '2rem',
-            textAlign: window.innerWidth < 1024 ? 'center' : 'left',
+            padding: 'clamp(1.5rem, 4vw, 2rem)',
+            textAlign: typeof window !== 'undefined' && window.innerWidth < 1024 ? 'center' : 'left',
           }}>
             <h2 style={{ fontSize: '1.25rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', fontWeight: 500 }}>
               Halo! Saya <span style={{ fontWeight: 700, color: '#fff' }}>Aris</span>
             </h2>
             <h1 style={{
-              fontSize: window.innerWidth < 640 ? '2rem' : '3.5rem',
+              fontSize: 'clamp(2rem, 6vw, 3.5rem)',
               fontWeight: 900,
               color: '#fff',
               marginBottom: '1.5rem',
@@ -668,9 +703,9 @@ export function AboutMeModal({ isOpen, onClose }: Props) {
             Beberapa project dan karya unggulan yang telah diselesaikan.
           </p>
 
-          <div style={{
+          <div className="about-grid-portfolio" style={{
             display: 'grid',
-            gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
             gap: '1.5rem',
           }}>
             {projects.map((item, i) => (

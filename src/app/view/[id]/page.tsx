@@ -251,8 +251,8 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: '#09090b', color: '#fff', fontFamily: 'var(--font-sans)' }}>
       {activeChapterIndex === null && (
-        <div style={{ position: 'absolute', top: '2.5rem', right: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <button onClick={onOpenAbout} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+        <div style={{ position: 'absolute', top: 'clamp(1rem, 2.5vh, 2.5rem)', right: 'clamp(1rem, 3vw, 3rem)', zIndex: 100, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button onClick={onOpenAbout} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem 1.2rem', borderRadius: '100px', backdropFilter: 'blur(10px)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
             <User size={16} /> About Me
           </button>
         </div>
@@ -260,7 +260,7 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
 
       {/* Home Button for GamingViewer */}
       {activeChapterIndex === null && (
-        <Link href="/" style={{ position: 'absolute', top: '2.5rem', left: '3rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
+        <Link href="/" style={{ position: 'absolute', top: 'clamp(1rem, 2.5vh, 2.5rem)', left: 'clamp(1rem, 3vw, 3rem)', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem 1.2rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', color: '#fff', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
           <ArrowLeft size={16} /> Beranda
         </Link>
       )}
@@ -320,20 +320,20 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
       {/* Interactive Poll Modal */}
       <AnimatePresence>
         {showPoll && activeSlide && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Live Polling: {activeSlide.title}</h2>
-              <button onClick={() => setShowPoll(false)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Polling
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div style={{ width: 'min(92vw, 1200px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 style={{ color: '#fff', fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Live Polling: {activeSlide.title}</h2>
+              <button onClick={() => setShowPoll(false)} style={{ background: '#fff', color: '#111', padding: '0.6rem 1.25rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                <X size={16} /> Tutup Polling
               </button>
             </div>
             
-            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+            <div style={{ width: 'min(92vw, 1200px)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', maxHeight: '80vh', overflowY: 'auto' }}>
               {/* QR Code Section */}
-              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Ikut Menjawab!</h3>
-                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
-                  <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '1 1 280px', maxWidth: '100%', background: '#fff', padding: '1.5rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', margin: '0 auto' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Ikut Menjawab!</h3>
+                <div style={{ padding: '0.75rem', background: '#f4f4f5', borderRadius: '12px', maxWidth: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <QRCodeSVG value={`${window.location.origin}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={200} style={{ maxWidth: '100%', height: 'auto' }} />
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/play/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
                 {showResetConfirm ? (
@@ -350,29 +350,29 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setShowResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                  <button onClick={() => setShowResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
                     Reset Hasil Polling
                   </button>
                 )}
               </motion.div>
               
               {/* Chart Section */}
-              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '1rem', height: '300px', borderBottom: '2px solid #e5e5e5', paddingBottom: '1rem' }}>
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: '1 1 320px', minWidth: 0, background: '#fff', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', minHeight: '300px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.5rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '0.75rem', height: '260px', borderBottom: '2px solid #e5e5e5', paddingBottom: '1rem' }}>
                   {pollResults.map((res, i) => {
                     const maxVotes = Math.max(1, ...pollResults.map(p => p.uv));
                     const heightPercent = `${(res.uv / maxVotes) * 100}%`;
                     return (
-                      <div key={res.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end', gap: '1rem' }}>
-                        <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#111' }}>{res.uv}</span>
+                      <div key={res.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#111' }}>{res.uv}</span>
                         <motion.div 
                           initial={{ height: 0 }}
                           animate={{ height: heightPercent }}
                           transition={{ type: 'spring', bounce: 0.4 }}
                           style={{ width: '100%', maxWidth: '80px', background: ['#ef4444', '#3b82f6', '#eab308', '#22c55e'][i], borderRadius: '8px 8px 0 0', minHeight: '4px' }}
                         />
-                        <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#555' }}>{res.name}</span>
+                        <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#555' }}>{res.name}</span>
                       </div>
                     );
                   })}
@@ -386,25 +386,25 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
       {/* Interactive Quiz Modal */}
       <AnimatePresence>
         {showQuiz && activeSlide && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Kuis: {activeSlide.title}</h2>
-              <button onClick={() => setShowQuiz(false)} style={{ background: '#fff', color: '#111', padding: '0.75rem 1.5rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <X size={18} /> Tutup Kuis
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div style={{ width: 'min(92vw, 1200px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h2 style={{ color: '#fff', fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Kuis: {activeSlide.title}</h2>
+              <button onClick={() => setShowQuiz(false)} style={{ background: '#fff', color: '#111', padding: '0.6rem 1.25rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600, border: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                <X size={16} /> Tutup Kuis
               </button>
             </div>
             
-            <div style={{ width: '85vw', maxWidth: '1200px', display: 'flex', gap: '2rem' }}>
+            <div style={{ width: 'min(92vw, 1200px)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', maxHeight: '80vh', overflowY: 'auto' }}>
               {/* QR Code Section */}
-              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '0 0 300px', background: '#fff', padding: '2rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Masuk Kuis!</h3>
-                <div style={{ padding: '1rem', background: '#f4f4f5', borderRadius: '12px' }}>
-                  <QRCodeSVG value={`${window.location.origin}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={220} />
+              <motion.div initial={{ x: -20 }} animate={{ x: 0 }} style={{ flex: '1 1 280px', maxWidth: '100%', background: '#fff', padding: '1.5rem', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', margin: '0 auto' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', margin: 0, color: '#111' }}>Scan untuk Masuk Kuis!</h3>
+                <div style={{ padding: '0.75rem', background: '#f4f4f5', borderRadius: '12px', maxWidth: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <QRCodeSVG value={`${window.location.origin}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}`} size={200} style={{ maxWidth: '100%', height: 'auto' }} />
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#71717a', margin: 0 }}>Atau buka:<br/><b style={{ color: '#3b82f6', wordBreak: 'break-all' }}>{typeof window !== 'undefined' ? `${window.location.host}/quiz/${window.location.pathname.split('/').pop()}_${activeSlide.id}` : ''}</b></p>
                 {showQuizResetConfirm ? (
-                  <div style={{ marginTop: 'auto', width: '100%', background: '#fef2f2', border: '1px solid #f87171', borderRadius: '8px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#991b1b', textAlign: 'center', fontWeight: 600 }}>Yakin hapus skor kuis?</p>
+                  <div style={{ marginTop: 'auto', width: '100%', background: '#fef2f2', border: '1px solid #f87171', borderRadius: '8px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#991b1b', textAlign: 'center', fontWeight: 600 }}>Yakin hapus skor kuis?</p>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button onClick={() => setShowQuizResetConfirm(false)} style={{ flex: 1, background: '#f4f4f5', color: '#111', border: 'none', padding: '0.5rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Batal</button>
                       <button onClick={async () => {
@@ -416,27 +416,27 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setShowQuizResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer' }}>
+                  <button onClick={() => setShowQuizResetConfirm(true)} style={{ marginTop: 'auto', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '0.75rem 1rem', borderRadius: '8px', width: '100%', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
                     Reset Skor Kuis
                   </button>
                 )}
               </motion.div>
               
               {/* Leaderboard Section */}
-              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '2rem', color: '#111', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="#3b82f6" /> Live Leaderboard</h3>
-                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '1rem' }} className="hide-scrollbar">
+              <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: '1 1 320px', minWidth: 0, background: '#fff', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', minHeight: '300px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.5rem', color: '#111', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Target color="#3b82f6" /> Live Leaderboard</h3>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }} className="hide-scrollbar">
                   {quizScores.length === 0 ? (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#a1a1aa', fontWeight: 600 }}>Belum ada peserta yang menjawab.</div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {quizScores.map((score, idx) => (
-                        <motion.div key={score.name} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: idx === 0 ? 'linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.05) 100%)' : '#f4f4f5', border: `1px solid ${idx === 0 ? 'rgba(234,179,8,0.5)' : 'transparent'}`, padding: '1rem 1.5rem', borderRadius: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#a1a1aa' }}>#{idx + 1}</span>
-                            <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#111' }}>{score.name}</span>
+                        <motion.div key={score.name} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: idx * 0.1 }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: idx === 0 ? 'linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.05) 100%)' : '#f4f4f5', border: `1px solid ${idx === 0 ? 'rgba(234,179,8,0.5)' : 'transparent'}`, padding: '0.75rem 1rem', borderRadius: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#a1a1aa' }}>#{idx + 1}</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 600, color: '#111' }}>{score.name}</span>
                           </div>
-                          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#3b82f6' }}>{score.score} pts</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: idx === 0 ? '#ca8a04' : '#3b82f6' }}>{score.score} pts</span>
                         </motion.div>
                       ))}
                     </div>
@@ -459,10 +459,10 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
                     <motion.div style={{ width: '100%', height: '100%', backgroundImage: `url(${bgImg})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.3) contrast(1.1)', scale: 1.05, x: xOffset, y: yOffset }} />
                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #09090b 0%, transparent 60%, #09090b 100%)' }} />
                   </div>
-                  <motion.div initial={{ x: -60, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }} style={{ zIndex: 10, paddingLeft: '8%', maxWidth: '800px' }}>
-                    <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.85rem', marginBottom: '1.5rem' }}>MODULE {String(i + 1).padStart(2, '0')} // {chap.subtitle || 'Chapter'}</p>
-                    <h1 style={{ fontSize: '5rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', marginBottom: '3rem' }}>{chap.title}</h1>
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 25px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '1rem', fontSize: '1rem', padding: '1rem 2rem', background: 'transparent', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '100px', color: '#fff', cursor: 'pointer', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  <motion.div initial={{ x: -60, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1 }} style={{ zIndex: 10, paddingLeft: 'clamp(1.5rem, 6vw, 8%)', paddingRight: '1.5rem', maxWidth: '800px', width: '100%' }}>
+                    <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: 'clamp(0.75rem, 1.5vw, 0.85rem)', marginBottom: '1rem' }}>MODULE {String(i + 1).padStart(2, '0')} // {chap.subtitle || 'Chapter'}</p>
+                    <h1 style={{ fontSize: 'clamp(2rem, 7vw, 5rem)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', marginBottom: 'clamp(1.5rem, 4vh, 3rem)', wordBreak: 'break-word' }}>{chap.title}</h1>
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 25px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2 }} onClick={() => handleEnterChapter(i)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', fontSize: 'clamp(0.85rem, 2vw, 1rem)', padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 2rem)', background: 'transparent', border: '1px solid rgba(59,130,246,0.5)', borderRadius: '100px', color: '#fff', cursor: 'pointer', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                       Enter Module <ArrowRight size={18} color="#3b82f6" />
                     </motion.button>
                   </motion.div>
@@ -481,68 +481,68 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
               <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} style={{ height: '100%', background: '#3b82f6' }} />
             </div>
 
-            <button onClick={() => setActiveChapterIndex(null)} style={{ position: 'fixed', top: '2.5rem', left: '3rem', zIndex: 50, display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#a1a1aa', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+            <button onClick={() => setActiveChapterIndex(null)} style={{ position: 'fixed', top: 'clamp(1rem, 2.5vh, 2.5rem)', left: 'clamp(1rem, 3vw, 3rem)', zIndex: 50, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a1a1aa', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'rgba(0,0,0,0.5)', padding: '0.4rem 0.8rem', borderRadius: '100px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
               <ArrowLeft size={16} /> Exit Module
             </button>
 
             {/* Content Container */}
-            <div style={{ width: '100%', height: '100%', overflowY: 'auto', position: 'relative', zIndex: 5, padding: '8rem 6% 10rem 6%' }} className="hide-scrollbar">
+            <div style={{ width: '100%', height: '100%', overflowY: 'auto', position: 'relative', zIndex: 5, padding: 'clamp(4.5rem, 8vh, 8rem) clamp(1rem, 4vw, 6%) clamp(5.5rem, 10vh, 10rem) clamp(1rem, 4vw, 6%)' }} className="hide-scrollbar">
               <AnimatePresence custom={direction} mode="wait">
-                <motion.div key={activeSlideIndex} custom={direction} variants={gamingSlideVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', background: 'rgba(9, 9, 11, 0.4)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', padding: '4rem', borderRadius: '16px' }}>
-                  <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                <motion.div key={activeSlideIndex} custom={direction} variants={gamingSlideVariants} initial="enter" animate="center" exit="exit" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', background: 'rgba(9, 9, 11, 0.4)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', padding: 'clamp(1.25rem, 4vw, 4rem)', borderRadius: '16px' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                     <div style={{ width: '30px', height: '2px', background: '#3b82f6' }} />
                     <p style={{ color: '#3b82f6', fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.8rem' }}>SEQ {String(activeSlideIndex + 1).padStart(2, '0')} / {String(activeChapter?.slides.length || 0).padStart(2, '0')}</p>
                   </motion.div>
                   
-                  <motion.h1 variants={itemVariants} style={{ fontSize: '3.5rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '2.5rem', color: '#fff' }}>
+                  <motion.h1 variants={itemVariants} style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.15, marginBottom: 'clamp(1.5rem, 3vh, 2.5rem)', color: '#fff', wordBreak: 'break-word' }}>
                     {activeSlide?.title}
                   </motion.h1>
                   
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '3rem', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', width: '100%' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: 'clamp(1.5rem, 3vw, 3rem)', alignItems: 'flex-start', marginBottom: 'clamp(1.5rem, 3vh, 3rem)', flexWrap: 'wrap', width: '100%' }}>
                     <div style={activeSlide?.image?.trim() 
-                      ? { flex: '1 1 500px', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' } 
-                      : { flex: '0 0 100%', width: '100%', fontSize: '1.25rem', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify' }
+                      ? { flex: '1 1 min(100%, 500px)', fontSize: 'clamp(1rem, 2.2vw, 1.25rem)', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', minWidth: 0 } 
+                      : { flex: '0 0 100%', width: '100%', fontSize: 'clamp(1rem, 2.2vw, 1.25rem)', color: '#a1a1aa', lineHeight: 1.8, fontWeight: 400, textAlign: 'justify', minWidth: 0 }
                     }>
                       <div dangerouslySetInnerHTML={{ __html: activeSlide?.content || '' }} className="rich-text-content" onClick={handleRichTextClick} />
                     </div>
                     {activeSlide?.image?.trim() ? (
-                      <div style={{ flex: '1 1 400px' }}>
+                      <div style={{ flex: '1 1 min(100%, 400px)', minWidth: 0, maxWidth: '100%' }}>
                         <img src={activeSlide.image.trim()} alt={activeSlide.title} style={{ width: '100%', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }} />
                       </div>
                     ) : null}
                   </motion.div>
 
                   {/* Interactive Elements Area */}
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1.5rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '0.75rem', marginBottom: 'clamp(1.5rem, 3vh, 3rem)', flexWrap: 'wrap' }}>
                     {(() => {
                       const allEmbeds = [...(activeSlide?.embeds || [])];
                       if (activeSlide?.embedUrl) allEmbeds.unshift({ title: activeSlide.embedTitle || 'Buka Link Interaktif', url: activeSlide.embedUrl });
                       return allEmbeds.map((emb, idx) => (
-                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
-                          <ExternalLink size={18} /> {emb.title || 'Buka Link Interaktif'}
+                        <motion.button key={idx} animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.5)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => { setFrameUrl(emb.url); setShowFrame(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid #3b82f6', color: '#3b82f6', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '0.65rem 1.25rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='#3b82f6'; e.currentTarget.style.color='#fff'}} onMouseOut={e => {e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#3b82f6'}}>
+                          <ExternalLink size={16} /> {emb.title || 'Buka Link Interaktif'}
                         </motion.button>
                       ));
                     })()}
                     
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
-                      <PenTool size={18} /> Buka Papan Catatan
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(255,255,255,0)', '0 0 15px rgba(255,255,255,0.3)', '0 0 0px rgba(255,255,255,0)'] }} transition={{ repeat: Infinity, duration: 2.5 }} onClick={() => setShowNotes(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '0.65rem 1.25rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(255,255,255,0.1)'}} onMouseOut={e => {e.currentTarget.style.background='transparent'}}>
+                      <PenTool size={16} /> Buka Papan Catatan
                     </motion.button>
                     
-                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }} onClick={() => setShowPoll(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(59,130,246,0.3)'; e.currentTarget.style.color='#93c5fd'}} onMouseOut={e => {e.currentTarget.style.background='rgba(59,130,246,0.15)'; e.currentTarget.style.color='#60a5fa'}}>
-                      <BarChartIcon size={18} /> Buka Polling
+                    <motion.button animate={{ boxShadow: ['0 0 0px rgba(59,130,246,0)', '0 0 20px rgba(59,130,246,0.6)', '0 0 0px rgba(59,130,246,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5 }} onClick={() => setShowPoll(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)', color: '#60a5fa', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '0.65rem 1.25rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='rgba(59,130,246,0.3)'; e.currentTarget.style.color='#93c5fd'}} onMouseOut={e => {e.currentTarget.style.background='rgba(59,130,246,0.15)'; e.currentTarget.style.color='#60a5fa'}}>
+                      <BarChartIcon size={16} /> Buka Polling
                     </motion.button>
                     {(activeSlide as any)?.isQuiz && (
-                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(168,85,247,0)', '0 0 20px rgba(168,85,247,0.6)', '0 0 0px rgba(168,85,247,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.7 }} onClick={() => setShowQuiz(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)', border: '1px solid rgba(168,85,247,0.4)', color: '#d8b4fe', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', padding: '0.75rem 1.5rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.4) 0%, rgba(59,130,246,0.4) 100%)'; e.currentTarget.style.color='#f3e8ff'}} onMouseOut={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)'; e.currentTarget.style.color='#d8b4fe'}}>
-                        <Target size={18} /> Buka Kuis Interaktif
+                      <motion.button animate={{ boxShadow: ['0 0 0px rgba(168,85,247,0)', '0 0 20px rgba(168,85,247,0.6)', '0 0 0px rgba(168,85,247,0)'] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.7 }} onClick={() => setShowQuiz(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)', border: '1px solid rgba(168,85,247,0.4)', color: '#d8b4fe', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', padding: '0.65rem 1.25rem', borderRadius: '100px' }} onMouseOver={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.4) 0%, rgba(59,130,246,0.4) 100%)'; e.currentTarget.style.color='#f3e8ff'}} onMouseOut={e => {e.currentTarget.style.background='linear-gradient(135deg, rgba(168,85,247,0.2) 0%, rgba(59,130,246,0.2) 100%)'; e.currentTarget.style.color='#d8b4fe'}}>
+                        <Target size={16} /> Buka Kuis Interaktif
                       </motion.button>
                     )}
                   </motion.div>
 
-                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+                  <motion.div variants={itemVariants} style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
                     {!isLastSlide ? (
-                      <button onClick={nextSlide} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}>Proceed to Next <ArrowRight size={18} /></button>
+                      <button onClick={nextSlide} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>Proceed to Next <ArrowRight size={18} /></button>
                     ) : (
-                      <button onClick={() => setActiveChapterIndex(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 2rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, cursor: 'pointer' }}><CheckCircle size={18} /> Complete Module</button>
+                      <button onClick={() => setActiveChapterIndex(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1.5rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}><CheckCircle size={18} /> Complete Module</button>
                     )}
                   </motion.div>
                 </motion.div>
@@ -550,11 +550,11 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
             </div>
 
             {/* Bottom Nav */}
-            <div style={{ position: 'fixed', bottom: '3rem', right: '3rem', zIndex: 50, display: 'flex', gap: '1rem' }}>
-              <button onClick={prevSlide} disabled={activeSlideIndex === 0} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', color: '#fff', cursor: activeSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: activeSlideIndex === 0 ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ position: 'fixed', bottom: 'clamp(1rem, 2.5vh, 3rem)', right: 'clamp(1rem, 3vw, 3rem)', zIndex: 50, display: 'flex', gap: '0.75rem' }}>
+              <button onClick={prevSlide} disabled={activeSlideIndex === 0} style={{ width: '48px', height: '48px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.5)', color: '#fff', cursor: activeSlideIndex === 0 ? 'not-allowed' : 'pointer', opacity: activeSlideIndex === 0 ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(10px)' }}>
                 <ArrowLeft size={18} />
               </button>
-              <button onClick={nextSlide} disabled={isLastSlide} style={{ width: '48px', height: '48px', borderRadius: '50%', border: 'none', background: '#fff', color: '#09090b', cursor: isLastSlide ? 'not-allowed' : 'pointer', opacity: isLastSlide ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <button onClick={nextSlide} disabled={isLastSlide} style={{ width: '48px', height: '48px', borderRadius: '50%', border: 'none', background: '#fff', color: '#09090b', cursor: isLastSlide ? 'not-allowed' : 'pointer', opacity: isLastSlide ? 0.3 : 1, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(10px)' }}>
                 <ArrowRight size={18} />
               </button>
             </div>
@@ -698,7 +698,7 @@ function PresentationToolsOverlay({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Floating Tools Control */}
-      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: '3rem', left: '3rem', zIndex: 10000, display: 'flex', alignItems: 'center', gap: '0' }}>
+      <div id="presentation-toolbar" style={{ position: 'fixed', bottom: 'clamp(1rem, 2.5vh, 3rem)', left: 'clamp(1rem, 3vw, 3rem)', zIndex: 10000, display: 'flex', alignItems: 'center', gap: '0' }}>
         <motion.button
           onClick={() => setToolbarOpen(prev => !prev)}
           animate={{ rotate: toolbarOpen ? 180 : 0 }}

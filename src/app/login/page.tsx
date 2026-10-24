@@ -105,7 +105,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ width: '100vw', minHeight: '100dvh', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', position: 'relative', overflowY: 'auto', overflowX: 'hidden', padding: '1.5rem 1rem' }}>
       
       {/* Dynamic Background */}
       {globalBg && isVideoBg && (
@@ -123,7 +123,7 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        style={{ width: '100%', maxWidth: '440px', padding: '2rem', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+        style={{ width: '100%', maxWidth: '440px', padding: '1rem', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
       >
         
         {/* Link removed from here */}
@@ -139,10 +139,10 @@ export default function LoginPage() {
           >
             {getAvatarEmoji()}
           </motion.div>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Ruang Guru</h1>
+          <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', fontWeight: 800, color: '#fff', margin: '0 0 0.5rem 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Ruang Guru</h1>
         </div>
 
-        <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'rgba(0,0,0,0.4)', padding: '2.5rem', borderRadius: '32px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+        <form onSubmit={handleLogin} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.25rem', background: 'rgba(0,0,0,0.4)', padding: 'clamp(1.5rem, 5vw, 2.5rem)', borderRadius: '24px', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
           
           <AnimatePresence>
             {error && (

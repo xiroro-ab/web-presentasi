@@ -102,9 +102,9 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
 
   if (!hasJoined) {
     return (
-      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #09090b 0%, #171720 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'var(--font-sans)', overflowY: 'auto' }}>
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '3rem 2rem', borderRadius: '24px', width: '100%', maxWidth: '400px', textAlign: 'center', backdropFilter: 'blur(10px)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', color: '#3b82f6' }}>Siap Bermain?</h1>
+      <div style={{ minHeight: '100dvh', background: 'linear-gradient(135deg, #09090b 0%, #171720 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1rem, 4vw, 2rem)', fontFamily: 'var(--font-sans)', overflowY: 'auto' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: 'clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)', borderRadius: '24px', width: '100%', maxWidth: '400px', textAlign: 'center', backdropFilter: 'blur(10px)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 800, marginBottom: '0.5rem', color: '#3b82f6' }}>Siap Bermain?</h1>
           <p style={{ color: '#a1a1aa', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Masukkan nama kamu untuk ikut kuis ini.</p>
           <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem' }}>
             <p style={{ margin: 0, color: '#93c5fd', fontSize: '0.85rem', fontWeight: 600 }}>⏱ Waktu Menjawab: {slideData?.quizTimer || 30} Detik</p>
@@ -118,9 +118,9 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
               onChange={e => setStudentName(e.target.value)}
               placeholder="Nama Lengkap..."
               required
-              style={{ width: '100%', padding: '1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '12px', fontSize: '1.1rem', marginBottom: '1rem', outline: 'none', textAlign: 'center' }}
+              style={{ width: '100%', padding: '0.9rem 1rem', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '12px', fontSize: '1rem', marginBottom: '1rem', outline: 'none', textAlign: 'center' }}
             />
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 10px 25px rgba(59,130,246,0.4)' }}>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" style={{ width: '100%', padding: '0.9rem 1rem', background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 10px 25px rgba(59,130,246,0.4)' }}>
               Mulai Kuis
             </motion.button>
           </form>
@@ -131,10 +131,10 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
 
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', background: isCorrect ? 'linear-gradient(135deg, #166534 0%, #064e3b 100%)' : 'linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
+      <div style={{ minHeight: '100dvh', background: isCorrect ? 'linear-gradient(135deg, #166534 0%, #064e3b 100%)' : 'linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1rem, 4vw, 2rem)', textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring' }}>
-          <div style={{ fontSize: '5rem', marginBottom: '1rem' }}>{isCorrect ? '🎉' : '❌'}</div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>{isCorrect ? 'Benar Sekali!' : 'Sayang Sekali Salah...'}</h1>
+          <div style={{ fontSize: 'clamp(3rem, 10vw, 5rem)', marginBottom: '1rem' }}>{isCorrect ? '🎉' : '❌'}</div>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 800, marginBottom: '0.5rem' }}>{isCorrect ? 'Benar Sekali!' : 'Sayang Sekali Salah...'}</h1>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem' }}>Pilihan Anda: <b>{selected}</b></p>
           <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>Silakan lihat layar proyektor untuk skor leaderboard.</p>
         </motion.div>
@@ -146,7 +146,7 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
 
   return (
-    <div style={{ height: '100dvh', maxHeight: '100dvh', background: '#09090b', color: '#fff', padding: '2rem 2rem 5rem 2rem', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', overflowX: 'hidden' }}>
+    <div style={{ height: '100dvh', maxHeight: '100dvh', background: '#09090b', color: '#fff', padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(3rem, 6vh, 5rem) clamp(1rem, 3vw, 2rem)', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', overflowX: 'hidden' }}>
       <div style={{ width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', padding: '0.4rem 1rem', borderRadius: '100px', fontSize: '0.85rem', fontWeight: 600, color: '#a1a1aa' }}>
           Peserta: <b>{studentName}</b>
@@ -176,12 +176,12 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
               disabled={submitting}
               style={{
                 width: '100%',
-                padding: '1.5rem',
+                padding: 'clamp(0.85rem, 2.5vw, 1.25rem)',
                 borderRadius: '16px',
                 border: 'none',
                 background: colors[i],
                 color: '#fff',
-                fontSize: '1.1rem',
+                fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
                 fontWeight: 700,
                 cursor: submitting ? 'wait' : 'pointer',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
@@ -192,7 +192,7 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
                 textAlign: 'left'
               }}
             >
-              <div style={{ background: 'rgba(255,255,255,0.2)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>{opt}</div>
+              <div style={{ background: 'rgba(255,255,255,0.2)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0 }}>{opt}</div>
               <div style={{ flex: 1 }}>{optText}</div>
             </motion.button>
           )

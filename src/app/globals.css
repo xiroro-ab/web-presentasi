@@ -23,7 +23,8 @@ body {
   background: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
-  overflow: hidden; /* Prevent native scroll, we handle it completely via UI */
+  min-height: 100dvh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -183,5 +184,61 @@ input:focus, textarea:focus {
   max-width: 100%; 
   height: auto; 
   border-radius: 12px; 
-  margin-top: 1rem; 
+  margin-top: 1rem;
+}
+
+/* =========================================
+   RESPONSIVE MOBILE STYLES & OVERFLOW FIXES
+   ========================================= */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+img, video, iframe {
+  max-width: 100%;
+}
+
+/* Prevent text clipping and horizontal leak */
+h1, h2, h3, h4, p, span, div {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .catalog-floating-btns {
+    position: static !important;
+    margin-top: 1rem !important;
+    margin-bottom: 2rem !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.6rem !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
+  .catalog-floating-btns button,
+  .catalog-floating-btns a {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .rich-text-content img {
+    max-height: 40vh;
+    margin: 1rem auto;
+  }
+
+  .nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.85rem;
+  }
+
+  #presentation-toolbar {
+    bottom: 4.5rem !important;
+    left: 1rem !important;
+  }
 }

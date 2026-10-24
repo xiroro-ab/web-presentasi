@@ -249,35 +249,37 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   // RENDERS
   if (kahootState === 'lobby') {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800 }}>Mulai Kahoot!</div>
+      <div style={{ width: '100vw', minHeight: '100dvh', height: '100%', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+        <div style={{ padding: 'clamp(1rem, 2.5vh, 2rem)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800 }}>Mulai Kahoot!</div>
           <button onClick={onExit} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={32}/></button>
         </div>
         
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4rem' }}>
-          <div style={{ background: '#fff', padding: '2rem', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
-            <h2 style={{ color: '#111', fontSize: '1.5rem', margin: '0 0 1.5rem 0', fontWeight: 700 }}>Scan untuk Bergabung</h2>
-            <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/kahoot/${presentationId}_${chapter.id}`} size={300} />
-            <div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#111' }}>
-              <span style={{ fontSize: '1rem', fontWeight: 600 }}>Atau ketik di browser Anda:</span><br/>
-              <span style={{ color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem', wordBreak: 'break-all' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(2rem, 4vw, 4rem)', flexWrap: 'wrap', padding: '1rem' }}>
+          <div style={{ background: '#fff', padding: 'clamp(1.25rem, 3vw, 2rem)', borderRadius: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', width: '100%', maxWidth: '380px' }}>
+            <h2 style={{ color: '#111', fontSize: '1.25rem', margin: '0 0 1rem 0', fontWeight: 700, textAlign: 'center' }}>Scan untuk Bergabung</h2>
+            <div style={{ padding: '0.5rem', background: '#f8fafc', borderRadius: '16px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/kahoot/${presentationId}_${chapter.id}`} size={260} style={{ width: '100%', maxWidth: '260px', height: 'auto' }} />
+            </div>
+            <div style={{ marginTop: '1.25rem', textAlign: 'center', color: '#111' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Atau ketik di browser Anda:</span><br/>
+              <span style={{ color: '#3b82f6', fontWeight: 700, fontSize: '1rem', wordBreak: 'break-all' }}>
                 {typeof window !== 'undefined' ? `${window.location.host}/kahoot/${presentationId}_${chapter.id}` : ''}
               </span>
             </div>
           </div>
           
-          <div style={{ width: '400px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <Users size={32} />
-              <span style={{ fontSize: '2rem', fontWeight: 700 }}>{Object.keys(players).length} Peserta</span>
+          <div style={{ width: '100%', maxWidth: '400px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <Users size={28} />
+              <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{Object.keys(players).length} Peserta</span>
             </div>
             
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto' }}>
               <AnimatePresence>
                 {Object.values(players).map(p => (
-                  <motion.div key={p.id} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.5rem' }}>{p.avatar}</span> {p.name}
+                  <motion.div key={p.id} initial={{ scale: 0 }} animate={{ scale: 1 }} style={{ background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+                    <span style={{ fontSize: '1.25rem' }}>{p.avatar}</span> {p.name}
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -285,7 +287,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
           </div>
         </div>
 
-        <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: 'clamp(1rem, 3vh, 2rem)', display: 'flex', justifyContent: 'center' }}>
           <button onClick={() => {
             // Find first quiz slide
             const firstQuizIdx = chapter.slides.findIndex((s: any) => s.isQuiz);
@@ -296,7 +298,7 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
             } else {
               alert('Tidak ada slide kuis di chapter ini!');
             }
-          }} style={{ background: '#fff', color: '#2563eb', padding: '1rem 4rem', fontSize: '1.5rem', fontWeight: 800, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
+          }} style={{ background: '#fff', color: '#2563eb', padding: 'clamp(0.75rem, 2vw, 1rem) clamp(2rem, 5vw, 4rem)', fontSize: 'clamp(1.1rem, 3vw, 1.5rem)', fontWeight: 800, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem', boxShadow: '0 10px 25px rgba(0,0,0,0.3)' }}>
             Mulai Kuis <Play fill="currentColor" />
           </button>
         </div>
@@ -313,60 +315,60 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
     const rightRunners = runnersUp.filter((_, i) => i % 2 !== 0);
 
     const renderRunnerUp = (p: any, isLeft: boolean, index: number) => (
-      <motion.div key={p.id} initial={{ opacity: 0, x: isLeft ? -50 : 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.5 + (index * 0.2) }} style={{ background: 'rgba(255,255,255,0.1)', padding: '1rem 1.5rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', maxWidth: '300px' }}>
-        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#94a3b8' }}>#{p.rank}</div>
-        <div style={{ fontSize: '1.5rem' }}>{p.avatar}</div>
+      <motion.div key={p.id} initial={{ opacity: 0, x: isLeft ? -50 : 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.5 + (index * 0.2) }} style={{ background: 'rgba(255,255,255,0.1)', padding: '0.75rem 1.25rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', maxWidth: '300px' }}>
+        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#94a3b8' }}>#{p.rank}</div>
+        <div style={{ fontSize: '1.3rem' }}>{p.avatar}</div>
         <div style={{ flex: 1, overflow: 'hidden' }}>
-          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-          <div style={{ fontSize: '1rem', color: '#cbd5e1' }}>{p.score} pts</div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+          <div style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>{p.score} pts</div>
         </div>
       </motion.div>
     );
 
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', overflow: 'hidden' }}>
-        <h1 style={{ fontSize: '4rem', fontWeight: 900, marginBottom: '2rem', color: '#eab308' }}><Trophy size={64} style={{ display: 'inline', verticalAlign: 'middle' }} /> PODIUM JUARA</h1>
+      <div style={{ width: '100vw', minHeight: '100dvh', height: '100%', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', overflowY: 'auto', padding: '2rem 1rem' }}>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 900, marginBottom: '2rem', color: '#eab308', textAlign: 'center' }}><Trophy size={48} style={{ display: 'inline', verticalAlign: 'middle' }} /> PODIUM JUARA</h1>
         
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', width: '100%', padding: '0 2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', width: '100%', padding: '0 1rem', flexWrap: 'wrap' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, alignItems: 'flex-end' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: '1 1 200px', alignItems: 'center' }}>
             {leftRunners.map((p, i) => renderRunnerUp(p, true, i))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '2rem', height: '300px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 'clamp(0.5rem, 2vw, 2rem)', height: 'clamp(200px, 35vh, 300px)', order: 1 }}>
             {podium[1] && (
-              <motion.div initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} style={{ width: '200px', height: '200px', background: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
-                <div style={{ fontSize: '3rem' }}>{podium[1].avatar}</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{podium[1].name}</div>
-                <div style={{ color: '#334155', fontWeight: 600 }}>{podium[1].score} pts</div>
-                <div style={{ fontSize: '4rem', fontWeight: 900, color: '#cbd5e1', marginTop: 'auto' }}>2</div>
+              <motion.div initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} style={{ width: 'clamp(85px, 26vw, 200px)', height: '65%', background: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '0.75rem', borderRadius: '16px 16px 0 0' }}>
+                <div style={{ fontSize: 'clamp(1.5rem, 4vw, 3rem)' }}>{podium[1].avatar}</div>
+                <div style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', fontWeight: 700, color: '#0f172a', textAlign: 'center', wordBreak: 'break-word', padding: '0 0.25rem' }}>{podium[1].name}</div>
+                <div style={{ color: '#334155', fontWeight: 600, fontSize: '0.85rem' }}>{podium[1].score} pts</div>
+                <div style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 900, color: '#cbd5e1', marginTop: 'auto' }}>2</div>
               </motion.div>
             )}
             {podium[0] && (
-              <motion.div initial={{ y: 300, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} style={{ width: '220px', height: '300px', background: '#eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0', boxShadow: '0 0 50px rgba(234, 179, 8, 0.4)' }}>
-                <div style={{ fontSize: '3rem' }}>{podium[0].avatar}</div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{podium[0].name}</div>
-                <div style={{ color: '#713f12', fontWeight: 700 }}>{podium[0].score} pts</div>
-                <div style={{ fontSize: '5rem', fontWeight: 900, color: '#fef08a', marginTop: 'auto' }}>1</div>
+              <motion.div initial={{ y: 300, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 1 }} style={{ width: 'clamp(95px, 30vw, 220px)', height: '100%', background: '#eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '0.75rem', borderRadius: '16px 16px 0 0', boxShadow: '0 0 50px rgba(234, 179, 8, 0.4)' }}>
+                <div style={{ fontSize: 'clamp(1.75rem, 4.5vw, 3rem)' }}>{podium[0].avatar}</div>
+                <div style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.75rem)', fontWeight: 800, color: '#0f172a', textAlign: 'center', wordBreak: 'break-word', padding: '0 0.25rem' }}>{podium[0].name}</div>
+                <div style={{ color: '#713f12', fontWeight: 700, fontSize: '0.85rem' }}>{podium[0].score} pts</div>
+                <div style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 900, color: '#fef08a', marginTop: 'auto' }}>1</div>
               </motion.div>
             )}
             {podium[2] && (
-              <motion.div initial={{ y: 150, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }} style={{ width: '200px', height: '150px', background: '#b45309', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '1rem', borderRadius: '16px 16px 0 0' }}>
-                <div style={{ fontSize: '3rem' }}>{podium[2].avatar}</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{podium[2].name}</div>
-                <div style={{ color: '#fde68a', fontWeight: 600 }}>{podium[2].score} pts</div>
-                <div style={{ fontSize: '3rem', fontWeight: 900, color: '#d97706', marginTop: 'auto' }}>3</div>
+              <motion.div initial={{ y: 150, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0 }} style={{ width: 'clamp(85px, 26vw, 200px)', height: '50%', background: '#b45309', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '0.75rem', borderRadius: '16px 16px 0 0' }}>
+                <div style={{ fontSize: 'clamp(1.5rem, 4vw, 3rem)' }}>{podium[2].avatar}</div>
+                <div style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', fontWeight: 700, color: '#fff', textAlign: 'center', wordBreak: 'break-word', padding: '0 0.25rem' }}>{podium[2].name}</div>
+                <div style={{ color: '#fde68a', fontWeight: 600, fontSize: '0.85rem' }}>{podium[2].score} pts</div>
+                <div style={{ fontSize: 'clamp(1.75rem, 4vw, 3rem)', fontWeight: 900, color: '#d97706', marginTop: 'auto' }}>3</div>
               </motion.div>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: '1 1 200px', alignItems: 'center', order: 2 }}>
             {rightRunners.map((p, i) => renderRunnerUp(p, false, i))}
           </div>
 
         </div>
 
-        <button onClick={onExit} style={{ marginTop: '3rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '1rem 2rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Selesai</button>
+        <button onClick={onExit} style={{ marginTop: '2.5rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.75rem 2rem', borderRadius: '100px', cursor: 'pointer', fontWeight: 600 }}>Selesai</button>
       </div>
     );
   }
@@ -374,23 +376,23 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
   if (kahootState === 'interim_leaderboard') {
     const leaderboard = Object.values(players).sort((a, b) => b.score - a.score).slice(0, 5);
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', padding: '2rem' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '3rem', color: '#fff' }}>KLASEMEN SEMENTARA</h1>
-        <div style={{ width: '100%', maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ width: '100vw', minHeight: '100dvh', height: '100%', background: '#0f172a', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', padding: 'clamp(1rem, 3vw, 2rem)', overflowY: 'auto' }}>
+        <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 3rem)', fontWeight: 900, marginBottom: 'clamp(1.5rem, 4vh, 3rem)', color: '#fff', textAlign: 'center' }}>KLASEMEN SEMENTARA</h1>
+        <div style={{ width: '100%', maxWidth: '800px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <AnimatePresence>
             {leaderboard.map((p, i) => (
-              <motion.div key={p.id} initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }} style={{ background: i === 0 ? '#eab308' : 'rgba(255,255,255,0.1)', padding: '1.5rem 2rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1.5rem', color: i === 0 ? '#111' : '#fff' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 800, width: '40px' }}>#{i+1}</div>
-                <div style={{ fontSize: '2.5rem' }}>{p.avatar}</div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 700, flex: 1 }}>{p.name}</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800 }}>{p.score}</div>
+              <motion.div key={p.id} initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.1 }} style={{ background: i === 0 ? '#eab308' : 'rgba(255,255,255,0.1)', padding: 'clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 2vw, 2rem)', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.5rem)', color: i === 0 ? '#111' : '#fff' }}>
+                <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2rem)', fontWeight: 800, width: '32px' }}>#{i+1}</div>
+                <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)' }}>{p.avatar}</div>
+                <div style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.75rem)', fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2rem)', fontWeight: 800 }}>{p.score}</div>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
-        <div style={{ marginTop: '4rem', display: 'flex', gap: '2rem' }}>
-          <button onClick={nextSlide} style={{ background: '#3b82f6', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            Lanjut ke Soal Berikutnya <ArrowRight size={24} />
+        <div style={{ marginTop: 'clamp(2rem, 4vh, 4rem)', display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button onClick={nextSlide} style={{ background: '#3b82f6', color: '#fff', padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.5rem, 3vw, 3rem)', fontSize: 'clamp(1rem, 2vw, 1.25rem)', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            Lanjut ke Soal Berikutnya <ArrowRight size={20} />
           </button>
         </div>
       </div>
@@ -399,39 +401,39 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
 
   // Reading, Answering, Result phase
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <div style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>Pertanyaan {kahootSlides.findIndex((s: any) => s.id === activeSlide.id) + 1} / {kahootSlides.length}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, background: '#ef4444', color: '#fff', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ width: '100vw', minHeight: '100dvh', height: '100%', background: '#f8fafc', color: '#0f172a', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ padding: 'clamp(0.75rem, 2vw, 2rem)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)', fontWeight: 800 }}>Pertanyaan {kahootSlides.findIndex((s: any) => s.id === activeSlide.id) + 1} / {kahootSlides.length}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 2rem)' }}>
+          <div style={{ fontSize: 'clamp(1.25rem, 2.5vw, 2rem)', fontWeight: 800, background: '#ef4444', color: '#fff', width: 'clamp(44px, 8vw, 60px)', height: 'clamp(44px, 8vw, 60px)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {timeLeft}
           </div>
           <button onClick={onExit} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}><X size={24}/></button>
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '3rem 4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minHeight: 0 }}>
+      <div style={{ flex: 1, padding: 'clamp(1rem, 3vh, 3rem) clamp(1rem, 4vw, 4rem)', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minHeight: 0 }}>
         
-        <div style={{ width: '100%', maxWidth: '1200px', height: '25vh', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 3rem 0' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', height: 'clamp(80px, 20vh, 25vh)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 clamp(1rem, 2vh, 3rem) 0' }}>
           <AutoResizeText 
             text={activeSlide.title || activeSlide.quizQuestion || 'Pertanyaan Kuis'} 
             maxFontSize={80} 
-            minFontSize={20} 
+            minFontSize={18} 
             align="justify"
           />
         </div>
 
         {kahootState === 'reading' && (
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: '2rem', fontWeight: 600, color: '#64748b', textAlign: 'center' }}>
+            <div style={{ fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 600, color: '#64748b', textAlign: 'center' }}>
               Baca soal dan persiapkan jawaban Anda!<br/>
-              <span style={{ fontSize: '4rem', color: '#3b82f6', fontWeight: 800, display: 'block', marginTop: '1rem' }}>{timeLeft}</span>
+              <span style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', color: '#3b82f6', fontWeight: 800, display: 'block', marginTop: '1rem' }}>{timeLeft}</span>
             </div>
           </motion.div>
         )}
 
         {(kahootState === 'answering' || kahootState === 'result') && (
-          <div style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '1.5rem', flex: 1, minHeight: 0 }}>
+          <div style={{ width: '100%', maxWidth: '1200px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 'clamp(0.5rem, 1.5vw, 1.5rem)', flex: 1, minHeight: 0 }}>
             {['A', 'B', 'C', 'D'].map((opt, i) => {
               const colors = ['#ef4444', '#3b82f6', '#eab308', '#22c55e'];
               const shapes = ['▲', '◆', '●', '■'];
@@ -441,14 +443,14 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
               const isFaded = kahootState === 'result' && !isCorrect;
 
               return (
-                <motion.div key={opt} style={{ position: 'relative', background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: '1.5rem', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
-                  <span style={{ fontSize: '3rem', marginRight: '1.5rem', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
+                <motion.div key={opt} style={{ position: 'relative', background: colors[i], borderRadius: '16px', display: 'flex', alignItems: 'center', padding: 'clamp(0.75rem, 2vw, 1.5rem)', color: '#fff', fontWeight: 700, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', opacity: isFaded ? 0.3 : 1, transition: 'opacity 0.3s', overflow: 'hidden', minWidth: 0, height: '100%', minHeight: 0 }}>
+                  <span style={{ fontSize: 'clamp(1.5rem, 4vw, 3rem)', marginRight: 'clamp(0.5rem, 2vw, 1.5rem)', opacity: 0.8, flexShrink: 0 }}>{shapes[i]}</span>
                   <div style={{ flex: 1, minWidth: 0, height: '100%', display: 'flex', alignItems: 'center' }}>
                     <AutoResizeText text={text} maxFontSize={40} minFontSize={10} align="left" />
                   </div>
                   
                   {kahootState === 'result' && isCorrect && (
-                    <div style={{ position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: 'clamp(0.8rem, 1.2vw, 1.5rem)', flexShrink: 0, whiteSpace: 'nowrap', backdropFilter: 'blur(4px)' }}>✓ BENAR</div>
+                    <div style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', padding: '0.4rem 0.8rem', borderRadius: '100px', fontSize: 'clamp(0.75rem, 1.2vw, 1.5rem)', flexShrink: 0, whiteSpace: 'nowrap', backdropFilter: 'blur(4px)' }}>✓ BENAR</div>
                   )}
                 </motion.div>
               );
@@ -459,10 +461,10 @@ export default function KahootPresenter({ chapter, presentationId, onExit }: any
       </div>
 
       {/* Footer Area Reserved Space */}
-      <div style={{ height: '90px', padding: '0 2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: kahootState === 'result' ? '#fff' : 'transparent', borderTop: kahootState === 'result' ? '1px solid #e2e8f0' : '1px solid transparent', flexShrink: 0, transition: 'all 0.3s' }}>
+      <div style={{ height: 'clamp(60px, 10vh, 90px)', padding: '0 clamp(1rem, 2vw, 2rem)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', background: kahootState === 'result' ? '#fff' : 'transparent', borderTop: kahootState === 'result' ? '1px solid #e2e8f0' : '1px solid transparent', flexShrink: 0, transition: 'all 0.3s' }}>
         {kahootState === 'result' && (
-          <button onClick={showInterimLeaderboard} style={{ background: '#2563eb', color: '#fff', padding: '1rem 3rem', fontSize: '1.25rem', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            Lihat Klasemen <ArrowRight size={24} />
+          <button onClick={showInterimLeaderboard} style={{ background: '#2563eb', color: '#fff', padding: 'clamp(0.6rem, 1.5vw, 1rem) clamp(1.5rem, 3vw, 3rem)', fontSize: 'clamp(1rem, 2vw, 1.25rem)', fontWeight: 700, borderRadius: '100px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            Lihat Klasemen <ArrowRight size={20} />
           </button>
         )}
       </div>

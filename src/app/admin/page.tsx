@@ -505,12 +505,12 @@ export default function AdminPanel() {
                <div style={{ textAlign: 'center', padding: '3rem', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(5px)' }}>Belum ada presentasi di database.</div>
             ) : (
               presentations.map(p => (
-                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div key={p.id} style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', padding: '1.5rem', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap', gap: '1rem' }}>
                   <div>
                     <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{p.title}</h3>
                     <p style={{ margin: 0, color: '#a1a1aa', fontSize: '0.9rem' }}>{p.teacher_name} - {p.subject}</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <button onClick={() => handleEdit(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(59,130,246,0.2)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={14}/> Edit</button>
                     <button onClick={() => handleDelete(p.id)} style={{ padding: '0.5rem 1rem', background: 'rgba(239,68,68,0.2)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={14}/> Hapus</button>
                   </div>
@@ -549,7 +549,7 @@ export default function AdminPanel() {
   const isGaming = data.theme === 'gaming';
 
   return (
-    <div style={{ position: 'relative', height: '100vh', overflowY: 'auto', overflowX: 'hidden', background: isGaming ? (globalBg ? '#000' : '#0a0a0c') : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
+    <div style={{ position: 'relative', minHeight: '100dvh', height: '100%', overflowY: 'auto', overflowX: 'hidden', background: isGaming ? (globalBg ? '#000' : '#0a0a0c') : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontFamily: 'var(--font-sans)', scrollBehavior: 'smooth' }}>
       
       {/* Dynamic Background for Editor Mode */}
       {isGaming && globalBg && isVideoBg && (
@@ -564,33 +564,33 @@ export default function AdminPanel() {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
       )}
 
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '4rem 2rem', position: 'relative', zIndex: 10 }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: 'clamp(2rem, 5vh, 4rem) clamp(1rem, 3vw, 2rem)', position: 'relative', zIndex: 10 }}>
         
         {/* Header Editor */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
           <div>
             <button onClick={() => { loadPresentations(); setMode('list'); }} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 600, padding: '0.5rem 1rem', borderRadius: '100px', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
               <ArrowLeft size={16} /> Kembali ke Daftar
             </button>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>Presentation Editor</h1>
+            <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', fontWeight: 700, margin: 0 }}>Presentation Editor</h1>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
 
-            <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+            <button onClick={exportData} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.65rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '0.9rem' }}>
               <Download size={16} /> Export
             </button>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: isGaming ? '#fff' : '#111', padding: '0.65rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 600, cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '0.9rem' }}>
               <Upload size={16} /> Import
               <input type="file" accept="application/json" style={{ display: 'none' }} onChange={importData} />
             </label>
-            <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}>
+            <button onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#3b82f6', color: '#fff', padding: '0.65rem 1.25rem', borderRadius: '100px', border: 'none', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, boxShadow: '0 4px 12px rgba(59,130,246,0.3)', fontSize: '0.9rem' }}>
               <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
 
         {/* AI Generator Banner */}
-        <div style={{ background: isGaming ? 'rgba(255,255,255,0.03)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: '2rem', borderRadius: '16px', marginBottom: '3rem' }}>
+        <div style={{ background: isGaming ? 'rgba(255,255,255,0.03)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: 'clamp(1.25rem, 3vw, 2rem)', borderRadius: '16px', marginBottom: '3rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', color: isGaming ? '#fff' : '#111' }}><Sparkles size={20} color={isGaming ? '#a1a1aa' : '#52525b'} /> AI Auto-Generator</h2>
@@ -612,7 +612,7 @@ export default function AdminPanel() {
           <AnimatePresence>
             {showAiSettings && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: '2rem' }} exit={{ height: 0, opacity: 0, marginTop: 0 }} style={{ overflow: 'hidden' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', padding: '1.5rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f8fafc', borderRadius: '12px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}` }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: 'clamp(1rem, 2vw, 2rem)', padding: 'clamp(1rem, 2vw, 1.5rem)', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f8fafc', borderRadius: '12px', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}` }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>API Key Anda (Opsional)</label>
                     <input type="password" value={aiApiKey} onChange={(e) => setAiApiKey(e.target.value)} style={{ width: '100%', fontSize: '0.9rem', background: isGaming ? 'rgba(0,0,0,0.4)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : '#cbd5e1'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem', borderRadius: '8px', outline: 'none' }} placeholder="Kosongkan jika pakai default" />
@@ -637,7 +637,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Global Settings */}
-        <div style={{ background: isGaming ? 'rgba(255,255,255,0.03)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: '2rem', borderRadius: '16px', marginBottom: '3rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+        <div style={{ background: isGaming ? 'rgba(255,255,255,0.03)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, padding: 'clamp(1.25rem, 3vw, 2rem)', borderRadius: '16px', marginBottom: '3rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 'clamp(1rem, 2vw, 2rem)' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Nama Guru</label>
             <input type="text" value={data.teacher_name} onChange={(e) => setData({ ...data, teacher_name: e.target.value })} style={{ width: '100%', fontSize: '1rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.1)' : 'transparent'}`, color: isGaming ? '#fff' : '#111', padding: '0.75rem 1rem', borderRadius: '8px', outline: 'none' }} placeholder="Misal: Aris Bermansyah" />
@@ -679,25 +679,25 @@ export default function AdminPanel() {
           <AnimatePresence>
             {data.chapters.map((chap, cIdx) => (
               <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={chap.id} style={{ background: isGaming ? 'rgba(255,255,255,0.02)' : '#fff', border: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)'}`, borderRadius: '16px', overflow: 'hidden' }}>
-                <div style={{ padding: '2rem', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`, display: 'flex', gap: '2rem' }}>
+                <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', borderBottom: `1px solid ${isGaming ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`, display: 'flex', gap: 'clamp(1rem, 2vw, 2rem)', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '50%', background: isGaming ? 'rgba(255,255,255,0.1)' : '#f4f4f5', color: isGaming ? '#fff' : '#111', fontWeight: 700, fontSize: '1.25rem' }}>{cIdx + 1}</div>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div style={{ flex: '1 1 280px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Chapter Title</label>
                         <input type="text" value={chap.title} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].title = e.target.value; setData(newData); }} style={{ width: '100%', fontSize: '1.5rem', fontWeight: 700, background: 'transparent', border: 'none', color: isGaming ? '#fff' : '#111', padding: 0, outline: 'none' }} placeholder="Chapter Title" />
                       </div>
                       <button onClick={() => removeChapter(cIdx)} style={{ width: '40px', height: '40px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={20} /></button>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 'clamp(1rem, 2vw, 2rem)' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Subtitle</label>
                         <input type="text" value={chap.subtitle || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].subtitle = e.target.value; setData(newData); }} style={{ width: '100%', fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="Subtitle" />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.5rem' }}>Cover Image</label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <input type="text" value={chap.image || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].image = e.target.value; setData(newData); }} style={{ flex: 1, fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="URL" />
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <input type="text" value={chap.image || ''} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].image = e.target.value; setData(newData); }} style={{ flex: '1 1 180px', minWidth: 0, fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.2)' : '#f4f4f5', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="URL" />
                           <label style={{ display: 'flex', alignItems: 'center', background: isGaming ? '#3b82f6' : '#111', color: '#fff', padding: '0 1rem', borderRadius: '6px', cursor: uploadingChapter === cIdx ? 'not-allowed' : 'pointer', fontSize: '0.85rem', opacity: uploadingChapter === cIdx ? 0.7 : 1 }}>
                             {uploadingChapter === cIdx ? 'Mengunggah...' : 'Upload'}
                             <input type="file" accept="image/*" style={{ display: 'none' }} disabled={uploadingChapter === cIdx} onChange={async (e) => {
@@ -737,12 +737,12 @@ export default function AdminPanel() {
                         </label>
                       </div>
                       {chap.isKahootMode && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                          <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                          <div style={{ flex: '1 1 200px' }}>
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#93c5fd' : '#0284c7', marginBottom: '0.5rem' }}>Waktu Membaca Soal (detik)</label>
                             <input type="number" min={1} value={chap.kahootReadingTime || 5} onChange={(e) => { const newData = { ...data }; newData.chapters[cIdx].kahootReadingTime = parseInt(e.target.value) || 5; setData(newData); }} style={{ width: '100%', fontSize: '0.95rem', background: isGaming ? 'rgba(0,0,0,0.3)' : '#fff', border: '1px solid transparent', color: isGaming ? '#fff' : '#111', padding: '0.6rem 1rem', borderRadius: '6px', outline: 'none' }} placeholder="5" />
                           </div>
-                          <div style={{ flex: 2, fontSize: '0.8rem', color: isGaming ? '#94a3b8' : '#64748b' }}>
+                          <div style={{ flex: '2 1 280px', fontSize: '0.8rem', color: isGaming ? '#94a3b8' : '#64748b' }}>
                             Di mode Kahoot, slide yang dicentang "Jadikan Kuis Interaktif" akan menjadi soal Kahoot. Slide pertama akan memunculkan Lobby Code.
                           </div>
                         </div>
@@ -876,7 +876,7 @@ export default function AdminPanel() {
                                 />
                               </div>
                               
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                                 {['A', 'B', 'C', 'D'].map((opt) => (
                                   <div key={opt}>
                                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: isGaming ? '#a1a1aa' : '#71717a', marginBottom: '0.25rem', textTransform: 'uppercase' }}>Opsi {opt}</label>

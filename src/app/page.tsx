@@ -78,7 +78,7 @@ export default function CatalogPage() {
   const isVideoBg = globalBg.match(/\.(mp4|webm|ogg)$/i) || globalBg.startsWith('data:video/');
 
   return (
-    <div style={{ height: '100vh', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: '2rem', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
+    <div style={{ minHeight: '100dvh', height: '100%', background: globalBg ? '#000' : '#09090b', color: '#fff', fontFamily: 'var(--font-sans)', padding: 'clamp(1rem, 3vw, 2rem)', position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
       
       {/* Dynamic Background */}
       {globalBg && isVideoBg && (
@@ -92,7 +92,7 @@ export default function CatalogPage() {
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 100%)', zIndex: 0, pointerEvents: 'none' }} />
       
       {/* Floating Buttons */}
-      <div style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100, display: 'flex', gap: '1rem' }}>
+      <div className="catalog-floating-btns" style={{ position: 'fixed', top: '2rem', right: '2rem', zIndex: 100, display: 'flex', gap: '1rem' }}>
         <button onClick={() => { setTempBgUrl(globalBg); setTempBgOpacity(globalBgOpacity); setIsBgConfigOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '100px', backdropFilter: 'blur(10px)', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', cursor: 'pointer' }} onMouseOver={e=>e.currentTarget.style.background='rgba(255,255,255,0.15)'} onMouseOut={e=>e.currentTarget.style.background='rgba(255,255,255,0.1)'}>
           <ImageIcon size={18} /> Ganti Background
         </button>
@@ -104,12 +104,12 @@ export default function CatalogPage() {
         </Link>
       </div>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', marginTop: '4rem', position: 'relative', zIndex: 10 }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', marginTop: 'clamp(2rem, 5vh, 4rem)', position: 'relative', zIndex: 10 }}>
         
         {/* Header */}
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h1 style={{ fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <MonitorPlay color="#3b82f6" /> 
               Katalog Presentasi
             </h1>
@@ -145,7 +145,7 @@ export default function CatalogPage() {
             Belum ada presentasi yang ditemukan.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 'clamp(1rem, 3vw, 2rem)' }}>
             <AnimatePresence>
               {filtered.map((p) => (
                 <motion.div
@@ -188,8 +188,8 @@ export default function CatalogPage() {
       {/* Background Config Modal */}
       <AnimatePresence>
         {isBgConfigOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} style={{ background: 'rgba(30,30,35,0.9)', border: '1px solid rgba(255,255,255,0.1)', padding: '2.5rem', borderRadius: '24px', width: '100%', maxWidth: '500px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', position: 'relative' }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} style={{ background: 'rgba(30,30,35,0.95)', border: '1px solid rgba(255,255,255,0.1)', padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: '24px', width: 'min(94vw, 500px)', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', position: 'relative' }}>
               <button onClick={() => setIsBgConfigOpen(false)} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <X size={16} />
               </button>
@@ -240,7 +240,7 @@ export default function CatalogPage() {
                 />
               </div>
               
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <button onClick={async () => { 
                   setTempBgUrl(''); 
                   setGlobalBg(''); 
