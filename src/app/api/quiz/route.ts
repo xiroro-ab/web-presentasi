@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       .maybeSingle();
       
     let newContent: Record<string, number> = existing?.content || {};
-    newContent[studentName] = (newContent[studentName] || 0) + (points || 0);
+    newContent[studentName] = points !== undefined ? Number(points) : 0;
 
     if (existing) {
       const { error } = await supabase.from('presentations').update({ content: newContent }).eq('id', existing.id);

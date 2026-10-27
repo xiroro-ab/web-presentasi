@@ -358,7 +358,12 @@ function GamingViewer({ data, onOpenAbout }: { data: PresentationData, onOpenAbo
               
               {/* Chart Section */}
               <motion.div initial={{ y: 20 }} animate={{ y: 0 }} style={{ flex: '1 1 320px', minWidth: 0, background: '#fff', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', minHeight: '300px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.5rem', color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#111' }}>Hasil Jawaban Kelas (Real-time)</h3>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, background: '#f4f4f5', padding: '0.35rem 0.85rem', borderRadius: '100px', color: '#3b82f6' }}>
+                    Total: {pollResults.reduce((acc, curr) => acc + curr.uv, 0)} Suara
+                  </span>
+                </div>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '0.75rem', height: '260px', borderBottom: '2px solid #e5e5e5', paddingBottom: '1rem' }}>
                   {pollResults.map((res, i) => {
                     const maxVotes = Math.max(1, ...pollResults.map(p => p.uv));

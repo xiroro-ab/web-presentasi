@@ -29,6 +29,22 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   }, [hasJoined, timeLeft, submitted]);
 
   useEffect(() => {
+    const savedQuiz = localStorage.getItem(`quiz_submitted_${resolvedParams.id}`);
+    if (savedQuiz) {
+      try {
+        const parsed = JSON.parse(savedQuiz);
+        if (parsed.submitted) {
+          setStudentName(parsed.studentName || '');
+          setSelected(parsed.selected || '');
+          setIsCorrect(parsed.isCorrect);
+          setHasJoined(true);
+          setSubmitted(true);
+        }
+      } catch (e) {}
+    }
+  }, [resolvedParams.id]);
+
+  useEffect(() => {
     // Fetch presentation to get quiz data
     fetch(`/api/presentations/${presentationId}`)
       .then(res => res.json())
@@ -78,6 +94,12 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
         body: JSON.stringify({ id: resolvedParams.id, studentName, points })
       });
       setSubmitted(true);
+      localStorage.setItem(`quiz_submitted_${resolvedParams.id}`, JSON.stringify({
+        submitted: true,
+        studentName,
+        selected: ans === 'TIMEOUT' ? 'Waktu Habis!' : ans,
+        isCorrect: correct
+      }));
     } catch (e) {
       console.error(e);
       alert('Gagal mengirim jawaban. Silakan coba lagi.');
