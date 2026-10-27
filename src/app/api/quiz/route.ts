@@ -9,6 +9,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const studentName = searchParams.get('studentName');
     
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
@@ -20,7 +21,15 @@ export async function GET(request: Request) {
 
     if (error && error.code !== 'PGRST116') throw error;
     
-    return NextResponse.json({ results: data?.content || {} });
+    const exists = Boolean(data && data.content);
+    const results = data?.content || {};
+    const hasSubmitted = Boolean(studentName && results && results[studentName] !== undefined);
+
+    return NextResponse.json({ 
+      exists,
+      results,
+      hasSubmitted
+    });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch quiz scores' }, { status: 500 });
   }

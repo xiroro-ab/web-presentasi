@@ -29,12 +29,15 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   }, [hasJoined, timeLeft, submitted]);
 
   useEffect(() => {
-    const savedQuiz = localStorage.getItem(`quiz_submitted_${resolvedParams.id}`);
+    const quizKey = `quiz_submitted_${resolvedParams.id}`;
+    let cachedName = '';
+    const savedQuiz = localStorage.getItem(quizKey);
     if (savedQuiz) {
       try {
         const parsed = JSON.parse(savedQuiz);
         if (parsed.submitted) {
-          setStudentName(parsed.studentName || '');
+          cachedName = parsed.studentName || '';
+          setStudentName(cachedName);
           setSelected(parsed.selected || '');
           setIsCorrect(parsed.isCorrect);
           setHasJoined(true);
@@ -42,7 +45,44 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
         }
       } catch (e) {}
     }
-  }, [resolvedParams.id]);
+
+    if (!cachedName) {
+      const storedName = localStorage.getItem('student_cached_name');
+      if (storedName) setStudentName(storedName);
+    }
+
+    // Verify with server in case teacher clicked "Reset Skor Kuis" / deleted the session
+    const verifyQuizStatus = async () => {
+      try {
+        const activeName = studentName || cachedName || localStorage.getItem('student_cached_name') || '';
+        const query = activeName 
+          ? `?id=${resolvedParams.id}&studentName=${encodeURIComponent(activeName)}` 
+          : `?id=${resolvedParams.id}`;
+        
+        const res = await fetch(`/api/quiz${query}`);
+        const data = await res.json();
+
+        // If quiz was reset / deleted on teacher's screen, or student's answer was removed
+        if (data.exists === false || (activeName && data.hasSubmitted === false)) {
+          const locallySaved = localStorage.getItem(quizKey);
+          if (locallySaved) {
+            localStorage.removeItem(quizKey);
+            setSubmitted(false);
+            setHasJoined(false);
+            setSelected(null);
+            setIsCorrect(null);
+            setTimeLeft(null);
+          }
+        }
+      } catch (e) {
+        console.error('Error verifying quiz status:', e);
+      }
+    };
+
+    verifyQuizStatus();
+    const interval = setInterval(verifyQuizStatus, 3000);
+    return () => clearInterval(interval);
+  }, [resolvedParams.id, studentName]);
 
   useEffect(() => {
     // Fetch presentation to get quiz data
@@ -71,6 +111,7 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName.trim()) return;
+    localStorage.setItem('student_cached_name', studentName.trim());
     setHasJoined(true);
     setTimeLeft(slideData?.quizTimer || 30);
   };
@@ -158,6 +199,9 @@ export default function StudentQuizPage({ params }: { params: Promise<{ id: stri
           <div style={{ fontSize: 'clamp(3rem, 10vw, 5rem)', marginBottom: '1rem' }}>{isCorrect ? '🎉' : '❌'}</div>
           <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 800, marginBottom: '0.5rem' }}>{isCorrect ? 'Benar Sekali!' : 'Sayang Sekali Salah...'}</h1>
           <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem' }}>Pilihan Anda: <b>{selected}</b></p>
+          <div style={{ marginTop: '1.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)', color: 'rgba(255, 255, 255, 0.85)', padding: '0.5rem 1rem', borderRadius: '100px', fontSize: '0.85rem' }}>
+            <span>✓</span> Jawaban tersimpan (Otomatis reset saat guru memulai ulang kuis)
+          </div>
           <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>Silakan lihat layar proyektor untuk skor leaderboard.</p>
         </motion.div>
       </div>
